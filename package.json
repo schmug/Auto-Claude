@@ -1,9 +1,9 @@
 {
-  "name": "auto-claude",
-  "version": "2.7.2",
-  "description": "Autonomous multi-agent coding framework powered by Claude AI",
+  "name": "auto-dfir",
+  "version": "1.0.0",
+  "description": "Autonomous multi-agent DFIR framework that plans, investigates, and validates cybersecurity incidents",
   "license": "AGPL-3.0",
-  "author": "Auto Claude Team",
+  "author": "Auto-DFIR Team",
   "workspaces": [
     "apps/*",
     "libs/*"
@@ -31,14 +31,19 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/AndyMik90/Auto-Claude.git"
+    "url": "https://github.com/schmug/Auto-DFIR.git"
   },
   "keywords": [
-    "ai",
-    "claude",
+    "dfir",
+    "digital-forensics",
+    "incident-response",
+    "cybersecurity",
     "autonomous",
-    "coding",
     "agents",
+    "investigation",
+    "threat-hunting",
+    "ioc",
+    "mitre-attack",
     "electron"
   ],
   "devDependencies": {
