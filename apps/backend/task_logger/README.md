@@ -57,7 +57,7 @@ Agent session integration:
 from task_logger import TaskLogger, LogPhase
 
 # Create logger for a spec
-logger = TaskLogger(spec_dir)
+logger = TaskLogger(case_dir)
 
 # Start a phase
 logger.start_phase(LogPhase.CODING, "Beginning implementation")
@@ -82,7 +82,7 @@ logger.end_phase(LogPhase.CODING, success=True)
 from task_logger import get_task_logger
 
 # Get/create global logger
-logger = get_task_logger(spec_dir)
+logger = get_task_logger(case_dir)
 logger.log("Using global logger instance")
 ```
 
@@ -102,10 +102,10 @@ with StreamingLogCapture(logger, LogPhase.CODING) as capture:
 from task_logger import load_task_logs, get_active_phase
 
 # Load all logs
-logs = load_task_logs(spec_dir)
+logs = load_task_logs(case_dir)
 
 # Get active phase
-active = get_active_phase(spec_dir)
+active = get_active_phase(case_dir)
 ```
 
 ## Design Principles

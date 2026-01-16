@@ -48,7 +48,7 @@ def load_qa_fixer_prompt() -> str:
 
 async def run_qa_fixer_session(
     client: ClaudeSDKClient,
-    spec_dir: Path,
+    case_dir: Path,
     fix_session: int,
     verbose: bool = False,
     project_dir: Path | None = None,
@@ -58,7 +58,7 @@ async def run_qa_fixer_session(
 
     Args:
         client: Claude SDK client
-        spec_dir: Spec directory
+        case_dir: Case directory
         fix_session: Fix iteration number
         verbose: Whether to show detailed output
         project_dir: Project root directory (for memory context)
@@ -68,16 +68,16 @@ async def run_qa_fixer_session(
         - "fixed" if fixes were applied
         - "error" if an error occurred
     """
-    # Derive project_dir from spec_dir if not provided
-    # spec_dir is typically: /project/.auto-claude/specs/001-name/
+    # Derive project_dir from case_dir if not provided
+    # case_dir is typically: /project/.auto-sleuth/cases/001-name/
     if project_dir is None:
-        # Walk up from spec_dir to find project root
-        project_dir = spec_dir.parent.parent.parent
+        # Walk up from case_dir to find project root
+        project_dir = case_dir.parent.parent.parent
     debug_section("qa_fixer", f"QA Fixer Session {fix_session}")
     debug(
         "qa_fixer",
         "Starting QA fixer session",
-        spec_dir=str(spec_dir),
+        case_dir=str(case_dir),
         fix_session=fix_session,
     )
 
@@ -87,13 +87,13 @@ async def run_qa_fixer_session(
     print(f"{'=' * 70}\n")
 
     # Get task logger for streaming markers
-    task_logger = get_task_logger(spec_dir)
+    task_logger = get_task_logger(case_dir)
     current_tool = None
     message_count = 0
     tool_count = 0
 
     # Check that fix request file exists
-    fix_request_file = spec_dir / "QA_FIX_REQUEST.md"
+    fix_request_file = case_dir / "QA_FIX_REQUEST.md"
     if not fix_request_file.exists():
         debug_error("qa_fixer", "QA_FIX_REQUEST.md not found")
         return "error", "QA_FIX_REQUEST.md not found"
@@ -104,7 +104,7 @@ async def run_qa_fixer_session(
 
     # Retrieve memory context for fixer (past fixes, patterns, gotchas)
     fixer_memory_context = await get_graphiti_context(
-        spec_dir,
+        case_dir,
         project_dir,
         {
             "description": "Fixing QA issues and implementing corrections",
@@ -118,10 +118,10 @@ async def run_qa_fixer_session(
 
     # Add session context - use full path so agent can find files
     prompt += f"\n\n---\n\n**Fix Session**: {fix_session}\n"
-    prompt += f"**Spec Directory**: {spec_dir}\n"
-    prompt += f"**Spec Name**: {spec_dir.name}\n"
-    prompt += f"\n**IMPORTANT**: All spec files are located in: `{spec_dir}/`\n"
-    prompt += f"The fix request file is at: `{spec_dir}/QA_FIX_REQUEST.md`\n"
+    prompt += f"**Case Directory**: {case_dir}\n"
+    prompt += f"**Case Name**: {case_dir.name}\n"
+    prompt += f"\n**IMPORTANT**: All case files are located in: `{case_dir}/`\n"
+    prompt += f"The fix request file is at: `{case_dir}/QA_FIX_REQUEST.md`\n"
 
     try:
         debug("qa_fixer", "Sending query to Claude SDK...")
@@ -260,7 +260,7 @@ async def run_qa_fixer_session(
         print("\n" + "-" * 70 + "\n")
 
         # Check if fixes were applied
-        status = get_qa_signoff_status(spec_dir)
+        status = get_qa_signoff_status(case_dir)
         debug(
             "qa_fixer",
             "Fixer session completed",
@@ -285,7 +285,7 @@ async def run_qa_fixer_session(
             debug_success("qa_fixer", "Fixes applied, ready for QA revalidation")
             # Save successful fix session to memory
             await save_session_memory(
-                spec_dir=spec_dir,
+                case_dir=case_dir,
                 project_dir=project_dir,
                 subtask_id=f"qa_fixer_{fix_session}",
                 session_num=fix_session,
@@ -299,7 +299,7 @@ async def run_qa_fixer_session(
             debug_success("qa_fixer", "Fixes assumed applied (status not updated)")
             # Still save to memory as successful (fixes were attempted)
             await save_session_memory(
-                spec_dir=spec_dir,
+                case_dir=case_dir,
                 project_dir=project_dir,
                 subtask_id=f"qa_fixer_{fix_session}",
                 session_num=fix_session,

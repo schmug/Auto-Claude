@@ -2,9 +2,9 @@
 Parallel Orchestrator PR Reviewer
 ==================================
 
-PR reviewer using Claude Agent SDK subagents for parallel specialist analysis.
+PR reviewer using Claude Agent SDK subagents for parallel caseialist analysis.
 
-The orchestrator analyzes the PR and delegates to specialized agents (security,
+The orchestrator analyzes the PR and delegates to caseialized agents (security,
 quality, logic, codebase-fit, ai-triage) which run in parallel. Results are
 synthesized into a final verdict.
 
@@ -69,21 +69,21 @@ logger = logging.getLogger(__name__)
 DEBUG_MODE = os.environ.get("DEBUG", "").lower() in ("true", "1", "yes")
 
 # Directory for PR review worktrees (inside github/pr for consistency)
-PR_WORKTREE_DIR = ".auto-claude/github/pr/worktrees"
+PR_WORKTREE_DIR = ".auto-sleuth/github/pr/worktrees"
 
 
 class ParallelOrchestratorReviewer:
     """
-    PR reviewer using SDK subagents for parallel specialist analysis.
+    PR reviewer using SDK subagents for parallel caseialist analysis.
 
     The orchestrator:
     1. Analyzes the PR (size, complexity, file types, risk areas)
-    2. Delegates to appropriate specialist agents (SDK handles parallel execution)
+    2. Delegates to appropriate caseialist agents (SDK handles parallel execution)
     3. Synthesizes findings into a final verdict
 
     Model Configuration:
     - Orchestrator uses user-configured model from frontend settings
-    - Specialist agents use model="inherit" (same as orchestrator)
+    - Caseialist agents use model="inherit" (same as orchestrator)
     """
 
     def __init__(
@@ -168,9 +168,9 @@ class ParallelOrchestratorReviewer:
                 f"(orphaned={stats['orphaned']}, expired={stats['expired']}, excess={stats['excess']})"
             )
 
-    def _define_specialist_agents(self) -> dict[str, AgentDefinition]:
+    def _define_caseialist_agents(self) -> dict[str, AgentDefinition]:
         """
-        Define specialist agents for the SDK.
+        Define caseialist agents for the SDK.
 
         Each agent has:
         - description: When the orchestrator should invoke this agent
@@ -190,7 +190,7 @@ class ParallelOrchestratorReviewer:
         return {
             "security-reviewer": AgentDefinition(
                 description=(
-                    "Security specialist. Use for OWASP Top 10, authentication, "
+                    "Security caseialist. Use for OWASP Top 10, authentication, "
                     "injection, cryptographic issues, and sensitive data exposure. "
                     "Invoke when PR touches auth, API endpoints, user input, database queries, "
                     "or file operations."
@@ -213,7 +213,7 @@ class ParallelOrchestratorReviewer:
             ),
             "logic-reviewer": AgentDefinition(
                 description=(
-                    "Logic and correctness specialist. Use for algorithm verification, "
+                    "Logic and correctness caseialist. Use for algorithm verification, "
                     "edge cases, state management, and race conditions. Invoke when PR has "
                     "algorithmic changes, data transformations, concurrent operations, or bug fixes."
                 ),
@@ -251,7 +251,7 @@ class ParallelOrchestratorReviewer:
         # Load orchestrator prompt
         base_prompt = self._load_prompt("pr_parallel_orchestrator.md")
         if not base_prompt:
-            base_prompt = "You are a PR reviewer. Analyze and delegate to specialists."
+            base_prompt = "You are a PR reviewer. Analyze and delegate to caseialists."
 
         # Build file list
         files_list = []
@@ -313,7 +313,7 @@ Found {len(context.ai_bot_comments)} comments from AI tools:
 
 ---
 
-Now analyze this PR and delegate to the appropriate specialist agents.
+Now analyze this PR and delegate to the appropriate caseialist agents.
 Remember: YOU decide which agents to invoke based on YOUR analysis.
 The SDK will run invoked agents in parallel automatically.
 """
@@ -335,11 +335,11 @@ The SDK will run invoked agents in parallel automatically.
         """
         return create_client(
             project_dir=project_root,
-            spec_dir=self.github_dir,
+            case_dir=self.github_dir,
             model=model,
             agent_type="pr_orchestrator_parallel",
             max_thinking_tokens=thinking_budget,
-            agents=self._define_specialist_agents(),
+            agents=self._define_caseialist_agents(),
             output_format={
                 "type": "json_schema",
                 "schema": ParallelOrchestratorResponse.model_json_schema(),
@@ -381,7 +381,7 @@ The SDK will run invoked agents in parallel automatically.
         """
         if agents:
             print(
-                f"[ParallelOrchestrator] Specialist agents invoked: {', '.join(agents)}",
+                f"[ParallelOrchestrator] Caseialist agents invoked: {', '.join(agents)}",
                 flush=True,
             )
             for agent in agents:
@@ -556,7 +556,7 @@ The SDK will run invoked agents in parallel automatically.
             self._report_progress(
                 "orchestrating",
                 40,
-                "Orchestrator delegating to specialist agents...",
+                "Orchestrator delegating to caseialist agents...",
                 pr_number=context.pr_number,
             )
 
@@ -957,7 +957,7 @@ The SDK will run invoked agents in parallel automatically.
 
         # Agents used
         if agents_invoked:
-            lines.append(f"**Specialist Agents Invoked:** {', '.join(agents_invoked)}")
+            lines.append(f"**Caseialist Agents Invoked:** {', '.join(agents_invoked)}")
             lines.append("")
 
         # Blockers
@@ -984,6 +984,6 @@ The SDK will run invoked agents in parallel automatically.
             lines.append("")
 
         lines.append("---")
-        lines.append("_Generated by Auto Claude Parallel Orchestrator (SDK Subagents)_")
+        lines.append("_Generated by Auto Sleuth Parallel Orchestrator (SDK Subagents)_")
 
         return "\n".join(lines)

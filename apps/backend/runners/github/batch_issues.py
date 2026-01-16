@@ -5,7 +5,7 @@ Issue Batching Service
 Groups similar issues together for combined auto-fix:
 - Uses semantic similarity from duplicates.py
 - Creates issue clusters using agglomerative clustering
-- Generates combined specs for issue batches
+- Generates combined cases for issue batches
 - Tracks batch state and progress
 """
 
@@ -244,7 +244,7 @@ class BatchStatus(str, Enum):
 
     PENDING = "pending"
     ANALYZING = "analyzing"
-    CREATING_SPEC = "creating_spec"
+    CREATING_SPEC = "creating_case"
     BUILDING = "building"
     QA_REVIEW = "qa_review"
     PR_CREATED = "pr_created"
@@ -292,7 +292,7 @@ class IssueBatch:
     issues: list[IssueBatchItem]
     common_themes: list[str] = field(default_factory=list)
     status: BatchStatus = BatchStatus.PENDING
-    spec_id: str | None = None
+    case_id: str | None = None
     pr_number: int | None = None
     error: str | None = None
     created_at: str = field(
@@ -315,7 +315,7 @@ class IssueBatch:
             "issues": [i.to_dict() for i in self.issues],
             "common_themes": self.common_themes,
             "status": self.status.value,
-            "spec_id": self.spec_id,
+            "case_id": self.case_id,
             "pr_number": self.pr_number,
             "error": self.error,
             "created_at": self.created_at,
@@ -335,7 +335,7 @@ class IssueBatch:
             issues=[IssueBatchItem.from_dict(i) for i in data.get("issues", [])],
             common_themes=data.get("common_themes", []),
             status=BatchStatus(data.get("status", "pending")),
-            spec_id=data.get("spec_id"),
+            case_id=data.get("case_id"),
             pr_number=data.get("pr_number"),
             error=data.get("error"),
             created_at=data.get("created_at", datetime.now(timezone.utc).isoformat()),
@@ -386,7 +386,7 @@ class IssueBatcher:
 
     Usage:
         batcher = IssueBatcher(
-            github_dir=Path(".auto-claude/github"),
+            github_dir=Path(".auto-sleuth/github"),
             repo="owner/repo",
         )
 

@@ -624,7 +624,7 @@ class FindingValidationResult(BaseModel):
     )
     evidence_verified_in_file: bool = Field(
         description=(
-            "True if the code_evidence was verified to exist at the specified line_range. "
+            "True if the code_evidence was verified to exist at the caseified line_range. "
             "False if the code couldn't be found (indicates hallucination in original finding)."
         )
     )

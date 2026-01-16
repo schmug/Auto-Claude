@@ -2,7 +2,7 @@
 Tool Registry
 =============
 
-Central registry for creating and managing auto-claude MCP tools.
+Central registry for creating and managing auto-sleuth MCP tools.
 """
 
 from pathlib import Path
@@ -23,12 +23,12 @@ from .tools import (
 )
 
 
-def create_all_tools(spec_dir: Path, project_dir: Path) -> list:
+def create_all_tools(case_dir: Path, project_dir: Path) -> list:
     """
-    Create all custom tools with the given spec and project directories.
+    Create all custom tools with the given case and project directories.
 
     Args:
-        spec_dir: Path to the spec directory
+        case_dir: Path to the case directory
         project_dir: Path to the project root
 
     Returns:
@@ -40,20 +40,20 @@ def create_all_tools(spec_dir: Path, project_dir: Path) -> list:
     all_tools = []
 
     # Create tools by category
-    all_tools.extend(create_subtask_tools(spec_dir, project_dir))
-    all_tools.extend(create_progress_tools(spec_dir, project_dir))
-    all_tools.extend(create_memory_tools(spec_dir, project_dir))
-    all_tools.extend(create_qa_tools(spec_dir, project_dir))
+    all_tools.extend(create_subtask_tools(case_dir, project_dir))
+    all_tools.extend(create_progress_tools(case_dir, project_dir))
+    all_tools.extend(create_memory_tools(case_dir, project_dir))
+    all_tools.extend(create_qa_tools(case_dir, project_dir))
 
     return all_tools
 
 
-def create_auto_claude_mcp_server(spec_dir: Path, project_dir: Path):
+def create_auto_sleuth_mcp_server(case_dir: Path, project_dir: Path):
     """
-    Create an MCP server with auto-claude custom tools.
+    Create an MCP server with auto-sleuth custom tools.
 
     Args:
-        spec_dir: Path to the spec directory
+        case_dir: Path to the case directory
         project_dir: Path to the project root
 
     Returns:
@@ -62,9 +62,9 @@ def create_auto_claude_mcp_server(spec_dir: Path, project_dir: Path):
     if not SDK_TOOLS_AVAILABLE:
         return None
 
-    tools = create_all_tools(spec_dir, project_dir)
+    tools = create_all_tools(case_dir, project_dir)
 
-    return create_sdk_mcp_server(name="auto-claude", version="1.0.0", tools=tools)
+    return create_sdk_mcp_server(name="auto-sleuth", version="1.0.0", tools=tools)
 
 
 def is_tools_available() -> bool:

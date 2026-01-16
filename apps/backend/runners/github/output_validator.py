@@ -36,7 +36,7 @@ class FindingValidator:
         "it might be good",
     ]
 
-    # Generic suggestions without specifics
+    # Generic suggestions without caseifics
     GENERIC_PATTERNS = [
         "improve this",
         "fix this",
@@ -250,7 +250,7 @@ class FindingValidator:
 
     def _auto_correct_line_number(self, finding: PRReviewFinding) -> PRReviewFinding:
         """
-        Try to find the correct line if the specified one is wrong.
+        Try to find the correct line if the caseified one is wrong.
 
         Args:
             finding: Finding with potentially incorrect line number
@@ -319,7 +319,7 @@ class FindingValidator:
                 if finding.severity == ReviewSeverity.LOW:
                     return True
 
-        # Check for generic suggestions without specifics
+        # Check for generic suggestions without caseifics
         if (
             not finding.suggested_fix
             or len(finding.suggested_fix) < self.MIN_SUGGESTED_FIX_LENGTH
@@ -351,11 +351,11 @@ class FindingValidator:
         """
         score = self.BASE_CONFIDENCE
 
-        # Has specific file and line
+        # Has caseific file and line
         if finding.file and finding.line:
             score += 0.1
 
-        # Has line range (more specific)
+        # Has line range (more caseific)
         if finding.end_line and finding.end_line > finding.line:
             score += 0.05
 

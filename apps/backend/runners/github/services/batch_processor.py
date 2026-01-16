@@ -58,7 +58,7 @@ class BatchProcessor:
         fetch_issue_callback,
     ) -> list:
         """
-        Batch similar issues and create combined specs for each batch.
+        Batch similar issues and create combined cases for each batch.
 
         Args:
             issues: List of GitHub issues to batch

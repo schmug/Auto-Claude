@@ -1,7 +1,7 @@
 """
 Main GraphitiMemory class - facade for the modular memory system.
 
-Provides a high-level interface that delegates to specialized modules:
+Provides a high-level interface that delegates to caseialized modules:
 - client.py: Database connection and lifecycle
 - queries.py: Episode storage operations
 - search.py: Semantic search and retrieval
@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 class GraphitiMemory:
     """
-    Manages Graphiti-based persistent memory for auto-claude sessions.
+    Manages Graphiti-based persistent memory for auto-sleuth sessions.
 
     This class provides a high-level interface for:
     - Storing session insights as episodes
@@ -42,7 +42,7 @@ class GraphitiMemory:
 
     def __init__(
         self,
-        spec_dir: Path,
+        case_dir: Path,
         project_dir: Path,
         group_id_mode: str = GroupIdMode.SPEC,
     ):
@@ -50,13 +50,13 @@ class GraphitiMemory:
         Initialize Graphiti memory manager.
 
         Args:
-            spec_dir: Spec directory (used as namespace/group_id in SPEC mode)
+            case_dir: Case directory (used as namespace/group_id in SPEC mode)
             project_dir: Project root directory (used as namespace in PROJECT mode)
             group_id_mode: How to scope the memory namespace:
-                - "spec": Each spec gets isolated memory (default)
-                - "project": All specs share project-wide context
+                - "case": Each case gets isolated memory (default)
+                - "project": All cases share project-wide context
         """
-        self.spec_dir = spec_dir
+        self.case_dir = case_dir
         self.project_dir = project_dir
         self.group_id_mode = group_id_mode
         self.config = GraphitiConfig.from_env()
@@ -70,7 +70,7 @@ class GraphitiMemory:
         self._available = False
 
         # Load existing state if available
-        self.state = GraphitiState.load(spec_dir)
+        self.state = GraphitiState.load(case_dir)
 
         # Check availability
         self._available = self.config.is_valid()
@@ -88,7 +88,7 @@ class GraphitiMemory:
 
     @property
     def is_initialized(self) -> bool:
-        """Check if Graphiti has been initialized for this spec."""
+        """Check if Graphiti has been initialized for this case."""
         return (
             self._client is not None
             and self._client.is_initialized
@@ -102,7 +102,7 @@ class GraphitiMemory:
         Get the group ID for memory namespace.
 
         Returns:
-            - In SPEC mode: spec folder name (e.g., "001-add-auth")
+            - In SPEC mode: case folder name (e.g., "001-add-auth")
             - In PROJECT mode: project name with hash for uniqueness
         """
         if self.group_id_mode == GroupIdMode.PROJECT:
@@ -112,12 +112,12 @@ class GraphitiMemory:
             ).hexdigest()[:8]
             return f"project_{project_name}_{path_hash}"
         else:
-            return self.spec_dir.name
+            return self.case_dir.name
 
     @property
-    def spec_context_id(self) -> str:
-        """Get a context ID specific to this spec (for filtering in project mode)."""
-        return self.spec_dir.name
+    def case_context_id(self) -> str:
+        """Get a context ID caseific to this case (for filtering in project mode)."""
+        return self.case_dir.name
 
     async def initialize(self) -> bool:
         """
@@ -147,7 +147,7 @@ class GraphitiMemory:
             )
             logger.warning("   Run: python integrations/graphiti/migrate_embeddings.py")
             logger.warning(
-                f"   Or start fresh by removing: {self.spec_dir / '.graphiti_state.json'}"
+                f"   Or start fresh by removing: {self.case_dir / '.graphiti_state.json'}"
             )
             # Continue with new provider (will use new database)
             # Reset state to use new provider
@@ -170,19 +170,19 @@ class GraphitiMemory:
                 self.state.created_at = datetime.now(timezone.utc).isoformat()
                 self.state.llm_provider = self.config.llm_provider
                 self.state.embedder_provider = self.config.embedder_provider
-                self.state.save(self.spec_dir)
+                self.state.save(self.case_dir)
 
             # Create query and search modules
             self._queries = GraphitiQueries(
                 self._client,
                 self.group_id,
-                self.spec_context_id,
+                self.case_context_id,
             )
 
             self._search = GraphitiSearch(
                 self._client,
                 self.group_id,
-                self.spec_context_id,
+                self.case_context_id,
                 self.group_id_mode,
                 self.project_dir,
             )
@@ -225,7 +225,7 @@ class GraphitiMemory:
         if result and self.state:
             self.state.last_session = session_num
             self.state.episode_count += 1
-            self.state.save(self.spec_dir)
+            self.state.save(self.case_dir)
 
         return result
 
@@ -241,7 +241,7 @@ class GraphitiMemory:
 
         if result and self.state:
             self.state.episode_count += 1
-            self.state.save(self.spec_dir)
+            self.state.save(self.case_dir)
 
         return result
 
@@ -254,7 +254,7 @@ class GraphitiMemory:
 
         if result and self.state:
             self.state.episode_count += 1
-            self.state.save(self.spec_dir)
+            self.state.save(self.case_dir)
 
         return result
 
@@ -267,7 +267,7 @@ class GraphitiMemory:
 
         if result and self.state:
             self.state.episode_count += 1
-            self.state.save(self.spec_dir)
+            self.state.save(self.case_dir)
 
         return result
 
@@ -288,7 +288,7 @@ class GraphitiMemory:
 
         if result and self.state:
             self.state.episode_count += 1
-            self.state.save(self.spec_dir)
+            self.state.save(self.case_dir)
 
         return result
 
@@ -324,13 +324,13 @@ class GraphitiMemory:
     async def get_session_history(
         self,
         limit: int = 5,
-        spec_only: bool = True,
+        case_only: bool = True,
     ) -> list[dict]:
         """Get recent session insights from the knowledge graph."""
         if not await self._ensure_initialized():
             return []
 
-        return await self._search.get_session_history(limit, spec_only)
+        return await self._search.get_session_history(limit, case_only)
 
     async def get_similar_task_outcomes(
         self,
@@ -352,9 +352,9 @@ class GraphitiMemory:
         """
         Get patterns and gotchas relevant to the query.
 
-        This method specifically retrieves PATTERN and GOTCHA episode types
+        This method caseifically retrieves PATTERN and GOTCHA episode types
         to enable cross-session learning. Unlike get_relevant_context(),
-        it filters for these specific types rather than doing generic search.
+        it filters for these caseific types rather than doing generic search.
 
         Args:
             query: Search query (task description)
@@ -417,4 +417,4 @@ class GraphitiMemory:
             self.state = GraphitiState()
 
         self.state.record_error(error_msg)
-        self.state.save(self.spec_dir)
+        self.state.save(self.case_dir)

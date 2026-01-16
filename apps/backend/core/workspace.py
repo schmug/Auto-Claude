@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-Workspace Management - Per-Spec Architecture
+Workspace Management - Per-Case Architecture
 =============================================
 
-Handles workspace isolation through Git worktrees, where each spec
-gets its own isolated worktree in .auto-claude/worktrees/tasks/{spec-name}/.
+Handles workspace isolation through Git worktrees, where each case
+gets its own isolated worktree in .auto-sleuth/worktrees/tasks/{case-name}/.
 
 This module has been refactored for better maintainability:
 - Models and enums: workspace/models.py
@@ -81,7 +81,7 @@ from core.workspace.display import (
 )
 from core.workspace.git_utils import (
     MAX_PARALLEL_AI_MERGES,
-    _is_auto_claude_file,
+    _is_auto_sleuth_file,
     get_existing_build_worktree,
 )
 from core.workspace.git_utils import (
@@ -146,7 +146,7 @@ MODULE = "workspace"
 
 def merge_existing_build(
     project_dir: Path,
-    spec_name: str,
+    case_name: str,
     no_commit: bool = False,
     use_smart_merge: bool = True,
     base_branch: str | None = None,
@@ -154,7 +154,7 @@ def merge_existing_build(
     """
     Merge an existing build into the project using intent-aware merge.
 
-    Called when user runs: python auto-claude/run.py --spec X --merge
+    Called when user runs: python auto-sleuth/run.py --case X --merge
 
     This uses the MergeOrchestrator to:
     1. Analyze semantic changes from the task
@@ -165,7 +165,7 @@ def merge_existing_build(
 
     Args:
         project_dir: The project directory
-        spec_name: Name of the spec
+        case_name: Name of the case
         no_commit: If True, merge changes but don't commit (stage only for review in IDE)
         use_smart_merge: If True, use intent-aware merge (default True)
         base_branch: The branch the task was created from (for comparison). If None, auto-detect.
@@ -173,19 +173,19 @@ def merge_existing_build(
     Returns:
         True if merge succeeded
     """
-    worktree_path = get_existing_build_worktree(project_dir, spec_name)
+    worktree_path = get_existing_build_worktree(project_dir, case_name)
 
     if not worktree_path:
         print()
-        print_status(f"No existing build found for '{spec_name}'.", "warning")
+        print_status(f"No existing build found for '{case_name}'.", "warning")
         print()
         print("To start a new build:")
-        print(highlight(f"  python auto-claude/run.py --spec {spec_name}"))
+        print(highlight(f"  python auto-sleuth/run.py --case {case_name}"))
         return False
 
     # Detect current branch - this is where user wants changes merged
     # Normal workflow: user is on their feature branch (e.g., version/2.5.5)
-    # and wants to merge the spec changes into it, then PR to main
+    # and wants to merge the case changes into it, then PR to main
     current_branch_result = subprocess.run(
         ["git", "rev-parse", "--abbrev-ref", "HEAD"],
         cwd=project_dir,
@@ -198,18 +198,18 @@ def merge_existing_build(
         else None
     )
 
-    spec_branch = f"auto-claude/{spec_name}"
+    case_branch = f"auto-sleuth/{case_name}"
 
     # Don't merge a branch into itself
-    if current_branch == spec_branch:
+    if current_branch == case_branch:
         print()
         print_status(
-            "You're on the spec branch. Switch to your target branch first.", "warning"
+            "You're on the case branch. Switch to your target branch first.", "warning"
         )
         print()
         print("Example:")
         print(highlight("  git checkout main  # or your feature branch"))
-        print(highlight(f"  python auto-claude/run.py --spec {spec_name} --merge"))
+        print(highlight(f"  python auto-sleuth/run.py --case {case_name} --merge"))
         return False
 
     if no_commit:
@@ -228,14 +228,14 @@ def merge_existing_build(
 
     # Use current branch as merge target (not auto-detected main/master)
     manager = WorktreeManager(project_dir, base_branch=current_branch)
-    show_build_summary(manager, spec_name)
+    show_build_summary(manager, case_name)
     print()
 
     # Try smart merge first if enabled
     if use_smart_merge:
         smart_result = _try_smart_merge(
             project_dir,
-            spec_name,
+            case_name,
             worktree_path,
             manager,
             no_commit=no_commit,
@@ -258,11 +258,11 @@ def merge_existing_build(
                     # AI resolved conflicts, assisted with merges, or direct copy was used
                     # Changes are already written and staged - no need for git merge
                     _print_merge_success(
-                        no_commit, stats, spec_name=spec_name, keep_worktree=True
+                        no_commit, stats, case_name=case_name, keep_worktree=True
                     )
 
                     # Don't auto-delete worktree - let user test and manually cleanup
-                    # User can delete with: python auto-claude/run.py --spec <name> --discard
+                    # User can delete with: python auto-sleuth/run.py --case <name> --discard
                     # Or via UI "Delete Worktree" button
 
                     return True
@@ -270,11 +270,11 @@ def merge_existing_build(
                     # No conflicts needed AI resolution - do standard git merge
                     # This is the common case: no divergence, just need to merge changes
                     success_result = manager.merge_worktree(
-                        spec_name, delete_after=False, no_commit=no_commit
+                        case_name, delete_after=False, no_commit=no_commit
                     )
                     if success_result:
                         _print_merge_success(
-                            no_commit, stats, spec_name=spec_name, keep_worktree=True
+                            no_commit, stats, case_name=case_name, keep_worktree=True
                         )
                         return True
             elif smart_result.get("git_conflicts"):
@@ -310,7 +310,7 @@ def merge_existing_build(
 
     # Fall back to standard git merge
     success_result = manager.merge_worktree(
-        spec_name, delete_after=False, no_commit=no_commit
+        case_name, delete_after=False, no_commit=no_commit
     )
 
     if success_result:
@@ -322,12 +322,12 @@ def merge_existing_build(
             print(highlight("  git commit -m 'your commit message'"))
             print()
             print("When satisfied, delete the worktree:")
-            print(muted(f"  python auto-claude/run.py --spec {spec_name} --discard"))
+            print(muted(f"  python auto-sleuth/run.py --case {case_name} --discard"))
         else:
             print_status("Your feature has been added to your project.", "success")
             print()
             print("When satisfied, delete the worktree:")
-            print(muted(f"  python auto-claude/run.py --spec {spec_name} --discard"))
+            print(muted(f"  python auto-sleuth/run.py --case {case_name} --discard"))
         return True
     else:
         print()
@@ -338,7 +338,7 @@ def merge_existing_build(
 
 def _try_smart_merge(
     project_dir: Path,
-    spec_name: str,
+    case_name: str,
     worktree_path: Path,
     manager: WorktreeManager,
     no_commit: bool = False,
@@ -350,7 +350,7 @@ def _try_smart_merge(
     This handles both semantic conflicts (parallel tasks) and git conflicts
     (branch divergence) by using AI to intelligently merge files.
 
-    Uses a lock file to prevent concurrent merges for the same spec.
+    Uses a lock file to prevent concurrent merges for the same case.
 
     Args:
         task_source_branch: The branch the task was created from (for comparison).
@@ -361,10 +361,10 @@ def _try_smart_merge(
     """
     # Quick Win 5: Acquire merge lock to prevent concurrent operations
     try:
-        with MergeLock(project_dir, spec_name):
+        with MergeLock(project_dir, case_name):
             return _try_smart_merge_inner(
                 project_dir,
-                spec_name,
+                case_name,
                 worktree_path,
                 manager,
                 no_commit,
@@ -381,7 +381,7 @@ def _try_smart_merge(
 
 def _try_smart_merge_inner(
     project_dir: Path,
-    spec_name: str,
+    case_name: str,
     worktree_path: Path,
     manager: WorktreeManager,
     no_commit: bool = False,
@@ -391,7 +391,7 @@ def _try_smart_merge_inner(
     debug(
         MODULE,
         "=== SMART MERGE START ===",
-        spec_name=spec_name,
+        case_name=case_name,
         worktree_path=str(worktree_path),
         no_commit=no_commit,
     )
@@ -402,7 +402,7 @@ def _try_smart_merge_inner(
         # Capture worktree state in FileTimelineTracker before merge
         try:
             timeline_tracker = FileTimelineTracker(project_dir)
-            timeline_tracker.capture_worktree_state(spec_name, worktree_path)
+            timeline_tracker.capture_worktree_state(case_name, worktree_path)
             debug(MODULE, "Captured worktree state for timeline tracking")
         except Exception as e:
             debug_warning(MODULE, f"Could not capture worktree state: {e}")
@@ -426,16 +426,16 @@ def _try_smart_merge_inner(
         debug(
             MODULE,
             "Refreshing evolution data from git",
-            spec_name=spec_name,
+            case_name=case_name,
             task_source_branch=task_source_branch,
         )
         orchestrator.evolution_tracker.refresh_from_git(
-            spec_name, worktree_path, target_branch=task_source_branch
+            case_name, worktree_path, target_branch=task_source_branch
         )
 
         # Check for git-level conflicts first (branch divergence)
         debug(MODULE, "Checking for git-level conflicts")
-        git_conflicts = _check_git_conflicts(project_dir, spec_name)
+        git_conflicts = _check_git_conflicts(project_dir, case_name)
 
         debug_detailed(
             MODULE,
@@ -466,7 +466,7 @@ def _try_smart_merge_inner(
             # Try to resolve git conflicts with AI
             resolution_result = _resolve_git_conflicts_with_ai(
                 project_dir,
-                spec_name,
+                case_name,
                 worktree_path,
                 git_conflicts,
                 orchestrator,
@@ -506,13 +506,13 @@ def _try_smart_merge_inner(
             print(muted("  Branches diverged but no conflicts detected"))
             print(muted("  Copying changed files directly from worktree..."))
 
-            # Get changed files from spec branch
-            spec_branch = f"auto-claude/{spec_name}"
+            # Get changed files from case branch
+            case_branch = f"auto-sleuth/{case_name}"
             base_branch = git_conflicts.get("base_branch", "main")
 
             # Get merge-base for diff
             merge_base_result = subprocess.run(
-                ["git", "merge-base", base_branch, spec_branch],
+                ["git", "merge-base", base_branch, case_branch],
                 cwd=project_dir,
                 capture_output=True,
                 text=True,
@@ -524,16 +524,16 @@ def _try_smart_merge_inner(
             )
 
             if merge_base:
-                # Get list of changed files in spec branch
+                # Get list of changed files in case branch
                 changed_files = _get_changed_files_from_branch(
-                    project_dir, merge_base, spec_branch
+                    project_dir, merge_base, case_branch
                 )
 
                 resolved_files = []
                 skipped_files = []  # Track files that failed to copy
                 files_to_stage = []
                 for file_path, status in changed_files:
-                    if _is_auto_claude_file(file_path):
+                    if _is_auto_sleuth_file(file_path):
                         continue
 
                     try:
@@ -547,12 +547,12 @@ def _try_smart_merge_inner(
                             resolved_files.append(file_path)
                             print(success(f"    ✓ {file_path} (deleted)"))
                         else:
-                            # New or modified - copy from spec branch
+                            # New or modified - copy from case branch
                             target_path.parent.mkdir(parents=True, exist_ok=True)
 
                             if _is_binary_file(file_path):
                                 binary_content = _get_binary_file_content_from_ref(
-                                    project_dir, spec_branch, file_path
+                                    project_dir, case_branch, file_path
                                 )
                                 if binary_content is not None:
                                     target_path.write_bytes(binary_content)
@@ -572,7 +572,7 @@ def _try_smart_merge_inner(
                                     )
                             else:
                                 content = _get_file_content_from_ref(
-                                    project_dir, spec_branch, file_path
+                                    project_dir, case_branch, file_path
                                 )
                                 if content is not None:
                                     target_path.write_text(content, encoding="utf-8")
@@ -651,7 +651,7 @@ def _try_smart_merge_inner(
 
         # No git conflicts - proceed with semantic analysis
         debug(MODULE, "No git conflicts, proceeding with semantic analysis")
-        preview = orchestrator.preview_merge([spec_name])
+        preview = orchestrator.preview_merge([case_name])
 
         files_to_merge = len(preview.get("files_to_merge", []))
         conflicts = preview.get("conflicts", [])
@@ -692,7 +692,7 @@ def _try_smart_merge_inner(
         return None
 
 
-def _check_git_conflicts(project_dir: Path, spec_name: str) -> dict:
+def _check_git_conflicts(project_dir: Path, case_name: str) -> dict:
     """
     Check for git-level conflicts WITHOUT modifying the working directory.
 
@@ -704,12 +704,12 @@ def _check_git_conflicts(project_dir: Path, spec_name: str) -> dict:
     """
     import re
 
-    spec_branch = f"auto-claude/{spec_name}"
+    case_branch = f"auto-sleuth/{case_name}"
     result = {
         "has_conflicts": False,
         "conflicting_files": [],
         "base_branch": "main",
-        "spec_branch": spec_branch,
+        "case_branch": case_branch,
     }
 
     try:
@@ -725,7 +725,7 @@ def _check_git_conflicts(project_dir: Path, spec_name: str) -> dict:
 
         # Get merge base
         merge_base_result = subprocess.run(
-            ["git", "merge-base", result["base_branch"], spec_branch],
+            ["git", "merge-base", result["base_branch"], case_branch],
             cwd=project_dir,
             capture_output=True,
             text=True,
@@ -743,19 +743,19 @@ def _check_git_conflicts(project_dir: Path, spec_name: str) -> dict:
             capture_output=True,
             text=True,
         )
-        spec_commit_result = subprocess.run(
-            ["git", "rev-parse", spec_branch],
+        case_commit_result = subprocess.run(
+            ["git", "rev-parse", case_branch],
             cwd=project_dir,
             capture_output=True,
             text=True,
         )
 
-        if main_commit_result.returncode != 0 or spec_commit_result.returncode != 0:
+        if main_commit_result.returncode != 0 or case_commit_result.returncode != 0:
             debug_warning(MODULE, "Could not resolve branch commits")
             return result
 
         main_commit = main_commit_result.stdout.strip()
-        spec_commit = spec_commit_result.stdout.strip()
+        case_commit = case_commit_result.stdout.strip()
 
         # Use git merge-tree to check for conflicts WITHOUT touching working directory
         # Note: --write-tree mode only accepts 2 branches (it auto-finds the merge base)
@@ -766,7 +766,7 @@ def _check_git_conflicts(project_dir: Path, spec_name: str) -> dict:
                 "--write-tree",
                 "--no-messages",
                 result["base_branch"],  # Use branch names, not commit hashes
-                spec_branch,
+                case_branch,
             ],
             cwd=project_dir,
             capture_output=True,
@@ -786,11 +786,11 @@ def _check_git_conflicts(project_dir: Path, spec_name: str) -> dict:
                     )
                     if match:
                         file_path = match.group(1).strip()
-                        # Skip .auto-claude files - they should never be merged
+                        # Skip .auto-sleuth files - they should never be merged
                         if (
                             file_path
                             and file_path not in result["conflicting_files"]
-                            and not _is_auto_claude_file(file_path)
+                            and not _is_auto_sleuth_file(file_path)
                         ):
                             result["conflicting_files"].append(file_path)
 
@@ -807,7 +807,7 @@ def _check_git_conflicts(project_dir: Path, spec_name: str) -> dict:
             else:
                 # No CONFLICT markers = no actual conflicts
                 # Branches diverged but changes don't overlap - git can auto-merge
-                # We'll handle this by copying files directly from spec branch
+                # We'll handle this by copying files directly from case branch
                 debug(
                     MODULE,
                     "No CONFLICT markers - branches diverged but can be auto-merged",
@@ -824,7 +824,7 @@ def _check_git_conflicts(project_dir: Path, spec_name: str) -> dict:
 
 def _resolve_git_conflicts_with_ai(
     project_dir: Path,
-    spec_name: str,
+    case_name: str,
     worktree_path: Path,
     git_conflicts: dict,
     orchestrator: MergeOrchestrator,
@@ -848,19 +848,19 @@ def _resolve_git_conflicts_with_ai(
     debug(
         MODULE,
         "=== AI CONFLICT RESOLUTION START ===",
-        spec_name=spec_name,
+        case_name=case_name,
         num_conflicting_files=len(git_conflicts.get("conflicting_files", [])),
     )
 
     conflicting_files = git_conflicts.get("conflicting_files", [])
     base_branch = git_conflicts.get("base_branch", "main")
-    spec_branch = git_conflicts.get("spec_branch", f"auto-claude/{spec_name}")
+    case_branch = git_conflicts.get("case_branch", f"auto-sleuth/{case_name}")
 
     debug_detailed(
         MODULE,
         "Conflict resolution params",
         base_branch=base_branch,
-        spec_branch=spec_branch,
+        case_branch=case_branch,
         conflicting_files=conflicting_files,
     )
 
@@ -876,7 +876,7 @@ def _resolve_git_conflicts_with_ai(
 
     # Get merge-base commit
     merge_base_result = subprocess.run(
-        ["git", "merge-base", base_branch, spec_branch],
+        ["git", "merge-base", base_branch, case_branch],
         cwd=project_dir,
         capture_output=True,
         text=True,
@@ -910,7 +910,7 @@ def _resolve_git_conflicts_with_ai(
     # FIX: Copy NEW files FIRST before resolving conflicts
     # This ensures dependencies exist before files that import them are written
     changed_files = _get_changed_files_from_branch(
-        project_dir, base_branch, spec_branch
+        project_dir, base_branch, case_branch
     )
     new_files = [
         (f, s) for f, s in changed_files if s == "A" and f not in conflicting_files
@@ -928,7 +928,7 @@ def _resolve_git_conflicts_with_ai(
                 # Handle binary files differently - use bytes instead of text
                 if _is_binary_file(file_path):
                     binary_content = _get_binary_file_content_from_ref(
-                        project_dir, spec_branch, file_path
+                        project_dir, case_branch, file_path
                     )
                     if binary_content is not None:
                         target_path.write_bytes(binary_content)
@@ -941,7 +941,7 @@ def _resolve_git_conflicts_with_ai(
                         debug(MODULE, f"Copied new binary file: {file_path}")
                 else:
                     content = _get_file_content_from_ref(
-                        project_dir, spec_branch, file_path
+                        project_dir, case_branch, file_path
                     )
                     if content is not None:
                         target_path.write_text(content, encoding="utf-8")
@@ -988,7 +988,7 @@ def _resolve_git_conflicts_with_ai(
 
             # Get content from worktree branch using ORIGINAL path
             worktree_content = _get_file_content_from_ref(
-                project_dir, spec_branch, file_path
+                project_dir, case_branch, file_path
             )
 
             # Get content from merge-base (common ancestor) using ORIGINAL path
@@ -1056,7 +1056,7 @@ def _resolve_git_conflicts_with_ai(
                                 main_content=main_content,
                                 worktree_content=worktree_content,
                                 base_content=base_content,
-                                spec_name=spec_name,
+                                case_name=case_name,
                                 project_dir=project_dir,
                             )
                         )
@@ -1213,7 +1213,7 @@ def _resolve_git_conflicts_with_ai(
             # File was renamed/moved - needs AI merge to incorporate changes
             # Get content from worktree (old path) and target branch (new path)
             worktree_content = _get_file_content_from_ref(
-                project_dir, spec_branch, file_path
+                project_dir, case_branch, file_path
             )
             target_content = _get_file_content_from_ref(
                 project_dir, base_branch, target_file_path
@@ -1232,7 +1232,7 @@ def _resolve_git_conflicts_with_ai(
                         main_content=target_content,
                         worktree_content=worktree_content,
                         base_content=base_content,
-                        spec_name=spec_name,
+                        case_name=case_name,
                         project_dir=project_dir,
                     )
                 )
@@ -1321,7 +1321,7 @@ def _resolve_git_conflicts_with_ai(
 
                 if _is_binary_file(file_path):
                     binary_content = _get_binary_file_content_from_ref(
-                        project_dir, spec_branch, file_path
+                        project_dir, case_branch, file_path
                     )
                     if binary_content is not None:
                         target_path.write_bytes(binary_content)
@@ -1338,7 +1338,7 @@ def _resolve_git_conflicts_with_ai(
                             )
                 else:
                     content = _get_file_content_from_ref(
-                        project_dir, spec_branch, file_path
+                        project_dir, case_branch, file_path
                     )
                     if content is not None:
                         target_path.write_text(content, encoding="utf-8")
@@ -1359,7 +1359,7 @@ def _resolve_git_conflicts_with_ai(
     # V2: Record merge completion in Evolution Tracker for future context
     # TODO: _record_merge_completion not yet implemented - see line 141
     # if resolved_files:
-    #     _record_merge_completion(project_dir, spec_name, resolved_files)
+    #     _record_merge_completion(project_dir, case_name, resolved_files)
 
     # Build result - partial success if some files failed but we got others
     result = {
@@ -1514,7 +1514,7 @@ def _build_merge_prompt(
     base_content: str | None,
     main_content: str,
     worktree_content: str,
-    spec_name: str,
+    case_name: str,
 ) -> str:
     """Build the prompt for AI file merge."""
     language = _infer_language_from_path(file_path)
@@ -1538,7 +1538,7 @@ BASE (common ancestor):
         worktree_content = worktree_content[:15000] + "\n... (truncated)"
 
     prompt = f"""Perform a 3-way merge for file: {file_path}
-Task being merged: {spec_name}
+Task being merged: {case_name}
 {base_section}
 OURS (current main branch):
 ```{language}
@@ -1622,7 +1622,7 @@ async def _merge_file_with_ai_async(
                 task.base_content,
                 task.main_content,
                 task.worktree_content,
-                task.spec_name,
+                task.case_name,
             )
 
             # Call Claude Haiku for fast merge

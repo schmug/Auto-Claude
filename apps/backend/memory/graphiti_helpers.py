@@ -34,13 +34,13 @@ def is_graphiti_memory_enabled() -> bool:
         return False
 
 
-def get_graphiti_memory(spec_dir: Path, project_dir: Path | None = None):
+def get_graphiti_memory(case_dir: Path, project_dir: Path | None = None):
     """
     Get a GraphitiMemory instance if available.
 
     Args:
-        spec_dir: Spec directory
-        project_dir: Project root directory (defaults to spec_dir.parent.parent)
+        case_dir: Case directory
+        project_dir: Project root directory (defaults to case_dir.parent.parent)
 
     Returns:
         GraphitiMemory instance or None if not available
@@ -52,8 +52,8 @@ def get_graphiti_memory(spec_dir: Path, project_dir: Path | None = None):
         from graphiti_memory import GraphitiMemory
 
         if project_dir is None:
-            project_dir = spec_dir.parent.parent
-        return GraphitiMemory(spec_dir, project_dir)
+            project_dir = case_dir.parent.parent
+        return GraphitiMemory(case_dir, project_dir)
     except ImportError:
         return None
 
@@ -80,7 +80,7 @@ def run_async(coro):
 
 
 async def save_to_graphiti_async(
-    spec_dir: Path,
+    case_dir: Path,
     session_num: int,
     insights: dict[str, Any],
     project_dir: Path | None = None,
@@ -91,7 +91,7 @@ async def save_to_graphiti_async(
     This is called in addition to file-based storage when Graphiti is enabled.
 
     Args:
-        spec_dir: Spec directory
+        case_dir: Case directory
         session_num: Session number
         insights: Session insights dictionary
         project_dir: Optional project directory
@@ -99,7 +99,7 @@ async def save_to_graphiti_async(
     Returns:
         True if save succeeded, False otherwise
     """
-    graphiti = get_graphiti_memory(spec_dir, project_dir)
+    graphiti = get_graphiti_memory(case_dir, project_dir)
     if not graphiti:
         return False
 

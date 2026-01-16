@@ -2,8 +2,8 @@
 Language Commands Module
 ========================
 
-Programming language-specific commands including interpreters,
-compilers, and language-specific tooling.
+Programming language-caseific commands including interpreters,
+compilers, and language-caseific tooling.
 """
 
 

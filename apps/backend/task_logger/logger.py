@@ -14,13 +14,13 @@ from .streaming import emit_marker
 
 class TaskLogger:
     """
-    Logger for a specific task/spec.
+    Logger for a caseific task/case.
 
     Handles persistent storage of logs and emits streaming markers
     for real-time UI updates.
 
     Usage:
-        logger = TaskLogger(spec_dir)
+        logger = TaskLogger(case_dir)
         logger.start_phase(LogPhase.CODING)
         logger.log("Starting implementation...")
         logger.tool_start("Read", "/path/to/file.py")
@@ -31,21 +31,21 @@ class TaskLogger:
 
     LOG_FILE = "task_logs.json"
 
-    def __init__(self, spec_dir: Path, emit_markers: bool = True):
+    def __init__(self, case_dir: Path, emit_markers: bool = True):
         """
         Initialize the task logger.
 
         Args:
-            spec_dir: Path to the spec directory
+            case_dir: Path to the case directory
             emit_markers: Whether to emit streaming markers to stdout
         """
-        self.spec_dir = Path(spec_dir)
-        self.log_file = self.spec_dir / self.LOG_FILE
+        self.case_dir = Path(case_dir)
+        self.log_file = self.case_dir / self.LOG_FILE
         self.emit_markers = emit_markers
         self.current_phase: LogPhase | None = None
         self.current_session: int | None = None
         self.current_subtask: str | None = None
-        self.storage = LogStorage(spec_dir)
+        self.storage = LogStorage(case_dir)
 
     @property
     def _data(self) -> dict:
@@ -237,7 +237,7 @@ class TaskLogger:
         Args:
             content: The message to log
             entry_type: Type of entry (text, error, success, info)
-            phase: Optional phase override (uses current_phase if not specified)
+            phase: Optional phase override (uses current_phase if not caseified)
             print_to_console: Whether to also print to stdout (default True)
         """
         phase_key = (phase or self.current_phase or LogPhase.CODING).value
@@ -527,9 +527,9 @@ class TaskLogger:
         return self._data
 
     def get_phase_logs(self, phase: LogPhase) -> dict:
-        """Get logs for a specific phase."""
+        """Get logs for a caseific phase."""
         return self.storage.get_phase_data(phase.value)
 
     def clear(self) -> None:
         """Clear all logs (useful for testing)."""
-        self.storage = LogStorage(self.spec_dir)
+        self.storage = LogStorage(self.case_dir)

@@ -25,7 +25,7 @@ def create_ollama_llm_client(config: "GraphitiConfig") -> Any:
 
     Raises:
         ProviderNotInstalled: If graphiti-core is not installed
-        ProviderError: If model is not specified
+        ProviderError: If model is not caseified
     """
     try:
         from graphiti_core.llm_client.config import LLMConfig

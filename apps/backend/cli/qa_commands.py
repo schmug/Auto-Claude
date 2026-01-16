@@ -33,37 +33,37 @@ from ui import (
 from .utils import print_banner, validate_environment
 
 
-def handle_qa_status_command(spec_dir: Path) -> None:
+def handle_qa_status_command(case_dir: Path) -> None:
     """
     Handle the --qa-status command.
 
     Args:
-        spec_dir: Spec directory path
+        case_dir: Case directory path
     """
     print_banner()
-    print(f"\nSpec: {spec_dir.name}\n")
-    print_qa_status(spec_dir)
+    print(f"\nCase: {case_dir.name}\n")
+    print_qa_status(case_dir)
 
 
-def handle_review_status_command(spec_dir: Path) -> None:
+def handle_review_status_command(case_dir: Path) -> None:
     """
     Handle the --review-status command.
 
     Args:
-        spec_dir: Spec directory path
+        case_dir: Case directory path
     """
     print_banner()
-    print(f"\nSpec: {spec_dir.name}\n")
-    display_review_status(spec_dir)
+    print(f"\nCase: {case_dir.name}\n")
+    display_review_status(case_dir)
     # Also show if approval is valid for build
-    review_state = ReviewState.load(spec_dir)
+    review_state = ReviewState.load(case_dir)
     print()
-    if review_state.is_approval_valid(spec_dir):
+    if review_state.is_approval_valid(case_dir):
         print(success(f"{icon(Icons.SUCCESS)} Ready to build - approval is valid."))
     elif review_state.approved:
         print(
             warning(
-                f"{icon(Icons.WARNING)} Spec changed since approval - re-review required."
+                f"{icon(Icons.WARNING)} Case changed since approval - re-review required."
             )
         )
     else:
@@ -73,7 +73,7 @@ def handle_review_status_command(spec_dir: Path) -> None:
 
 def handle_qa_command(
     project_dir: Path,
-    spec_dir: Path,
+    case_dir: Path,
     model: str,
     verbose: bool = False,
 ) -> None:
@@ -82,25 +82,25 @@ def handle_qa_command(
 
     Args:
         project_dir: Project root directory
-        spec_dir: Spec directory path
+        case_dir: Case directory path
         model: Model to use for QA
         verbose: Enable verbose output
     """
     print_banner()
-    print(f"\nRunning QA validation for: {spec_dir.name}")
-    if not validate_environment(spec_dir):
+    print(f"\nRunning QA validation for: {case_dir.name}")
+    if not validate_environment(case_dir):
         sys.exit(1)
 
     # Check if there's pending human feedback that needs to be processed
     # Human feedback takes priority over "already approved" status
-    fix_request_file = spec_dir / "QA_FIX_REQUEST.md"
+    fix_request_file = case_dir / "QA_FIX_REQUEST.md"
     has_human_feedback = fix_request_file.exists()
 
-    if not should_run_qa(spec_dir) and not has_human_feedback:
-        if is_qa_approved(spec_dir):
+    if not should_run_qa(case_dir) and not has_human_feedback:
+        if is_qa_approved(case_dir):
             print("\n✅ Build already approved by QA.")
         else:
-            completed, total = count_subtasks(spec_dir)
+            completed, total = count_subtasks(case_dir)
             print(f"\n❌ Build not complete ({completed}/{total} subtasks).")
             print("Complete all subtasks before running QA validation.")
         return
@@ -112,7 +112,7 @@ def handle_qa_command(
         approved = asyncio.run(
             run_qa_validation_loop(
                 project_dir=project_dir,
-                spec_dir=spec_dir,
+                case_dir=case_dir,
                 model=model,
                 verbose=verbose,
             )
@@ -124,4 +124,4 @@ def handle_qa_command(
             sys.exit(1)
     except KeyboardInterrupt:
         print("\n\nQA validation paused.")
-        print(f"Resume with: python auto-claude/run.py --spec {spec_dir.name} --qa")
+        print(f"Resume with: python auto-sleuth/run.py --case {case_dir.name} --qa")

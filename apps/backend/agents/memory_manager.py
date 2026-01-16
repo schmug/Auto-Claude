@@ -82,7 +82,7 @@ def debug_memory_system_status() -> None:
 
 
 async def get_graphiti_context(
-    spec_dir: Path,
+    case_dir: Path,
     project_dir: Path,
     subtask: dict,
 ) -> str | None:
@@ -93,7 +93,7 @@ async def get_graphiti_context(
     task description, returning past insights, patterns, and gotchas.
 
     Args:
-        spec_dir: Spec directory
+        case_dir: Case directory
         project_dir: Project root directory
         subtask: The current subtask being worked on
 
@@ -117,7 +117,7 @@ async def get_graphiti_context(
         from graphiti_memory import GraphitiMemory
 
         # Create memory manager
-        memory = GraphitiMemory(spec_dir, project_dir)
+        memory = GraphitiMemory(case_dir, project_dir)
 
         if not memory.is_enabled:
             if is_debug_enabled():
@@ -146,7 +146,7 @@ async def get_graphiti_context(
         # Get relevant context
         context_items = await memory.get_relevant_context(query, num_results=5)
 
-        # Get patterns and gotchas specifically (THE FIX for learning loop!)
+        # Get patterns and gotchas caseifically (THE FIX for learning loop!)
         # This retrieves PATTERN and GOTCHA episode types for cross-session learning
         patterns, gotchas = await memory.get_patterns_and_gotchas(
             query, num_results=3, min_score=0.5
@@ -240,7 +240,7 @@ async def get_graphiti_context(
 
 
 async def save_session_memory(
-    spec_dir: Path,
+    case_dir: Path,
     project_dir: Path,
     subtask_id: str,
     session_num: int,
@@ -258,7 +258,7 @@ async def save_session_memory(
     This is called after each session to persist learnings.
 
     Args:
-        spec_dir: Spec directory
+        case_dir: Case directory
         project_dir: Project root directory
         subtask_id: The subtask that was worked on
         session_num: Current session number
@@ -279,7 +279,7 @@ async def save_session_memory(
             session_num=session_num,
             success=success,
             subtasks_completed=subtasks_completed,
-            spec_dir=str(spec_dir),
+            case_dir=str(case_dir),
         )
 
     # Build insights structure (same format for both storage systems)
@@ -324,7 +324,7 @@ async def save_session_memory(
         try:
             from graphiti_memory import GraphitiMemory
 
-            memory = GraphitiMemory(spec_dir, project_dir)
+            memory = GraphitiMemory(case_dir, project_dir)
 
             if is_debug_enabled():
                 debug_detailed(
@@ -399,7 +399,7 @@ async def save_session_memory(
         debug("memory", "Attempting FALLBACK storage: File-based")
 
     try:
-        memory_dir = spec_dir / "memory" / "session_insights"
+        memory_dir = case_dir / "memory" / "session_insights"
         if is_debug_enabled():
             debug_detailed(
                 "memory",
@@ -408,7 +408,7 @@ async def save_session_memory(
                 session_file=f"session_{session_num:03d}.json",
             )
 
-        save_file_based_memory(spec_dir, session_num, insights)
+        save_file_based_memory(case_dir, session_num, insights)
         logger.info(
             f"Session {session_num} insights saved to file-based memory (fallback)"
         )
@@ -431,7 +431,7 @@ async def save_session_memory(
 
 # Keep the old function name as an alias for backwards compatibility
 async def save_session_to_graphiti(
-    spec_dir: Path,
+    case_dir: Path,
     project_dir: Path,
     subtask_id: str,
     session_num: int,
@@ -441,7 +441,7 @@ async def save_session_to_graphiti(
 ) -> bool:
     """Backwards compatibility wrapper for save_session_memory."""
     result, _ = await save_session_memory(
-        spec_dir,
+        case_dir,
         project_dir,
         subtask_id,
         session_num,

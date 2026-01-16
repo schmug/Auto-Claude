@@ -47,7 +47,7 @@ class AuditAction(str, Enum):
 
     # Auto-fix actions
     AUTOFIX_STARTED = "autofix_started"
-    AUTOFIX_SPEC_CREATED = "autofix_spec_created"
+    AUTOFIX_SPEC_CREATED = "autofix_case_created"
     AUTOFIX_BUILD_STARTED = "autofix_build_started"
     AUTOFIX_PR_CREATED = "autofix_pr_created"
     AUTOFIX_COMPLETED = "autofix_completed"
@@ -167,7 +167,7 @@ class AuditLogger:
     Structured audit logger for GitHub automation.
 
     Usage:
-        audit = AuditLogger(log_dir=Path(".auto-claude/github/audit"))
+        audit = AuditLogger(log_dir=Path(".auto-sleuth/github/audit"))
 
         # Start an operation with context
         ctx = audit.start_operation(
@@ -204,12 +204,12 @@ class AuditLogger:
         Initialize audit logger.
 
         Args:
-            log_dir: Directory for audit logs (default: .auto-claude/github/audit)
+            log_dir: Directory for audit logs (default: .auto-sleuth/github/audit)
             retention_days: Days to retain logs (default: 30)
             max_file_size_mb: Max size per log file before rotation (default: 100MB)
             enabled: Whether audit logging is enabled (default: True)
         """
-        self.log_dir = log_dir or Path(".auto-claude/github/audit")
+        self.log_dir = log_dir or Path(".auto-sleuth/github/audit")
         self.retention_days = retention_days
         self.max_file_size_mb = max_file_size_mb
         self.enabled = enabled
@@ -641,7 +641,7 @@ class AuditLogger:
         return results
 
     def get_operation_history(self, correlation_id: str) -> list[AuditEntry]:
-        """Get all entries for a specific operation by correlation ID."""
+        """Get all entries for a caseific operation by correlation ID."""
         return self.query_logs(correlation_id=correlation_id, limit=1000)
 
     def get_statistics(

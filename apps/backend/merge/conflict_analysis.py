@@ -128,7 +128,7 @@ def analyze_location_conflict(
     rule_index: dict[tuple[ChangeType, ChangeType], CompatibilityRule],
 ) -> ConflictRegion | None:
     """
-    Analyze changes at a specific location for conflicts.
+    Analyze changes at a caseific location for conflicts.
 
     Args:
         file_path: Path to the file being analyzed
@@ -292,7 +292,7 @@ def analyze_compatibility(
     rule_index: dict[tuple[ChangeType, ChangeType], CompatibilityRule],
 ) -> tuple[bool, MergeStrategy | None, str]:
     """
-    Analyze compatibility between two specific changes.
+    Analyze compatibility between two caseific changes.
 
     Args:
         change_a: First semantic change

@@ -32,7 +32,7 @@ class BuildStatus:
     """Current build status for status line display."""
 
     active: bool = False
-    spec: str = ""
+    case: str = ""
     state: BuildState = BuildState.IDLE
     subtasks_completed: int = 0
     subtasks_total: int = 0
@@ -51,7 +51,7 @@ class BuildStatus:
         """Convert to dictionary for JSON serialization."""
         return {
             "active": self.active,
-            "spec": self.spec,
+            "case": self.case,
             "state": self.state.value,
             "subtasks": {
                 "completed": self.subtasks_completed,
@@ -85,7 +85,7 @@ class BuildStatus:
 
         return cls(
             active=data.get("active", False),
-            spec=data.get("spec", ""),
+            case=data.get("case", ""),
             state=BuildState(data.get("state", "idle")),
             subtasks_completed=subtasks.get("completed", 0),
             subtasks_total=subtasks.get("total", 0),
@@ -103,14 +103,14 @@ class BuildStatus:
 
 
 class StatusManager:
-    """Manages the .auto-claude-status file for ccstatusline integration."""
+    """Manages the .auto-sleuth-status file for ccstatusline integration."""
 
     # Class-level debounce delay (ms) for batched writes
     _WRITE_DEBOUNCE_MS = 50
 
     def __init__(self, project_dir: Path):
         self.project_dir = Path(project_dir)
-        self.status_file = self.project_dir / ".auto-claude-status"
+        self.status_file = self.project_dir / ".auto-sleuth-status"
         self._status = BuildStatus()
         self._write_pending = False
         self._write_timer: threading.Timer | None = None
@@ -215,18 +215,18 @@ class StatusManager:
             self._do_write()
 
     def update(self, **kwargs) -> None:
-        """Update specific status fields."""
+        """Update caseific status fields."""
         with self._write_lock:
             for key, value in kwargs.items():
                 if hasattr(self._status, key):
                     setattr(self._status, key, value)
         self.write()
 
-    def set_active(self, spec: str, state: BuildState) -> None:
+    def set_active(self, case: str, state: BuildState) -> None:
         """Mark build as active. Writes immediately for visibility."""
         with self._write_lock:
             self._status.active = True
-            self._status.spec = spec
+            self._status.case = case
             self._status.state = state
             self._status.session_started = datetime.now().isoformat()
         self.write(immediate=True)

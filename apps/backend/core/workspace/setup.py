@@ -49,19 +49,19 @@ MODULE = "workspace.setup"
 
 def choose_workspace(
     project_dir: Path,
-    spec_name: str,
+    case_name: str,
     force_isolated: bool = False,
     force_direct: bool = False,
     auto_continue: bool = False,
 ) -> WorkspaceMode:
     """
-    Let user choose where auto-claude should work.
+    Let user choose where auto-sleuth should work.
 
     Uses simple, non-technical language. Safe defaults.
 
     Args:
         project_dir: The project directory
-        spec_name: Name of the spec being built
+        case_name: Name of the case being built
         force_isolated: Skip prompts and use isolated mode
         force_direct: Skip prompts and use direct mode
         auto_continue: Non-interactive mode (for UI integration) - skip all prompts
@@ -181,74 +181,74 @@ def copy_env_files_to_worktree(project_dir: Path, worktree_path: Path) -> list[s
     return copied
 
 
-def copy_spec_to_worktree(
-    source_spec_dir: Path,
+def copy_case_to_worktree(
+    source_case_dir: Path,
     worktree_path: Path,
-    spec_name: str,
+    case_name: str,
 ) -> Path:
     """
-    Copy spec files into the worktree so the AI can access them.
+    Copy case files into the worktree so the AI can access them.
 
-    The AI's filesystem is restricted to the worktree, so spec files
+    The AI's filesystem is restricted to the worktree, so case files
     must be copied inside for access.
 
     Args:
-        source_spec_dir: Original spec directory (may be outside worktree)
+        source_case_dir: Original case directory (may be outside worktree)
         worktree_path: Path to the worktree
-        spec_name: Name of the spec folder
+        case_name: Name of the case folder
 
     Returns:
-        Path to the spec directory inside the worktree
+        Path to the case directory inside the worktree
     """
     # Determine target location inside worktree
-    # Use .auto-claude/specs/{spec_name}/ as the standard location
-    # Note: auto-claude/ is source code, .auto-claude/ is the installed instance
-    target_spec_dir = worktree_path / ".auto-claude" / "specs" / spec_name
+    # Use .auto-sleuth/cases/{case_name}/ as the standard location
+    # Note: auto-sleuth/ is source code, .auto-sleuth/ is the installed instance
+    target_case_dir = worktree_path / ".auto-sleuth" / "cases" / case_name
 
     # Create parent directories if needed
-    target_spec_dir.parent.mkdir(parents=True, exist_ok=True)
+    target_case_dir.parent.mkdir(parents=True, exist_ok=True)
 
-    # Copy spec files (overwrite if exists to get latest)
-    if target_spec_dir.exists():
-        shutil.rmtree(target_spec_dir)
+    # Copy case files (overwrite if exists to get latest)
+    if target_case_dir.exists():
+        shutil.rmtree(target_case_dir)
 
-    shutil.copytree(source_spec_dir, target_spec_dir)
+    shutil.copytree(source_case_dir, target_case_dir)
 
-    return target_spec_dir
+    return target_case_dir
 
 
 def setup_workspace(
     project_dir: Path,
-    spec_name: str,
+    case_name: str,
     mode: WorkspaceMode,
-    source_spec_dir: Path | None = None,
+    source_case_dir: Path | None = None,
     base_branch: str | None = None,
 ) -> tuple[Path, WorktreeManager | None, Path | None]:
     """
     Set up the workspace based on user's choice.
 
-    Uses per-spec worktrees - each spec gets its own isolated worktree.
+    Uses per-case worktrees - each case gets its own isolated worktree.
 
     Args:
         project_dir: The project directory
-        spec_name: Name of the spec being built (e.g., "001-feature-name")
+        case_name: Name of the case being built (e.g., "001-feature-name")
         mode: The workspace mode to use
-        source_spec_dir: Optional source spec directory to copy to worktree
+        source_case_dir: Optional source case directory to copy to worktree
         base_branch: Base branch for worktree creation (default: current branch)
 
     Returns:
-        Tuple of (working_directory, worktree_manager or None, localized_spec_dir or None)
+        Tuple of (working_directory, worktree_manager or None, localized_case_dir or None)
 
-        When using isolated mode with source_spec_dir:
+        When using isolated mode with source_case_dir:
         - working_directory: Path to the worktree
         - worktree_manager: Manager for the worktree
-        - localized_spec_dir: Path to spec files INSIDE the worktree (accessible to AI)
+        - localized_case_dir: Path to case files INSIDE the worktree (accessible to AI)
     """
     if mode == WorkspaceMode.DIRECT:
-        # Work directly in project - spec_dir stays as-is
-        return project_dir, None, source_spec_dir
+        # Work directly in project - case_dir stays as-is
+        return project_dir, None, source_case_dir
 
-    # Create isolated workspace using per-spec worktree
+    # Create isolated workspace using per-case worktree
     print()
     print_status("Setting up separate workspace...", "progress")
 
@@ -259,7 +259,7 @@ def setup_workspace(
     manager.setup()
 
     # Get or create worktree for THIS SPECIFIC SPEC
-    worktree_info = manager.get_or_create_worktree(spec_name)
+    worktree_info = manager.get_or_create_worktree(case_name)
 
     # Copy .env files to worktree so user can run the project
     copied_env_files = copy_env_files_to_worktree(project_dir, worktree_info.path)
@@ -296,22 +296,22 @@ def setup_workspace(
             f"Security config copied: {', '.join(security_files_copied)}", "success"
         )
 
-    # Ensure .auto-claude/ is in the worktree's .gitignore
+    # Ensure .auto-sleuth/ is in the worktree's .gitignore
     # This is critical because the worktree inherits .gitignore from the base branch,
-    # which may not have .auto-claude/ if that change wasn't committed/pushed.
-    # Without this, spec files would be committed to the worktree's branch.
+    # which may not have .auto-sleuth/ if that change wasn't committed/pushed.
+    # Without this, case files would be committed to the worktree's branch.
     from init import ensure_gitignore_entry
 
-    if ensure_gitignore_entry(worktree_info.path, ".auto-claude/"):
-        debug(MODULE, "Added .auto-claude/ to worktree's .gitignore")
+    if ensure_gitignore_entry(worktree_info.path, ".auto-sleuth/"):
+        debug(MODULE, "Added .auto-sleuth/ to worktree's .gitignore")
 
-    # Copy spec files to worktree if provided
-    localized_spec_dir = None
-    if source_spec_dir and source_spec_dir.exists():
-        localized_spec_dir = copy_spec_to_worktree(
-            source_spec_dir, worktree_info.path, spec_name
+    # Copy case files to worktree if provided
+    localized_case_dir = None
+    if source_case_dir and source_case_dir.exists():
+        localized_case_dir = copy_case_to_worktree(
+            source_case_dir, worktree_info.path, case_name
         )
-        print_status("Spec files copied to workspace", "success")
+        print_status("Case files copied to workspace", "success")
 
     print_status(f"Workspace ready: {worktree_info.path.name}", "success")
     print()
@@ -319,12 +319,12 @@ def setup_workspace(
     # Initialize FileTimelineTracker for this task
     initialize_timeline_tracking(
         project_dir=project_dir,
-        spec_name=spec_name,
+        case_name=case_name,
         worktree_path=worktree_info.path,
-        source_spec_dir=localized_spec_dir or source_spec_dir,
+        source_case_dir=localized_case_dir or source_case_dir,
     )
 
-    return worktree_info.path, manager, localized_spec_dir
+    return worktree_info.path, manager, localized_case_dir
 
 
 def ensure_timeline_hook_installed(project_dir: Path) -> None:
@@ -374,9 +374,9 @@ def ensure_timeline_hook_installed(project_dir: Path) -> None:
 
 def initialize_timeline_tracking(
     project_dir: Path,
-    spec_name: str,
+    case_name: str,
     worktree_path: Path,
-    source_spec_dir: Path | None = None,
+    source_case_dir: Path | None = None,
 ) -> None:
     """
     Initialize FileTimelineTracker for a new task.
@@ -389,15 +389,15 @@ def initialize_timeline_tracking(
 
         # Get task intent from implementation plan
         task_intent = ""
-        task_title = spec_name
+        task_title = case_name
         files_to_modify = []
 
-        if source_spec_dir:
-            plan_path = source_spec_dir / "implementation_plan.json"
+        if source_case_dir:
+            plan_path = source_case_dir / "investigation_plan.json"
             if plan_path.exists():
                 with open(plan_path) as f:
                     plan = json.load(f)
-                task_title = plan.get("title", spec_name)
+                task_title = plan.get("title", case_name)
                 task_intent = plan.get("description", "")
 
                 # Extract files from phases/subtasks
@@ -415,7 +415,7 @@ def initialize_timeline_tracking(
         if files_to_modify and branch_point:
             # Register the task with known files
             tracker.on_task_start(
-                task_id=spec_name,
+                task_id=case_name,
                 files_to_modify=list(set(files_to_modify)),  # Dedupe
                 branch_point_commit=branch_point,
                 task_intent=task_intent,
@@ -423,14 +423,14 @@ def initialize_timeline_tracking(
             )
             debug(
                 MODULE,
-                f"Timeline tracking initialized for {spec_name}",
+                f"Timeline tracking initialized for {case_name}",
                 files_tracked=len(files_to_modify),
                 branch_point=branch_point[:8] if branch_point else None,
             )
         else:
             # Initialize retroactively from worktree if no plan
             tracker.initialize_from_worktree(
-                task_id=spec_name,
+                task_id=case_name,
                 worktree_path=worktree_path,
                 task_intent=task_intent,
                 task_title=task_title,

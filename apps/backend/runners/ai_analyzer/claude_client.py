@@ -16,7 +16,7 @@ except ImportError:
 
 
 class ClaudeAnalysisClient:
-    """Wrapper for Claude SDK client with analysis-specific configuration."""
+    """Wrapper for Claude SDK client with analysis-caseific configuration."""
 
     DEFAULT_MODEL = "sonnet"  # Shorthand - resolved via API Profile if configured
     ALLOWED_TOOLS = ["Read", "Glob", "Grep"]

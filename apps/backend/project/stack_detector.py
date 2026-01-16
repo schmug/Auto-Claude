@@ -114,7 +114,7 @@ class StackDetector:
             self.stack.languages.append("swift")
 
         # Dart/Flutter
-        if self.parser.file_exists("pubspec.yaml", "*.dart", "**/*.dart"):
+        if self.parser.file_exists("pubcase.yaml", "*.dart", "**/*.dart"):
             self.stack.languages.append("dart")
 
     def detect_package_managers(self) -> None:
@@ -165,7 +165,7 @@ class StackDetector:
             self.stack.package_managers.append("gradle")
 
         # Dart/Flutter package managers
-        if self.parser.file_exists("pubspec.yaml", "pubspec.lock"):
+        if self.parser.file_exists("pubcase.yaml", "pubcase.lock"):
             self.stack.package_managers.append("pub")
         if self.parser.file_exists("melos.yaml"):
             self.stack.package_managers.append("melos")

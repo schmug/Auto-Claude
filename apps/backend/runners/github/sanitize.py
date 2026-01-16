@@ -5,7 +5,7 @@ GitHub Content Sanitization
 Protects against prompt injection attacks by:
 - Stripping HTML comments that may contain hidden instructions
 - Enforcing content length limits
-- Escaping special delimiters
+- Escaping caseial delimiters
 - Validating AI output format before acting
 
 Based on OWASP guidelines for LLM prompt injection prevention.

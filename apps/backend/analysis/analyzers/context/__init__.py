@@ -2,7 +2,7 @@
 Context Analyzer Package
 =========================
 
-Contains specialized detectors for comprehensive project context analysis.
+Contains caseialized detectors for comprehensive project context analysis.
 """
 
 from __future__ import annotations

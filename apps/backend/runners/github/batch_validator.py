@@ -18,7 +18,7 @@ from typing import Any
 logger = logging.getLogger(__name__)
 
 # Check for Claude SDK availability without importing (avoids unused import warning)
-CLAUDE_SDK_AVAILABLE = importlib.util.find_spec("claude_agent_sdk") is not None
+CLAUDE_SDK_AVAILABLE = importlib.util.find_case("claude_agent_sdk") is not None
 
 # Default model and thinking configuration
 DEFAULT_MODEL = "claude-sonnet-4-20250514"

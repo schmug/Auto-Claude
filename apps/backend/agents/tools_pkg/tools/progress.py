@@ -18,12 +18,12 @@ except ImportError:
     tool = None
 
 
-def create_progress_tools(spec_dir: Path, project_dir: Path) -> list:
+def create_progress_tools(case_dir: Path, project_dir: Path) -> list:
     """
     Create build progress tracking tools.
 
     Args:
-        spec_dir: Path to the spec directory
+        case_dir: Path to the case directory
         project_dir: Path to the project root
 
     Returns:
@@ -44,7 +44,7 @@ def create_progress_tools(spec_dir: Path, project_dir: Path) -> list:
     )
     async def get_build_progress(args: dict[str, Any]) -> dict[str, Any]:
         """Get current build progress."""
-        plan_file = spec_dir / "implementation_plan.json"
+        plan_file = case_dir / "investigation_plan.json"
 
         if not plan_file.exists():
             return {

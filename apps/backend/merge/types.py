@@ -36,7 +36,7 @@ class ChangeType(Enum):
     MODIFY_FUNCTION = "modify_function"
     RENAME_FUNCTION = "rename_function"
 
-    # React/JSX specific
+    # React/JSX caseific
     ADD_HOOK_CALL = "add_hook_call"
     REMOVE_HOOK_CALL = "remove_hook_call"
     WRAP_JSX = "wrap_jsx"
@@ -65,7 +65,7 @@ class ChangeType(Enum):
     ADD_INTERFACE = "add_interface"
     MODIFY_INTERFACE = "modify_interface"
 
-    # Python specific
+    # Python caseific
     ADD_DECORATOR = "add_decorator"
     REMOVE_DECORATOR = "remove_decorator"
 
@@ -279,7 +279,7 @@ class FileAnalysis:
         )
 
     def get_changes_at_location(self, location: str) -> list[SemanticChange]:
-        """Get all changes at a specific location."""
+        """Get all changes at a caseific location."""
         return [c for c in self.changes if c.location == location]
 
     @property
@@ -303,7 +303,7 @@ class ConflictRegion:
 
     Attributes:
         file_path: The file containing the conflict
-        location: The specific location (e.g., "function:App")
+        location: The caseific location (e.g., "function:App")
         tasks_involved: List of task IDs that modified this location
         change_types: The types of changes from each task
         severity: How serious the conflict is
@@ -465,7 +465,7 @@ class FileEvolution:
         )
 
     def get_task_snapshot(self, task_id: str) -> TaskSnapshot | None:
-        """Get a specific task's snapshot."""
+        """Get a caseific task's snapshot."""
         for snapshot in self.task_snapshots:
             if snapshot.task_id == task_id:
                 return snapshot
@@ -552,6 +552,6 @@ def compute_content_hash(content: str) -> str:
 
 def sanitize_path_for_storage(file_path: str) -> str:
     """Convert a file path to a safe storage name."""
-    # Replace path separators and special chars
+    # Replace path separators and caseial chars
     safe = file_path.replace("/", "_").replace("\\", "_").replace(".", "_")
     return safe

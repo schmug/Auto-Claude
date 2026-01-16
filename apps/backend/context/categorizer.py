@@ -52,7 +52,7 @@ class FileCategorizer:
             # High relevance files in the "right" location are likely to be modified
             path_lower = match.path.lower()
 
-            is_test = "test" in path_lower or "spec" in path_lower
+            is_test = "test" in path_lower or "case" in path_lower
             is_example = "example" in path_lower or "sample" in path_lower
             is_config = "config" in path_lower and match.relevance_score < 5
 

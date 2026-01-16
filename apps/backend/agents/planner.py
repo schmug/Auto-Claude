@@ -1,8 +1,8 @@
 """
-Planner Agent Module
-====================
+Planner Agent Module - Auto-Sleuth DFIR
+========================================
 
-Handles follow-up planner sessions for adding new subtasks to completed specs.
+Handles follow-up investigation planner sessions for adding new analysis tasks to completed cases.
 """
 
 import logging
@@ -34,53 +34,53 @@ logger = logging.getLogger(__name__)
 
 async def run_followup_planner(
     project_dir: Path,
-    spec_dir: Path,
+    case_dir: Path,
     model: str,
     verbose: bool = False,
 ) -> bool:
     """
-    Run the follow-up planner to add new subtasks to a completed spec.
+    Run the follow-up planner to add new analysis tasks to a completed investigation.
 
     This is a simplified version of run_autonomous_agent that:
     1. Creates a client
-    2. Loads the followup planner prompt
+    2. Loads the followup investigation planner prompt
     3. Runs a single planning session
-    4. Returns after the plan is updated (doesn't enter coding loop)
+    4. Returns after the plan is updated (doesn't enter analysis loop)
 
     The planner agent will:
-    - Read FOLLOWUP_REQUEST.md for the new task
-    - Read the existing implementation_plan.json
-    - Add new phase(s) with pending subtasks
+    - Read FOLLOWUP_REQUEST.md for the new investigation task
+    - Read the existing investigation_plan.json
+    - Add new phase(s) with pending analysis tasks
     - Update the plan status back to in_progress
 
     Args:
         project_dir: Root directory for the project
-        spec_dir: Directory containing the completed spec
+        case_dir: Directory containing the completed case
         model: Claude model to use
         verbose: Whether to show detailed output
 
     Returns:
         bool: True if planning completed successfully
     """
-    from implementation_plan import ImplementationPlan
+    from investigation_plan import InvestigationPlan
     from prompts import get_followup_planner_prompt
 
     # Initialize status manager for ccstatusline
     status_manager = StatusManager(project_dir)
-    status_manager.set_active(spec_dir.name, BuildState.PLANNING)
+    status_manager.set_active(case_dir.name, BuildState.PLANNING)
     emit_phase(ExecutionPhase.PLANNING, "Follow-up planning")
 
     # Initialize task logger for persistent logging
-    task_logger = get_task_logger(spec_dir)
+    task_logger = get_task_logger(case_dir)
 
     # Show header
     content = [
-        bold(f"{icon(Icons.GEAR)} FOLLOW-UP PLANNER SESSION"),
+        bold(f"{icon(Icons.GEAR)} FOLLOW-UP INVESTIGATION PLANNER SESSION"),
         "",
-        f"Spec: {highlight(spec_dir.name)}",
-        muted("Adding follow-up work to completed spec."),
+        f"Case: {highlight(case_dir.name)}",
+        muted("Adding follow-up analysis to completed investigation."),
         "",
-        muted("The agent will read your FOLLOWUP_REQUEST.md and add new subtasks."),
+        muted("The agent will read your FOLLOWUP_REQUEST.md and add new analysis tasks."),
     ]
     print()
     print(box(content, width=70, style="heavy"))
@@ -91,19 +91,19 @@ async def run_followup_planner(
         task_logger.start_phase(LogPhase.PLANNING, "Starting follow-up planning...")
         task_logger.set_session(1)
 
-    # Create client with phase-specific model and thinking budget
-    # Respects task_metadata.json configuration when no CLI override
-    planning_model = get_phase_model(spec_dir, "planning", model)
-    planning_thinking_budget = get_phase_thinking_budget(spec_dir, "planning")
+    # Create client with phase-caseific model and thinking budget
+    # Recasets task_metadata.json configuration when no CLI override
+    planning_model = get_phase_model(case_dir, "planning", model)
+    planning_thinking_budget = get_phase_thinking_budget(case_dir, "planning")
     client = create_client(
         project_dir,
-        spec_dir,
+        case_dir,
         planning_model,
         max_thinking_tokens=planning_thinking_budget,
     )
 
     # Generate follow-up planner prompt
-    prompt = get_followup_planner_prompt(spec_dir)
+    prompt = get_followup_planner_prompt(case_dir)
 
     print_status("Running follow-up planner...", "progress")
     print()
@@ -112,7 +112,7 @@ async def run_followup_planner(
         # Run single planning session
         async with client:
             status, response = await run_agent_session(
-                client, prompt, spec_dir, verbose, phase=LogPhase.PLANNING
+                client, prompt, case_dir, verbose, phase=LogPhase.PLANNING
             )
 
         # End planning phase in task logger
@@ -130,28 +130,28 @@ async def run_followup_planner(
             return False
 
         # Verify the plan was updated (should have pending subtasks now)
-        plan_file = spec_dir / "implementation_plan.json"
+        plan_file = case_dir / "investigation_plan.json"
         if plan_file.exists():
-            plan = ImplementationPlan.load(plan_file)
+            plan = InvestigationPlan.load(plan_file)
 
             # Check if there are any pending subtasks
-            all_subtasks = [c for p in plan.phases for c in p.subtasks]
-            pending_subtasks = [c for c in all_subtasks if c.status.value == "pending"]
+            all_tasks = [c for p in plan.phases for c in p.subtasks]  # subtasks = analysis_tasks
+            pending_tasks = [c for c in all_tasks if c.status.value == "pending"]
 
-            if pending_subtasks:
+            if pending_tasks:
                 # Reset the plan status to in_progress (in case planner didn't)
                 plan.reset_for_followup()
                 plan.save(plan_file)
 
                 print()
                 content = [
-                    bold(f"{icon(Icons.SUCCESS)} FOLLOW-UP PLANNING COMPLETE"),
+                    bold(f"{icon(Icons.SUCCESS)} FOLLOW-UP INVESTIGATION PLANNING COMPLETE"),
                     "",
-                    f"New pending subtasks: {highlight(str(len(pending_subtasks)))}",
-                    f"Total subtasks: {len(all_subtasks)}",
+                    f"New pending analysis tasks: {highlight(str(len(pending_tasks)))}",
+                    f"Total tasks: {len(all_tasks)}",
                     "",
                     muted("Next steps:"),
-                    f"  Run: {highlight(f'python auto-claude/run.py --spec {spec_dir.name}')}",
+                    f"  Run: {highlight(f'python auto-sleuth/run.py --case {case_dir.name}')}",
                 ]
                 print(box(content, width=70, style="heavy"))
                 print()
@@ -160,16 +160,16 @@ async def run_followup_planner(
             else:
                 print()
                 print_status(
-                    "Warning: No pending subtasks found after planning", "warning"
+                    "Warning: No pending analysis tasks found after planning", "warning"
                 )
-                print(muted("The planner may not have added new subtasks."))
-                print(muted("Check implementation_plan.json manually."))
+                print(muted("The planner may not have added new analysis tasks."))
+                print(muted("Check investigation_plan.json manually."))
                 status_manager.update(state=BuildState.PAUSED)
                 return False
         else:
             print()
             print_status(
-                "Error: implementation_plan.json not found after planning", "error"
+                "Error: investigation_plan.json not found after planning", "error"
             )
             status_manager.update(state=BuildState.ERROR)
             return False

@@ -77,7 +77,7 @@ async def spawn_security_review(
     model: str = "claude-sonnet-4-5-20250929",
 ) -> list[PRReviewFinding]:
     """
-    Spawn a focused security review subagent for specific files.
+    Spawn a focused security review subagent for caseific files.
 
     Args:
         files: List of file paths to review
@@ -95,7 +95,7 @@ async def spawn_security_review(
     )
 
     try:
-        # Build focused context with only specified files
+        # Build focused context with only caseified files
         focused_patches = _build_focused_patches(files, pr_context)
 
         # Load security agent prompt
@@ -126,7 +126,7 @@ async def spawn_security_review(
 
         client = create_client(
             project_dir=project_root,
-            spec_dir=github_dir,
+            case_dir=github_dir,
             model=model,
             agent_type="pr_reviewer",  # Read-only - no bash, no edits
         )
@@ -166,7 +166,7 @@ async def spawn_quality_review(
     model: str = "claude-sonnet-4-5-20250929",
 ) -> list[PRReviewFinding]:
     """
-    Spawn a focused code quality review subagent for specific files.
+    Spawn a focused code quality review subagent for caseific files.
 
     Args:
         files: List of file paths to review
@@ -212,7 +212,7 @@ async def spawn_quality_review(
 
         client = create_client(
             project_dir=project_root,
-            spec_dir=github_dir,
+            case_dir=github_dir,
             model=model,
             agent_type="pr_reviewer",  # Read-only - no bash, no edits
         )
@@ -248,11 +248,11 @@ async def spawn_deep_analysis(
     model: str = "claude-sonnet-4-5-20250929",
 ) -> list[PRReviewFinding]:
     """
-    Spawn a deep analysis subagent to investigate a specific concern.
+    Spawn a deep analysis subagent to investigate a caseific concern.
 
     Args:
         files: List of file paths to analyze
-        focus_question: Specific question to investigate
+        focus_question: Caseific question to investigate
         pr_context: Full PR context
         project_dir: Project root directory
         github_dir: GitHub state directory
@@ -275,7 +275,7 @@ async def spawn_deep_analysis(
 **Focus Files:**
 {", ".join(files)}
 
-Your task is to perform a deep analysis to answer this question. Review the provided code changes carefully and provide specific findings if issues are discovered.
+Your task is to perform a deep analysis to answer this question. Review the provided code changes carefully and provide caseific findings if issues are discovered.
 
 Output findings in JSON format:
 ```json
@@ -307,7 +307,7 @@ Output findings in JSON format:
 
         client = create_client(
             project_dir=project_root,
-            spec_dir=github_dir,
+            case_dir=github_dir,
             model=model,
             agent_type="pr_reviewer",  # Read-only - no bash, no edits
         )
@@ -348,7 +348,7 @@ async def run_tests(
 
     Args:
         project_dir: Project root directory
-        test_paths: Specific test paths to run (optional)
+        test_paths: Caseific test paths to run (optional)
 
     Returns:
         TestResult with execution status and results
@@ -468,7 +468,7 @@ async def get_file_content(
     file_path: str,
 ) -> str:
     """
-    Get content of a specific file.
+    Get content of a caseific file.
 
     Args:
         project_dir: Project root directory
@@ -493,7 +493,7 @@ async def get_file_content(
 
 
 def _build_focused_patches(files: list[str], pr_context: PRContext) -> str:
-    """Build diff containing only specified files."""
+    """Build diff containing only caseified files."""
     patches = []
     for changed_file in pr_context.changed_files:
         if changed_file.path in files and changed_file.patch:

@@ -8,9 +8,9 @@ tailored security allowlists.
 
 This package is organized into focused modules:
 - base: Core shell commands and validated commands
-- languages: Programming language-specific commands
+- languages: Programming language-caseific commands
 - package_managers: Package manager commands
-- frameworks: Framework-specific commands
+- frameworks: Framework-caseific commands
 - databases: Database client and ORM commands
 - infrastructure: DevOps and infrastructure commands
 - cloud: Cloud provider CLI commands
@@ -32,7 +32,7 @@ __all__ = [
     # Base commands
     "BASE_COMMANDS",
     "VALIDATED_COMMANDS",
-    # Technology-specific command registries
+    # Technology-caseific command registries
     "LANGUAGE_COMMANDS",
     "PACKAGE_MANAGER_COMMANDS",
     "FRAMEWORK_COMMANDS",

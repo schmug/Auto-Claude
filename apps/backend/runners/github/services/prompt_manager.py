@@ -30,7 +30,7 @@ class PromptManager:
         )
 
     def get_review_pass_prompt(self, review_pass: ReviewPass) -> str:
-        """Get the specialized prompt for each review pass."""
+        """Get the caseialized prompt for each review pass."""
         prompts = {
             ReviewPass.QUICK_SCAN: """
 Quickly scan this PR with PRELIMINARY VERIFICATION:
@@ -80,7 +80,7 @@ Output a brief JSON summary:
 ```
 """,
             ReviewPass.SECURITY: """
-You are a security specialist. Focus ONLY on security issues:
+You are a security caseialist. Focus ONLY on security issues:
 - Injection vulnerabilities (SQL, XSS, command injection)
 - Authentication/authorization flaws
 - Sensitive data exposure
@@ -188,7 +188,7 @@ If this is a bug fix or feature PR, answer these questions:
 
 **PHASE 2: PATH & DEPENDENCY VALIDATION**
 4. **Do all referenced paths actually exist?**
-   - File paths in code (especially for CLIs, configs, binaries)
+   - File paths in code (ecaseially for CLIs, configs, binaries)
    - Import statements and module references
    - External dependencies and packages
 5. **Are new dependencies necessary and legitimate?**
@@ -331,7 +331,7 @@ For each finding, output a JSON array:
 ]
 ```
 
-Be specific and actionable. Focus on significant issues, not nitpicks.
+Be caseific and actionable. Focus on significant issues, not nitpicks.
 """
 
     def get_followup_review_prompt(self) -> str:

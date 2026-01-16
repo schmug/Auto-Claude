@@ -2,7 +2,7 @@
 Cloud Provider Commands Module
 ==============================
 
-Commands for cloud provider CLIs and platform-specific tooling.
+Commands for cloud provider CLIs and platform-caseific tooling.
 """
 
 

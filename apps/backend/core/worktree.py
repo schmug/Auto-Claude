@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 """
-Git Worktree Manager - Per-Spec Architecture
+Git Worktree Manager - Per-Case Architecture
 =============================================
 
-Each spec gets its own worktree:
-- Worktree path: .auto-claude/worktrees/tasks/{spec-name}/
-- Branch name: auto-claude/{spec-name}
+Each case gets its own worktree:
+- Worktree path: .auto-sleuth/worktrees/tasks/{case-name}/
+- Branch name: auto-sleuth/{case-name}
 
 This allows:
-1. Multiple specs to be worked on simultaneously
-2. Each spec's changes are isolated
+1. Multiple cases to be worked on simultaneously
+2. Each case's changes are isolated
 3. Branches persist until explicitly merged
-4. Clear 1:1:1 mapping: spec → worktree → branch
+4. Clear 1:1:1 mapping: case → worktree → branch
 """
 
 import asyncio
@@ -149,11 +149,11 @@ class WorktreeError(Exception):
 
 @dataclass
 class WorktreeInfo:
-    """Information about a spec's worktree."""
+    """Information about a case's worktree."""
 
     path: Path
     branch: str
-    spec_name: str
+    case_name: str
     base_branch: str
     is_active: bool = True
     commit_count: int = 0
@@ -166,10 +166,10 @@ class WorktreeInfo:
 
 class WorktreeManager:
     """
-    Manages per-spec Git worktrees.
+    Manages per-case Git worktrees.
 
-    Each spec gets its own worktree in .auto-claude/worktrees/tasks/{spec-name}/ with
-    a corresponding branch auto-claude/{spec-name}.
+    Each case gets its own worktree in .auto-sleuth/worktrees/tasks/{case-name}/ with
+    a corresponding branch auto-sleuth/{case-name}.
     """
 
     # Timeout constants for subprocess operations
@@ -180,7 +180,7 @@ class WorktreeManager:
     def __init__(self, project_dir: Path, base_branch: str | None = None):
         self.project_dir = project_dir
         self.base_branch = base_branch or self._detect_base_branch()
-        self.worktrees_dir = project_dir / ".auto-claude" / "worktrees" / "tasks"
+        self.worktrees_dir = project_dir / ".auto-sleuth" / "worktrees" / "tasks"
         self._merge_lock = asyncio.Lock()
 
     def _detect_base_branch(self) -> str:
@@ -255,10 +255,10 @@ class WorktreeManager:
     def _unstage_gitignored_files(self) -> None:
         """
         Unstage any staged files that are gitignored in the current branch,
-        plus any files in the .auto-claude directory which should never be merged.
+        plus any files in the .auto-sleuth directory which should never be merged.
 
         This is needed after a --no-commit merge because files that exist in the
-        source branch (like spec files in .auto-claude/specs/) get staged even if
+        source branch (like case files in .auto-sleuth/cases/) get staged even if
         they're gitignored in the target branch.
         """
         # Get list of staged files
@@ -268,7 +268,7 @@ class WorktreeManager:
 
         staged_files = result.stdout.strip().split("\n")
 
-        # Files to unstage: gitignored files + .auto-claude directory files
+        # Files to unstage: gitignored files + .auto-sleuth directory files
         files_to_unstage = set()
 
         # 1. Check which staged files are gitignored
@@ -284,23 +284,23 @@ class WorktreeManager:
                 if file.strip():
                     files_to_unstage.add(file.strip())
 
-        # 2. Always unstage .auto-claude directory files - these are project-specific
+        # 2. Always unstage .auto-sleuth directory files - these are project-caseific
         # and should never be merged from the worktree branch
-        auto_claude_patterns = [".auto-claude/", "auto-claude/specs/"]
+        auto_sleuth_patterns = [".auto-sleuth/", "auto-sleuth/cases/"]
         for file in staged_files:
             file = file.strip()
             if not file:
                 continue
             # Normalize path separators for cross-platform (Windows backslash support)
             normalized = file.replace("\\", "/")
-            for pattern in auto_claude_patterns:
+            for pattern in auto_sleuth_patterns:
                 if normalized.startswith(pattern) or f"/{pattern}" in normalized:
                     files_to_unstage.add(file)
                     break
 
         if files_to_unstage:
             print(
-                f"Unstaging {len(files_to_unstage)} auto-claude/gitignored file(s)..."
+                f"Unstaging {len(files_to_unstage)} auto-sleuth/gitignored file(s)..."
             )
             # Unstage each file
             for file in files_to_unstage:
@@ -310,34 +310,34 @@ class WorktreeManager:
         """Create worktrees directory if needed."""
         self.worktrees_dir.mkdir(parents=True, exist_ok=True)
 
-    # ==================== Per-Spec Worktree Methods ====================
+    # ==================== Per-Case Worktree Methods ====================
 
-    def get_worktree_path(self, spec_name: str) -> Path:
-        """Get the worktree path for a spec (checks new and legacy locations)."""
-        # New path first (.auto-claude/worktrees/tasks/)
-        new_path = self.worktrees_dir / spec_name
+    def get_worktree_path(self, case_name: str) -> Path:
+        """Get the worktree path for a case (checks new and legacy locations)."""
+        # New path first (.auto-sleuth/worktrees/tasks/)
+        new_path = self.worktrees_dir / case_name
         if new_path.exists():
             return new_path
 
-        # Legacy fallback (.worktrees/ instead of .auto-claude/worktrees/tasks/)
-        legacy_path = self.project_dir / ".worktrees" / spec_name
+        # Legacy fallback (.worktrees/ instead of .auto-sleuth/worktrees/tasks/)
+        legacy_path = self.project_dir / ".worktrees" / case_name
         if legacy_path.exists():
             return legacy_path
 
         # Return new path as default for creation
         return new_path
 
-    def get_branch_name(self, spec_name: str) -> str:
-        """Get the branch name for a spec."""
-        return f"auto-claude/{spec_name}"
+    def get_branch_name(self, case_name: str) -> str:
+        """Get the branch name for a case."""
+        return f"auto-sleuth/{case_name}"
 
-    def worktree_exists(self, spec_name: str) -> bool:
-        """Check if a worktree exists for a spec."""
-        return self.get_worktree_path(spec_name).exists()
+    def worktree_exists(self, case_name: str) -> bool:
+        """Check if a worktree exists for a case."""
+        return self.get_worktree_path(case_name).exists()
 
-    def get_worktree_info(self, spec_name: str) -> WorktreeInfo | None:
-        """Get info about a spec's worktree."""
-        worktree_path = self.get_worktree_path(spec_name)
+    def get_worktree_info(self, case_name: str) -> WorktreeInfo | None:
+        """Get info about a case's worktree."""
+        worktree_path = self.get_worktree_path(case_name)
         if not worktree_path.exists():
             return None
 
@@ -349,12 +349,12 @@ class WorktreeManager:
         actual_branch = result.stdout.strip()
 
         # Get statistics
-        stats = self._get_worktree_stats(spec_name)
+        stats = self._get_worktree_stats(case_name)
 
         return WorktreeInfo(
             path=worktree_path,
             branch=actual_branch,
-            spec_name=spec_name,
+            case_name=case_name,
             base_branch=self.base_branch,
             is_active=True,
             **stats,
@@ -362,24 +362,24 @@ class WorktreeManager:
 
     def _check_branch_namespace_conflict(self) -> str | None:
         """
-        Check if a branch named 'auto-claude' exists, which would block creating
-        branches in the 'auto-claude/*' namespace.
+        Check if a branch named 'auto-sleuth' exists, which would block creating
+        branches in the 'auto-sleuth/*' namespace.
 
         Git stores branch refs as files under .git/refs/heads/, so a branch named
-        'auto-claude' creates a file that prevents creating the 'auto-claude/'
-        directory needed for 'auto-claude/{spec-name}' branches.
+        'auto-sleuth' creates a file that prevents creating the 'auto-sleuth/'
+        directory needed for 'auto-sleuth/{case-name}' branches.
 
         Returns:
             The conflicting branch name if found, None otherwise.
         """
-        result = self._run_git(["rev-parse", "--verify", "auto-claude"])
+        result = self._run_git(["rev-parse", "--verify", "auto-sleuth"])
         if result.returncode == 0:
-            return "auto-claude"
+            return "auto-sleuth"
         return None
 
-    def _get_worktree_stats(self, spec_name: str) -> dict:
+    def _get_worktree_stats(self, case_name: str) -> dict:
         """Get diff statistics for a worktree."""
-        worktree_path = self.get_worktree_path(spec_name)
+        worktree_path = self.get_worktree_path(case_name)
 
         stats = {
             "commit_count": 0,
@@ -464,12 +464,12 @@ class WorktreeManager:
 
         return stats
 
-    def create_worktree(self, spec_name: str) -> WorktreeInfo:
+    def create_worktree(self, case_name: str) -> WorktreeInfo:
         """
-        Create a worktree for a spec.
+        Create a worktree for a case.
 
         Args:
-            spec_name: The spec folder name (e.g., "002-implement-memory")
+            case_name: The case folder name (e.g., "002-implement-memory")
 
         Returns:
             WorktreeInfo for the created worktree
@@ -477,17 +477,17 @@ class WorktreeManager:
         Raises:
             WorktreeError: If a branch namespace conflict exists or worktree creation fails
         """
-        worktree_path = self.get_worktree_path(spec_name)
-        branch_name = self.get_branch_name(spec_name)
+        worktree_path = self.get_worktree_path(case_name)
+        branch_name = self.get_branch_name(case_name)
 
-        # Check for branch namespace conflict (e.g., 'auto-claude' blocking 'auto-claude/*')
+        # Check for branch namespace conflict (e.g., 'auto-sleuth' blocking 'auto-sleuth/*')
         conflicting_branch = self._check_branch_namespace_conflict()
         if conflicting_branch:
             raise WorktreeError(
                 f"Branch '{conflicting_branch}' exists and blocks creating '{branch_name}'.\n"
                 f"\n"
-                f"Git branch names work like file paths - a branch named 'auto-claude' prevents\n"
-                f"creating branches under 'auto-claude/' (like 'auto-claude/{spec_name}').\n"
+                f"Git branch names work like file paths - a branch named 'auto-sleuth' prevents\n"
+                f"creating branches under 'auto-sleuth/' (like 'auto-sleuth/{case_name}').\n"
                 f"\n"
                 f"Fix: Rename the conflicting branch:\n"
                 f"  git branch -m {conflicting_branch} {conflicting_branch}-backup"
@@ -531,7 +531,7 @@ class WorktreeManager:
 
         if result.returncode != 0:
             raise WorktreeError(
-                f"Failed to create worktree for {spec_name}: {result.stderr}"
+                f"Failed to create worktree for {case_name}: {result.stderr}"
             )
 
         print(f"Created worktree: {worktree_path.name} on branch {branch_name}")
@@ -539,38 +539,38 @@ class WorktreeManager:
         return WorktreeInfo(
             path=worktree_path,
             branch=branch_name,
-            spec_name=spec_name,
+            case_name=case_name,
             base_branch=self.base_branch,
             is_active=True,
         )
 
-    def get_or_create_worktree(self, spec_name: str) -> WorktreeInfo:
+    def get_or_create_worktree(self, case_name: str) -> WorktreeInfo:
         """
-        Get existing worktree or create a new one for a spec.
+        Get existing worktree or create a new one for a case.
 
         Args:
-            spec_name: The spec folder name
+            case_name: The case folder name
 
         Returns:
             WorktreeInfo for the worktree
         """
-        existing = self.get_worktree_info(spec_name)
+        existing = self.get_worktree_info(case_name)
         if existing:
             print(f"Using existing worktree: {existing.path}")
             return existing
 
-        return self.create_worktree(spec_name)
+        return self.create_worktree(case_name)
 
-    def remove_worktree(self, spec_name: str, delete_branch: bool = False) -> None:
+    def remove_worktree(self, case_name: str, delete_branch: bool = False) -> None:
         """
-        Remove a spec's worktree.
+        Remove a case's worktree.
 
         Args:
-            spec_name: The spec folder name
+            case_name: The case folder name
             delete_branch: Whether to also delete the branch
         """
-        worktree_path = self.get_worktree_path(spec_name)
-        branch_name = self.get_branch_name(spec_name)
+        worktree_path = self.get_worktree_path(case_name)
+        branch_name = self.get_branch_name(case_name)
 
         if worktree_path.exists():
             result = self._run_git(
@@ -589,22 +589,22 @@ class WorktreeManager:
         self._run_git(["worktree", "prune"])
 
     def merge_worktree(
-        self, spec_name: str, delete_after: bool = False, no_commit: bool = False
+        self, case_name: str, delete_after: bool = False, no_commit: bool = False
     ) -> bool:
         """
-        Merge a spec's worktree branch back to base branch.
+        Merge a case's worktree branch back to base branch.
 
         Args:
-            spec_name: The spec folder name
+            case_name: The case folder name
             delete_after: Whether to remove worktree and branch after merge
             no_commit: If True, merge changes but don't commit (stage only for review)
 
         Returns:
             True if merge succeeded
         """
-        info = self.get_worktree_info(spec_name)
+        info = self.get_worktree_info(case_name)
         if not info:
-            print(f"No worktree found for spec: {spec_name}")
+            print(f"No worktree found for case: {case_name}")
             return False
 
         if no_commit:
@@ -620,13 +620,13 @@ class WorktreeManager:
             print(f"Error: Could not checkout base branch: {result.stderr}")
             return False
 
-        # Merge the spec branch
+        # Merge the case branch
         merge_args = ["merge", "--no-ff", info.branch]
         if no_commit:
             # --no-commit stages the merge but doesn't create the commit
             merge_args.append("--no-commit")
         else:
-            merge_args.extend(["-m", f"auto-claude: Merge {info.branch}"])
+            merge_args.extend(["-m", f"auto-sleuth: Merge {info.branch}"])
 
         result = self._run_git(merge_args)
 
@@ -648,13 +648,13 @@ class WorktreeManager:
             print(f"Successfully merged {info.branch}")
 
         if delete_after:
-            self.remove_worktree(spec_name, delete_branch=True)
+            self.remove_worktree(case_name, delete_branch=True)
 
         return True
 
-    def commit_in_worktree(self, spec_name: str, message: str) -> bool:
-        """Commit all changes in a spec's worktree."""
-        worktree_path = self.get_worktree_path(spec_name)
+    def commit_in_worktree(self, case_name: str, message: str) -> bool:
+        """Commit all changes in a case's worktree."""
+        worktree_path = self.get_worktree_path(case_name)
         if not worktree_path.exists():
             return False
 
@@ -672,9 +672,9 @@ class WorktreeManager:
     # ==================== Listing & Discovery ====================
 
     def list_all_worktrees(self) -> list[WorktreeInfo]:
-        """List all spec worktrees (includes legacy .worktrees/ location)."""
+        """List all case worktrees (includes legacy .worktrees/ location)."""
         worktrees = []
-        seen_specs = set()
+        seen_cases = set()
 
         # Check new location first
         if self.worktrees_dir.exists():
@@ -683,22 +683,22 @@ class WorktreeManager:
                     info = self.get_worktree_info(item.name)
                     if info:
                         worktrees.append(info)
-                        seen_specs.add(item.name)
+                        seen_cases.add(item.name)
 
         # Check legacy location (.worktrees/)
         legacy_dir = self.project_dir / ".worktrees"
         if legacy_dir.exists():
             for item in legacy_dir.iterdir():
-                if item.is_dir() and item.name not in seen_specs:
+                if item.is_dir() and item.name not in seen_cases:
                     info = self.get_worktree_info(item.name)
                     if info:
                         worktrees.append(info)
 
         return worktrees
 
-    def list_all_spec_branches(self) -> list[str]:
-        """List all auto-claude branches (even if worktree removed)."""
-        result = self._run_git(["branch", "--list", "auto-claude/*"])
+    def list_all_case_branches(self) -> list[str]:
+        """List all auto-sleuth branches (even if worktree removed)."""
+        result = self._run_git(["branch", "--list", "auto-sleuth/*"])
         if result.returncode != 0:
             return []
 
@@ -710,9 +710,9 @@ class WorktreeManager:
 
         return branches
 
-    def get_changed_files(self, spec_name: str) -> list[tuple[str, str]]:
-        """Get list of changed files in a spec's worktree."""
-        worktree_path = self.get_worktree_path(spec_name)
+    def get_changed_files(self, case_name: str) -> list[tuple[str, str]]:
+        """Get list of changed files in a case's worktree."""
+        worktree_path = self.get_worktree_path(case_name)
         if not worktree_path.exists():
             return []
 
@@ -730,9 +730,9 @@ class WorktreeManager:
 
         return files
 
-    def get_change_summary(self, spec_name: str) -> dict:
+    def get_change_summary(self, case_name: str) -> dict:
         """Get a summary of changes in a worktree."""
-        files = self.get_changed_files(spec_name)
+        files = self.get_changed_files(case_name)
 
         new_files = sum(1 for status, _ in files if status == "A")
         modified_files = sum(1 for status, _ in files if status == "M")
@@ -747,7 +747,7 @@ class WorktreeManager:
     def cleanup_all(self) -> None:
         """Remove all worktrees and their branches."""
         for worktree in self.list_all_worktrees():
-            self.remove_worktree(worktree.spec_name, delete_branch=True)
+            self.remove_worktree(worktree.case_name, delete_branch=True)
 
     def cleanup_stale_worktrees(self) -> None:
         """Remove worktrees that aren't registered with git."""
@@ -769,9 +769,9 @@ class WorktreeManager:
 
         self._run_git(["worktree", "prune"])
 
-    def get_test_commands(self, spec_name: str) -> list[str]:
+    def get_test_commands(self, case_name: str) -> list[str]:
         """Detect likely test/run commands for the project."""
-        worktree_path = self.get_worktree_path(spec_name)
+        worktree_path = self.get_worktree_path(case_name)
         commands = []
 
         if (worktree_path / "package.json").exists():
@@ -794,11 +794,11 @@ class WorktreeManager:
 
         return commands
 
-    def has_uncommitted_changes(self, spec_name: str | None = None) -> bool:
+    def has_uncommitted_changes(self, case_name: str | None = None) -> bool:
         """Check if there are uncommitted changes."""
         cwd = None
-        if spec_name:
-            worktree_path = self.get_worktree_path(spec_name)
+        if case_name:
+            worktree_path = self.get_worktree_path(case_name)
             if worktree_path.exists():
                 cwd = worktree_path
         result = self._run_git(["status", "--porcelain"], cwd=cwd)
@@ -806,12 +806,12 @@ class WorktreeManager:
 
     # ==================== PR Creation Methods ====================
 
-    def push_branch(self, spec_name: str, force: bool = False) -> PushBranchResult:
+    def push_branch(self, case_name: str, force: bool = False) -> PushBranchResult:
         """
-        Push a spec's branch to the remote origin with retry logic.
+        Push a case's branch to the remote origin with retry logic.
 
         Args:
-            spec_name: The spec folder name
+            case_name: The case folder name
             force: Whether to force push (use with caution)
 
         Returns:
@@ -821,11 +821,11 @@ class WorktreeManager:
                 - remote: str (if successful)
                 - error: str (if failed)
         """
-        info = self.get_worktree_info(spec_name)
+        info = self.get_worktree_info(case_name)
         if not info:
             return PushBranchResult(
                 success=False,
-                error=f"No worktree found for spec: {spec_name}",
+                error=f"No worktree found for case: {case_name}",
             )
 
         # Push the branch to origin
@@ -887,18 +887,18 @@ class WorktreeManager:
 
     def create_pull_request(
         self,
-        spec_name: str,
+        case_name: str,
         target_branch: str | None = None,
         title: str | None = None,
         draft: bool = False,
     ) -> PullRequestResult:
         """
-        Create a GitHub pull request for a spec's branch using gh CLI with retry logic.
+        Create a GitHub pull request for a case's branch using gh CLI with retry logic.
 
         Args:
-            spec_name: The spec folder name
+            case_name: The case folder name
             target_branch: Target branch for PR (defaults to base_branch)
-            title: PR title (defaults to spec name)
+            title: PR title (defaults to case name)
             draft: Whether to create as draft PR
 
         Returns:
@@ -908,18 +908,18 @@ class WorktreeManager:
                 - already_exists: bool (if PR already exists)
                 - error: str (if failed)
         """
-        info = self.get_worktree_info(spec_name)
+        info = self.get_worktree_info(case_name)
         if not info:
             return PullRequestResult(
                 success=False,
-                error=f"No worktree found for spec: {spec_name}",
+                error=f"No worktree found for case: {case_name}",
             )
 
         target = target_branch or self.base_branch
-        pr_title = title or f"auto-claude: {spec_name}"
+        pr_title = title or f"auto-sleuth: {case_name}"
 
-        # Get PR body from spec.md if available
-        pr_body = self._extract_spec_summary(spec_name)
+        # Get PR body from case.md if available
+        pr_body = self._extract_case_summary(case_name)
 
         # Build gh pr create command
         gh_args = [
@@ -959,7 +959,7 @@ class WorktreeManager:
 
                 # Check for "already exists" case (success, no retry needed)
                 if result.returncode != 0 and "already exists" in result.stderr.lower():
-                    existing_url = self._get_existing_pr_url(spec_name, target)
+                    existing_url = self._get_existing_pr_url(case_name, target)
                     result_dict = PullRequestResult(
                         success=True,
                         pr_url=existing_url,
@@ -1031,22 +1031,22 @@ class WorktreeManager:
                 error="gh CLI not found. Install from https://cli.github.com/",
             )
 
-    def _extract_spec_summary(self, spec_name: str) -> str:
-        """Extract a summary from spec.md for PR body."""
-        worktree_path = self.get_worktree_path(spec_name)
-        spec_path = worktree_path / ".auto-claude" / "specs" / spec_name / "spec.md"
+    def _extract_case_summary(self, case_name: str) -> str:
+        """Extract a summary from case.md for PR body."""
+        worktree_path = self.get_worktree_path(case_name)
+        case_path = worktree_path / ".auto-sleuth" / "cases" / case_name / "case.md"
 
-        if not spec_path.exists():
-            # Try project spec path
-            spec_path = (
-                self.project_dir / ".auto-claude" / "specs" / spec_name / "spec.md"
+        if not case_path.exists():
+            # Try project case path
+            case_path = (
+                self.project_dir / ".auto-sleuth" / "cases" / case_name / "case.md"
             )
 
-        if not spec_path.exists():
-            return "Auto-generated PR from Auto-Claude build."
+        if not case_path.exists():
+            return "Auto-generated PR from Auto-Sleuth build."
 
         try:
-            content = spec_path.read_text(encoding="utf-8")
+            content = case_path.read_text(encoding="utf-8")
             # Extract first few paragraphs (skip title, get overview)
             lines = content.split("\n")
             summary_lines = []
@@ -1072,14 +1072,14 @@ class WorktreeManager:
         except (OSError, UnicodeDecodeError) as e:
             # Silently fall back to default - file read errors shouldn't block PR creation
             debug_warning(
-                "worktree", f"Could not extract spec summary for PR body: {e}"
+                "worktree", f"Could not extract case summary for PR body: {e}"
             )
 
-        return "Auto-generated PR from Auto-Claude build."
+        return "Auto-generated PR from Auto-Sleuth build."
 
-    def _get_existing_pr_url(self, spec_name: str, target_branch: str) -> str | None:
+    def _get_existing_pr_url(self, case_name: str, target_branch: str) -> str | None:
         """Get the URL of an existing PR for this branch."""
-        info = self.get_worktree_info(spec_name)
+        info = self.get_worktree_info(case_name)
         if not info:
             return None
 
@@ -1109,7 +1109,7 @@ class WorktreeManager:
 
     def push_and_create_pr(
         self,
-        spec_name: str,
+        case_name: str,
         target_branch: str | None = None,
         title: str | None = None,
         draft: bool = False,
@@ -1119,9 +1119,9 @@ class WorktreeManager:
         Push branch and create a pull request in one operation.
 
         Args:
-            spec_name: The spec folder name
+            case_name: The case folder name
             target_branch: Target branch for PR (defaults to base_branch)
-            title: PR title (defaults to spec name)
+            title: PR title (defaults to case name)
             draft: Whether to create as draft PR
             force_push: Whether to force push the branch
 
@@ -1134,7 +1134,7 @@ class WorktreeManager:
                 - error: str (if failed)
         """
         # Step 1: Push the branch
-        push_result = self.push_branch(spec_name, force=force_push)
+        push_result = self.push_branch(case_name, force=force_push)
         if not push_result.get("success"):
             return PushAndCreatePRResult(
                 success=False,
@@ -1144,7 +1144,7 @@ class WorktreeManager:
 
         # Step 2: Create the PR
         pr_result = self.create_pull_request(
-            spec_name=spec_name,
+            case_name=case_name,
             target_branch=target_branch,
             title=title,
             draft=draft,
@@ -1167,14 +1167,14 @@ class WorktreeManager:
         self, days_threshold: int = 30, include_stats: bool = False
     ) -> list[WorktreeInfo] | list[str]:
         """
-        Find worktrees that haven't been modified in the specified number of days.
+        Find worktrees that haven't been modified in the caseified number of days.
 
         Args:
             days_threshold: Number of days without activity to consider a worktree old (default: 30)
-            include_stats: If True, return full WorktreeInfo objects; if False, return just spec names
+            include_stats: If True, return full WorktreeInfo objects; if False, return just case names
 
         Returns:
-            List of old worktrees (either WorktreeInfo objects or spec names based on include_stats)
+            List of old worktrees (either WorktreeInfo objects or case names based on include_stats)
         """
         old_worktrees = []
 
@@ -1187,7 +1187,7 @@ class WorktreeManager:
                 if include_stats:
                     old_worktrees.append(worktree_info)
                 else:
-                    old_worktrees.append(worktree_info.spec_name)
+                    old_worktrees.append(worktree_info.case_name)
 
         return old_worktrees
 
@@ -1195,14 +1195,14 @@ class WorktreeManager:
         self, days_threshold: int = 30, dry_run: bool = False
     ) -> tuple[list[str], list[str]]:
         """
-        Remove worktrees that haven't been modified in the specified number of days.
+        Remove worktrees that haven't been modified in the caseified number of days.
 
         Args:
             days_threshold: Number of days without activity to consider a worktree old (default: 30)
             dry_run: If True, only report what would be removed without actually removing
 
         Returns:
-            Tuple of (removed_specs, failed_specs) containing spec names
+            Tuple of (removed_cases, failed_cases) containing case names
         """
         old_worktrees = self.get_old_worktrees(
             days_threshold=days_threshold, include_stats=True
@@ -1219,21 +1219,21 @@ class WorktreeManager:
             print(f"\n[DRY RUN] Would remove {len(old_worktrees)} old worktrees:")
             for info in old_worktrees:
                 print(
-                    f"  - {info.spec_name} (last activity: {info.days_since_last_commit} days ago)"
+                    f"  - {info.case_name} (last activity: {info.days_since_last_commit} days ago)"
                 )
             return ([], [])
 
         print(f"\nRemoving {len(old_worktrees)} old worktrees...")
         for info in old_worktrees:
             try:
-                self.remove_worktree(info.spec_name, delete_branch=True)
-                removed.append(info.spec_name)
+                self.remove_worktree(info.case_name, delete_branch=True)
+                removed.append(info.case_name)
                 print(
-                    f"  ✓ Removed {info.spec_name} (last activity: {info.days_since_last_commit} days ago)"
+                    f"  ✓ Removed {info.case_name} (last activity: {info.days_since_last_commit} days ago)"
                 )
             except Exception as e:
-                failed.append(info.spec_name)
-                print(f"  ✗ Failed to remove {info.spec_name}: {e}")
+                failed.append(info.case_name)
+                print(f"  ✗ Failed to remove {info.case_name}: {e}")
 
         if removed:
             print(f"\nSuccessfully removed {len(removed)} worktree(s).")
@@ -1311,13 +1311,13 @@ class WorktreeManager:
             if not items:
                 return
             print(f"{title} ({len(items)}):")
-            for info in sorted(items, key=lambda x: x.spec_name):
+            for info in sorted(items, key=lambda x: x.case_name):
                 age_str = (
                     f"{info.days_since_last_commit}d ago"
                     if info.days_since_last_commit is not None
                     else "unknown"
                 )
-                print(f"  - {info.spec_name} (last activity: {age_str})")
+                print(f"  - {info.case_name} (last activity: {age_str})")
             print()
 
         print_group("Recent (< 7 days)", recent)

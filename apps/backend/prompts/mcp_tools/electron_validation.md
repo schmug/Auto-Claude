@@ -102,7 +102,7 @@ ELECTRON VALIDATION:
   - Interactions working: PASS/FAIL
 - Console Errors: [list or "None"]
 - Electron-Specific Features: PASS/FAIL
-  - [Feature]: PASS/FAIL
+  - [Remediation]: PASS/FAIL
 - Issues: [list or "None"]
 ```
 

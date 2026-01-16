@@ -15,9 +15,9 @@ from progress import is_build_complete
 # =============================================================================
 
 
-def load_implementation_plan(spec_dir: Path) -> dict | None:
+def load_investigation_plan(case_dir: Path) -> dict | None:
     """Load the implementation plan JSON."""
-    plan_file = spec_dir / "implementation_plan.json"
+    plan_file = case_dir / "investigation_plan.json"
     if not plan_file.exists():
         return None
     try:
@@ -27,9 +27,9 @@ def load_implementation_plan(spec_dir: Path) -> dict | None:
         return None
 
 
-def save_implementation_plan(spec_dir: Path, plan: dict) -> bool:
+def save_investigation_plan(case_dir: Path, plan: dict) -> bool:
     """Save the implementation plan JSON."""
-    plan_file = spec_dir / "implementation_plan.json"
+    plan_file = case_dir / "investigation_plan.json"
     try:
         with open(plan_file, "w") as f:
             json.dump(plan, f, indent=2)
@@ -43,33 +43,33 @@ def save_implementation_plan(spec_dir: Path, plan: dict) -> bool:
 # =============================================================================
 
 
-def get_qa_signoff_status(spec_dir: Path) -> dict | None:
+def get_qa_signoff_status(case_dir: Path) -> dict | None:
     """Get the current QA sign-off status from implementation plan."""
-    plan = load_implementation_plan(spec_dir)
+    plan = load_investigation_plan(case_dir)
     if not plan:
         return None
     return plan.get("qa_signoff")
 
 
-def is_qa_approved(spec_dir: Path) -> bool:
+def is_qa_approved(case_dir: Path) -> bool:
     """Check if QA has approved the build."""
-    status = get_qa_signoff_status(spec_dir)
+    status = get_qa_signoff_status(case_dir)
     if not status:
         return False
     return status.get("status") == "approved"
 
 
-def is_qa_rejected(spec_dir: Path) -> bool:
+def is_qa_rejected(case_dir: Path) -> bool:
     """Check if QA has rejected the build (needs fixes)."""
-    status = get_qa_signoff_status(spec_dir)
+    status = get_qa_signoff_status(case_dir)
     if not status:
         return False
     return status.get("status") == "rejected"
 
 
-def is_fixes_applied(spec_dir: Path) -> bool:
+def is_fixes_applied(case_dir: Path) -> bool:
     """Check if fixes have been applied and ready for re-validation."""
-    status = get_qa_signoff_status(spec_dir)
+    status = get_qa_signoff_status(case_dir)
     if not status:
         return False
     return status.get("status") == "fixes_applied" and status.get(
@@ -77,9 +77,9 @@ def is_fixes_applied(spec_dir: Path) -> bool:
     )
 
 
-def get_qa_iteration_count(spec_dir: Path) -> int:
+def get_qa_iteration_count(case_dir: Path) -> int:
     """Get the number of QA iterations so far."""
-    status = get_qa_signoff_status(spec_dir)
+    status = get_qa_signoff_status(case_dir)
     if not status:
         return 0
     return status.get("qa_session", 0)
@@ -90,7 +90,7 @@ def get_qa_iteration_count(spec_dir: Path) -> int:
 # =============================================================================
 
 
-def should_run_qa(spec_dir: Path) -> bool:
+def should_run_qa(case_dir: Path) -> bool:
     """
     Determine if QA validation should run.
 
@@ -98,16 +98,16 @@ def should_run_qa(spec_dir: Path) -> bool:
     - All subtasks are completed
     - QA has not yet approved
     """
-    if not is_build_complete(spec_dir):
+    if not is_build_complete(case_dir):
         return False
 
-    if is_qa_approved(spec_dir):
+    if is_qa_approved(case_dir):
         return False
 
     return True
 
 
-def should_run_fixes(spec_dir: Path) -> bool:
+def should_run_fixes(case_dir: Path) -> bool:
     """
     Determine if QA fixes should run.
 
@@ -117,10 +117,10 @@ def should_run_fixes(spec_dir: Path) -> bool:
     """
     from .loop import MAX_QA_ITERATIONS
 
-    if not is_qa_rejected(spec_dir):
+    if not is_qa_rejected(case_dir):
         return False
 
-    iterations = get_qa_iteration_count(spec_dir)
+    iterations = get_qa_iteration_count(case_dir)
     if iterations >= MAX_QA_ITERATIONS:
         return False
 
@@ -132,11 +132,11 @@ def should_run_fixes(spec_dir: Path) -> bool:
 # =============================================================================
 
 
-def print_qa_status(spec_dir: Path) -> None:
+def print_qa_status(case_dir: Path) -> None:
     """Print the current QA status."""
     from .report import get_iteration_history, get_recurring_issue_summary
 
-    status = get_qa_signoff_status(spec_dir)
+    status = get_qa_signoff_status(case_dir)
 
     if not status:
         print("QA Status: Not started")
@@ -166,7 +166,7 @@ def print_qa_status(spec_dir: Path) -> None:
             print(f"  ... and {len(issues) - 3} more")
 
     # Show iteration history summary
-    history = get_iteration_history(spec_dir)
+    history = get_iteration_history(case_dir)
     if history:
         summary = get_recurring_issue_summary(history)
         print("\nIteration History:")

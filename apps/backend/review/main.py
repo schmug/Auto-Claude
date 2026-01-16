@@ -20,7 +20,7 @@ This facade maintains compatibility with existing imports:
 Design Principles:
 - Block automatic build start until human approval is given
 - Persist approval state in review_state.json
-- Detect spec changes after approval (requires re-approval)
+- Detect case changes after approval (requires re-approval)
 - Support both interactive and auto-approve modes
 - Graceful Ctrl+C handling
 
@@ -28,12 +28,12 @@ Usage:
     # Programmatic use
     from review import ReviewState, run_review_checkpoint
 
-    state = ReviewState.load(spec_dir)
+    state = ReviewState.load(case_dir)
     if not state.is_approved():
-        state = run_review_checkpoint(spec_dir)
+        state = run_review_checkpoint(case_dir)
 
     # CLI use (for manual review)
-    python auto-claude/review.py --spec-dir auto-claude/specs/001-feature
+    python auto-sleuth/review.py --case-dir auto-sleuth/cases/001-feature
 """
 
 import sys
@@ -54,13 +54,13 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(
-        description="Human review checkpoint for auto-claude specs"
+        description="Human review checkpoint for auto-sleuth cases"
     )
     parser.add_argument(
-        "--spec-dir",
+        "--case-dir",
         type=str,
         required=True,
-        help="Path to the spec directory",
+        help="Path to the case directory",
     )
     parser.add_argument(
         "--auto-approve",
@@ -75,16 +75,16 @@ def main():
 
     args = parser.parse_args()
 
-    spec_dir = Path(args.spec_dir)
-    if not spec_dir.exists():
-        print_status(f"Spec directory not found: {spec_dir}", "error")
+    case_dir = Path(args.case_dir)
+    if not case_dir.exists():
+        print_status(f"Case directory not found: {case_dir}", "error")
         sys.exit(1)
 
     if args.status:
         # Just show status
-        display_review_status(spec_dir)
-        state = ReviewState.load(spec_dir)
-        if state.is_approval_valid(spec_dir):
+        display_review_status(case_dir)
+        state = ReviewState.load(case_dir)
+        if state.is_approval_valid(case_dir):
             print()
             print_status("Ready to build.", "success")
             sys.exit(0)
@@ -95,7 +95,7 @@ def main():
 
     # Run interactive review
     try:
-        state = run_review_checkpoint(spec_dir, auto_approve=args.auto_approve)
+        state = run_review_checkpoint(case_dir, auto_approve=args.auto_approve)
         if state.is_approved():
             sys.exit(0)
         else:

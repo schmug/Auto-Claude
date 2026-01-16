@@ -12,7 +12,7 @@ import json
 import sys
 from pathlib import Path
 
-# Add auto-claude to path
+# Add auto-sleuth to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # Load .env file with centralized error handling
@@ -48,8 +48,8 @@ def load_project_context(project_dir: str) -> str:
     """Load project context for the AI."""
     context_parts = []
 
-    # Load project index if available (from .auto-claude - the installed instance)
-    index_path = Path(project_dir) / ".auto-claude" / "project_index.json"
+    # Load project index if available (from .auto-sleuth - the installed instance)
+    index_path = Path(project_dir) / ".auto-sleuth" / "project_index.json"
     if index_path.exists():
         try:
             with open(index_path) as f:
@@ -68,7 +68,7 @@ def load_project_context(project_dir: str) -> str:
             pass
 
     # Load roadmap if available
-    roadmap_path = Path(project_dir) / ".auto-claude" / "roadmap" / "roadmap.json"
+    roadmap_path = Path(project_dir) / ".auto-sleuth" / "roadmap" / "roadmap.json"
     if roadmap_path.exists():
         try:
             with open(roadmap_path) as f:
@@ -86,14 +86,14 @@ def load_project_context(project_dir: str) -> str:
             pass
 
     # Load existing tasks
-    tasks_path = Path(project_dir) / ".auto-claude" / "specs"
+    tasks_path = Path(project_dir) / ".auto-sleuth" / "cases"
     if tasks_path.exists():
         try:
             task_dirs = [d for d in tasks_path.iterdir() if d.is_dir()]
             task_names = [d.name for d in task_dirs[:10]]
             if task_names:
                 context_parts.append(
-                    "## Existing Tasks/Specs\n- " + "\n- ".join(task_names)
+                    "## Existing Tasks/Cases\n- " + "\n- ".join(task_names)
                 )
         except Exception:
             pass

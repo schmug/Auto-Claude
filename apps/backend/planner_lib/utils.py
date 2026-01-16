@@ -2,20 +2,20 @@
 Utility functions for implementation planner.
 """
 
-from implementation_plan import Verification, VerificationType
+from investigation_plan import Verification, VerificationType
 
 from .models import PlannerContext
 
 
 def extract_feature_name(context: PlannerContext) -> str:
-    """Extract feature name from spec."""
-    # Try to find title in spec
-    lines = context.spec_content.split("\n")
+    """Extract feature name from case."""
+    # Try to find title in case
+    lines = context.case_content.split("\n")
     for line in lines[:10]:
         if line.startswith("# "):
             title = line[2:].strip()
             # Remove common prefixes
-            for prefix in ["Specification:", "Spec:", "Feature:"]:
+            for prefix in ["Caseification:", "Case:", "Feature:"]:
                 if title.startswith(prefix):
                     title = title[len(prefix) :].strip()
             return title
@@ -31,7 +31,7 @@ def group_files_by_service(context: PlannerContext) -> dict[str, list[dict]]:
         path = file_info.get("path", "")
         service = file_info.get("service", "unknown")
 
-        # Try to infer service from path if not specified
+        # Try to infer service from path if not caseified
         if service == "unknown":
             for svc_name, svc_info in context.project_index.get("services", {}).items():
                 svc_path = svc_info.get("path", svc_name)
@@ -83,18 +83,18 @@ def create_verification(
     elif subtask_type == "task":
         return Verification(
             type=VerificationType.COMMAND,
-            run="echo 'Task registered - verify with celery inspect'",
+            run="echo 'Task registered - verify with celery incaset'",
         )
     else:
         return Verification(type=VerificationType.MANUAL)
 
 
 def extract_acceptance_criteria(context: PlannerContext) -> list[str]:
-    """Extract acceptance criteria from spec."""
+    """Extract acceptance criteria from case."""
     criteria = []
     in_criteria_section = False
 
-    for line in context.spec_content.split("\n"):
+    for line in context.case_content.split("\n"):
         # Look for success criteria or acceptance sections
         if any(
             header in line.lower()
@@ -124,7 +124,7 @@ def extract_acceptance_criteria(context: PlannerContext) -> list[str]:
     # If no criteria found, create generic ones
     if not criteria:
         criteria = [
-            "Feature works as specified",
+            "Feature works as caseified",
             "No console errors",
             "No regressions in existing functionality",
         ]

@@ -6,7 +6,7 @@ Data models for merge orchestration.
 
 This module contains all the data classes used by the merge orchestrator:
 - MergeStats: Statistics from merge operations
-- TaskMergeRequest: Request to merge a specific task
+- TaskMergeRequest: Request to merge a caseific task
 - MergeReport: Complete report from a merge operation
 """
 
@@ -70,7 +70,7 @@ class MergeStats:
 
 @dataclass
 class TaskMergeRequest:
-    """Request to merge a specific task's changes."""
+    """Request to merge a caseific task's changes."""
 
     task_id: str
     worktree_path: Path

@@ -176,7 +176,7 @@ class GitHubMemoryIntegration:
             project_dir: Project root directory (for Graphiti namespacing)
         """
         self.repo = repo
-        self.state_dir = state_dir or Path(".auto-claude/github")
+        self.state_dir = state_dir or Path(".auto-sleuth/github")
         self.project_dir = project_dir or Path.cwd()
         self.memory_dir = self.state_dir / "memory"
         self.memory_dir.mkdir(parents=True, exist_ok=True)
@@ -224,12 +224,12 @@ class GitHubMemoryIntegration:
 
         if self._graphiti is None:
             try:
-                # Create spec dir for GitHub automation
-                spec_dir = self.state_dir / "graphiti" / self.repo.replace("/", "_")
-                spec_dir.mkdir(parents=True, exist_ok=True)
+                # Create case dir for GitHub automation
+                case_dir = self.state_dir / "graphiti" / self.repo.replace("/", "_")
+                case_dir.mkdir(parents=True, exist_ok=True)
 
                 self._graphiti = get_graphiti_memory(
-                    spec_dir=spec_dir,
+                    case_dir=case_dir,
                     project_dir=self.project_dir,
                     group_id_mode=GroupIdMode.PROJECT,  # Share context across all GitHub reviews
                 )
@@ -266,7 +266,7 @@ class GitHubMemoryIntegration:
         graphiti = await self._get_graphiti()
         if graphiti:
             try:
-                # Query for file-specific insights
+                # Query for file-caseific insights
                 for file_path in file_paths[:5]:  # Limit to 5 files
                     results = await graphiti.get_relevant_context(
                         query=f"What should I know about {file_path}?",
@@ -301,7 +301,7 @@ class GitHubMemoryIntegration:
                     )
 
                 # Get session history for recent gotchas
-                history = await graphiti.get_session_history(limit=10, spec_only=False)
+                history = await graphiti.get_session_history(limit=10, case_only=False)
                 for session in history:
                     discoveries = session.get("discoveries", {})
                     for gotcha in discoveries.get("gotchas_encountered", []):
@@ -477,7 +477,7 @@ class GitHubMemoryIntegration:
         Get known codebase patterns.
 
         Args:
-            area: Specific area (e.g., "auth", "api", "database")
+            area: Caseific area (e.g., "auth", "api", "database")
 
         Returns:
             List of pattern hints

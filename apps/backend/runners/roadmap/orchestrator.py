@@ -10,7 +10,7 @@ from pathlib import Path
 
 from client import create_client
 from debug import debug, debug_error, debug_section, debug_success
-from init import init_auto_claude_dir
+from init import init_auto_sleuth_dir
 from phase_config import get_thinking_budget
 from ui import Icons, box, icon, muted, print_section, print_status
 
@@ -41,14 +41,14 @@ class RoadmapOrchestrator:
         self.enable_competitor_analysis = enable_competitor_analysis
         self.refresh_competitor_analysis = refresh_competitor_analysis
 
-        # Default output to project's .auto-claude directory (installed instance)
-        # Note: auto-claude/ is source code, .auto-claude/ is the installed instance
+        # Default output to project's .auto-sleuth directory (installed instance)
+        # Note: auto-sleuth/ is source code, .auto-sleuth/ is the installed instance
         if output_dir:
             self.output_dir = Path(output_dir)
         else:
-            # Initialize .auto-claude directory and ensure it's in .gitignore
-            init_auto_claude_dir(self.project_dir)
-            self.output_dir = self.project_dir / ".auto-claude" / "roadmap"
+            # Initialize .auto-sleuth directory and ensure it's in .gitignore
+            init_auto_sleuth_dir(self.project_dir)
+            self.output_dir = self.project_dir / ".auto-sleuth" / "roadmap"
 
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -66,7 +66,7 @@ class RoadmapOrchestrator:
         self.graph_hints_provider = GraphHintsProvider(
             self.output_dir, self.project_dir, self.refresh
         )
-        # Competitor analyzer refreshes if either general refresh or specific competitor refresh
+        # Competitor analyzer refreshes if either general refresh or caseific competitor refresh
         competitor_should_refresh = self.refresh or self.refresh_competitor_analysis
         self.competitor_analyzer = CompetitorAnalyzer(
             self.output_dir, competitor_should_refresh, self.agent_executor

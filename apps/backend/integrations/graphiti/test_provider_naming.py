@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Quick test to demonstrate provider-specific database naming.
+Quick test to demonstrate provider-caseific database naming.
 
-Shows how Auto Claude automatically generates provider-specific database names
+Shows how Auto Sleuth automatically generates provider-caseific database names
 to prevent embedding dimension mismatches.
 """
 
@@ -10,14 +10,14 @@ import os
 import sys
 from pathlib import Path
 
-# Add auto-claude to path
+# Add auto-sleuth to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from integrations.graphiti.config import GraphitiConfig
 
 
 def test_provider_naming():
-    """Demonstrate provider-specific database naming."""
+    """Demonstrate provider-caseific database naming."""
 
     print("\n" + "=" * 70)
     print("  PROVIDER-SPECIFIC DATABASE NAMING")
@@ -44,7 +44,7 @@ def test_provider_naming():
         # Get naming info
         dimension = config.get_embedding_dimension()
         signature = config.get_provider_signature()
-        db_name = config.get_provider_specific_database_name("auto_claude_memory")
+        db_name = config.get_provider_caseific_database_name("auto_sleuth_memory")
 
         print(f"Provider: {provider}")
         if model:
@@ -52,7 +52,7 @@ def test_provider_naming():
         print(f"  Embedding Dimension: {dimension}")
         print(f"  Provider Signature: {signature}")
         print(f"  Database Name: {db_name}")
-        print(f"  Full Path: ~/.auto-claude/memories/{db_name}/")
+        print(f"  Full Path: ~/.auto-sleuth/memories/{db_name}/")
         print()
 
     print("=" * 70)

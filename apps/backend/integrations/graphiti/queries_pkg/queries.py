@@ -27,18 +27,18 @@ class GraphitiQueries:
     to the knowledge graph.
     """
 
-    def __init__(self, client, group_id: str, spec_context_id: str):
+    def __init__(self, client, group_id: str, case_context_id: str):
         """
         Initialize query manager.
 
         Args:
             client: GraphitiClient instance
             group_id: Group ID for memory namespace
-            spec_context_id: Spec-specific context ID
+            case_context_id: Case-caseific context ID
         """
         self.client = client
         self.group_id = group_id
-        self.spec_context_id = spec_context_id
+        self.case_context_id = case_context_id
 
     async def add_session_insight(
         self,
@@ -60,17 +60,17 @@ class GraphitiQueries:
 
             episode_content = {
                 "type": EPISODE_TYPE_SESSION_INSIGHT,
-                "spec_id": self.spec_context_id,
+                "case_id": self.case_context_id,
                 "session_number": session_num,
                 "timestamp": datetime.now(timezone.utc).isoformat(),
                 **insights,
             }
 
             await self.client.graphiti.add_episode(
-                name=f"session_{session_num:03d}_{self.spec_context_id}",
+                name=f"session_{session_num:03d}_{self.case_context_id}",
                 episode_body=json.dumps(episode_content),
                 source=EpisodeType.text,
-                source_description=f"Auto-build session insight for {self.spec_context_id}",
+                source_description=f"Auto-build session insight for {self.case_context_id}",
                 reference_time=datetime.now(timezone.utc),
                 group_id=self.group_id,
             )
@@ -105,7 +105,7 @@ class GraphitiQueries:
 
             episode_content = {
                 "type": EPISODE_TYPE_CODEBASE_DISCOVERY,
-                "spec_id": self.spec_context_id,
+                "case_id": self.case_context_id,
                 "timestamp": datetime.now(timezone.utc).isoformat(),
                 "files": discoveries,
             }
@@ -141,7 +141,7 @@ class GraphitiQueries:
 
             episode_content = {
                 "type": EPISODE_TYPE_PATTERN,
-                "spec_id": self.spec_context_id,
+                "case_id": self.case_context_id,
                 "timestamp": datetime.now(timezone.utc).isoformat(),
                 "pattern": pattern,
             }
@@ -177,7 +177,7 @@ class GraphitiQueries:
 
             episode_content = {
                 "type": EPISODE_TYPE_GOTCHA,
-                "spec_id": self.spec_context_id,
+                "case_id": self.case_context_id,
                 "timestamp": datetime.now(timezone.utc).isoformat(),
                 "gotcha": gotcha,
             }
@@ -222,7 +222,7 @@ class GraphitiQueries:
 
             episode_content = {
                 "type": EPISODE_TYPE_TASK_OUTCOME,
-                "spec_id": self.spec_context_id,
+                "case_id": self.case_context_id,
                 "task_id": task_id,
                 "success": success,
                 "outcome": outcome,
@@ -272,7 +272,7 @@ class GraphitiQueries:
                 try:
                     episode_content = {
                         "type": EPISODE_TYPE_CODEBASE_DISCOVERY,
-                        "spec_id": self.spec_context_id,
+                        "case_id": self.case_context_id,
                         "timestamp": datetime.now(timezone.utc).isoformat(),
                         "file_path": file_insight.get("path", "unknown"),
                         "purpose": file_insight.get("purpose", ""),
@@ -317,7 +317,7 @@ class GraphitiQueries:
 
                     episode_content = {
                         "type": EPISODE_TYPE_PATTERN,
-                        "spec_id": self.spec_context_id,
+                        "case_id": self.case_context_id,
                         "timestamp": datetime.now(timezone.utc).isoformat(),
                         "pattern": pattern_text,
                         "applies_to": applies_to,
@@ -358,7 +358,7 @@ class GraphitiQueries:
 
                     episode_content = {
                         "type": EPISODE_TYPE_GOTCHA,
-                        "spec_id": self.spec_context_id,
+                        "case_id": self.case_context_id,
                         "timestamp": datetime.now(timezone.utc).isoformat(),
                         "gotcha": gotcha_text,
                         "trigger": trigger,
@@ -391,7 +391,7 @@ class GraphitiQueries:
 
                     episode_content = {
                         "type": EPISODE_TYPE_TASK_OUTCOME,
-                        "spec_id": self.spec_context_id,
+                        "case_id": self.case_context_id,
                         "task_id": subtask_id,
                         "success": success,
                         "outcome": outcome.get("approach_used", ""),
@@ -427,7 +427,7 @@ class GraphitiQueries:
                 try:
                     episode_content = {
                         "type": EPISODE_TYPE_SESSION_INSIGHT,
-                        "spec_id": self.spec_context_id,
+                        "case_id": self.case_context_id,
                         "timestamp": datetime.now(timezone.utc).isoformat(),
                         "subtask_id": insights.get("subtask_id", "unknown"),
                         "session_number": insights.get("session_num", 0),

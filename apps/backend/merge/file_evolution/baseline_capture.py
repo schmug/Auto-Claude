@@ -158,7 +158,7 @@ class BaselineCapture:
         captured_at = datetime.now()
         captured: dict[str, FileEvolution] = {}
 
-        # Discover files if not specified
+        # Discover files if not caseified
         if files is None:
             files = self.discover_trackable_files()
 

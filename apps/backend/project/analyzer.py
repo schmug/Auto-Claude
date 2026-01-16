@@ -41,25 +41,25 @@ class ProjectAnalyzer:
     5. Infrastructure files (Dockerfile, k8s manifests)
     """
 
-    PROFILE_FILENAME = ".auto-claude-security.json"
+    PROFILE_FILENAME = ".auto-sleuth-security.json"
 
-    def __init__(self, project_dir: Path, spec_dir: Path | None = None):
+    def __init__(self, project_dir: Path, case_dir: Path | None = None):
         """
         Initialize analyzer.
 
         Args:
             project_dir: Root directory of the project
-            spec_dir: Optional spec directory for storing profile
+            case_dir: Optional case directory for storing profile
         """
         self.project_dir = Path(project_dir).resolve()
-        self.spec_dir = Path(spec_dir).resolve() if spec_dir else None
+        self.case_dir = Path(case_dir).resolve() if case_dir else None
         self.profile = SecurityProfile()
         self.parser = ConfigParser(project_dir)
 
     def get_profile_path(self) -> Path:
         """Get the path where profile should be stored."""
-        if self.spec_dir:
-            return self.spec_dir / self.PROFILE_FILENAME
+        if self.case_dir:
+            return self.case_dir / self.PROFILE_FILENAME
         return self.project_dir / self.PROFILE_FILENAME
 
     def load_profile(self) -> SecurityProfile | None:
@@ -113,8 +113,8 @@ class ProjectAnalyzer:
             "composer.json",
             "composer.lock",
             # Dart/Flutter
-            "pubspec.yaml",
-            "pubspec.lock",
+            "pubcase.yaml",
+            "pubcase.lock",
             # Java/Kotlin/Scala
             "pom.xml",
             "build.gradle",

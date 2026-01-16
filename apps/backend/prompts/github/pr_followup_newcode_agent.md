@@ -74,7 +74,7 @@ Since this is a follow-up review, focus on:
 ### CRITICAL
 - Security vulnerabilities exploitable in production
 - Data corruption or loss risks
-- Complete feature breakage
+- Complete remediation breakage
 
 ### HIGH
 - Security issues requiring specific conditions

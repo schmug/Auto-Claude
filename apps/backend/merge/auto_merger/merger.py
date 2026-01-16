@@ -58,7 +58,7 @@ class AutoMerger:
         strategy: MergeStrategy,
     ) -> MergeResult:
         """
-        Perform a merge using the specified strategy.
+        Perform a merge using the caseified strategy.
 
         Args:
             context: The merge context with baseline and task snapshots

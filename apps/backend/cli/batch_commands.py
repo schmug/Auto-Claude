@@ -45,24 +45,24 @@ def handle_batch_create_command(batch_file: str, project_dir: str) -> bool:
     print_status(f"Creating {len(tasks)} tasks from batch file", "info")
     print()
 
-    specs_dir = Path(project_dir) / ".auto-claude" / "specs"
-    specs_dir.mkdir(parents=True, exist_ok=True)
+    cases_dir = Path(project_dir) / ".auto-sleuth" / "cases"
+    cases_dir.mkdir(parents=True, exist_ok=True)
 
-    # Find next spec ID
-    existing_specs = [d.name for d in specs_dir.iterdir() if d.is_dir()]
+    # Find next case ID
+    existing_cases = [d.name for d in cases_dir.iterdir() if d.is_dir()]
     next_id = (
-        max([int(s.split("-")[0]) for s in existing_specs if s[0].isdigit()] or [0]) + 1
+        max([int(s.split("-")[0]) for s in existing_cases if s[0].isdigit()] or [0]) + 1
     )
 
-    created_specs = []
+    created_cases = []
 
     for idx, task in enumerate(tasks, 1):
-        spec_id = f"{next_id:03d}"
+        case_id = f"{next_id:03d}"
         task_title = task.get("title", f"Task {idx}")
         task_slug = task_title.lower().replace(" ", "-")[:50]
-        spec_name = f"{spec_id}-{task_slug}"
-        spec_dir = specs_dir / spec_name
-        spec_dir.mkdir(exist_ok=True)
+        case_name = f"{case_id}-{task_slug}"
+        case_dir = cases_dir / case_name
+        case_dir.mkdir(exist_ok=True)
 
         # Create requirements.json
         requirements = {
@@ -73,47 +73,47 @@ def handle_batch_create_command(batch_file: str, project_dir: str) -> bool:
             "priority": task.get("priority", 5),
             "complexity_inferred": task.get("complexity", "standard"),
             "inferred_from": {},
-            "created_at": Path(spec_dir).stat().st_mtime,
+            "created_at": Path(case_dir).stat().st_mtime,
             "estimate": {
                 "estimated_hours": task.get("estimated_hours", 4.0),
                 "estimated_days": task.get("estimated_days", 0.5),
             },
         }
 
-        req_file = spec_dir / "requirements.json"
+        req_file = case_dir / "requirements.json"
         with open(req_file, "w") as f:
             json.dump(requirements, f, indent=2, default=str)
 
-        created_specs.append(
+        created_cases.append(
             {
-                "id": spec_id,
-                "name": spec_name,
+                "id": case_id,
+                "name": case_name,
                 "title": task_title,
-                "status": "pending_spec_creation",
+                "status": "pending_case_creation",
             }
         )
 
         print_status(
-            f"[{idx}/{len(tasks)}] Created {spec_id} - {task_title}", "success"
+            f"[{idx}/{len(tasks)}] Created {case_id} - {task_title}", "success"
         )
         next_id += 1
 
     print()
-    print_status(f"Created {len(created_specs)} spec(s) successfully", "success")
+    print_status(f"Created {len(created_cases)} case(s) successfully", "success")
     print()
 
     # Show summary
     print(highlight("Next steps:"))
-    print("  1. Generate specs: spec_runner.py --continue <spec_id>")
-    print("  2. Approve specs and build them")
-    print("  3. Run: python run.py --spec <id> to execute")
+    print("  1. Generate cases: case_runner.py --continue <case_id>")
+    print("  2. Approve cases and build them")
+    print("  3. Run: python run.py --case <id> to execute")
 
     return True
 
 
 def handle_batch_status_command(project_dir: str) -> bool:
     """
-    Show status of all specs in project.
+    Show status of all cases in project.
 
     Args:
         project_dir: Project directory
@@ -121,27 +121,27 @@ def handle_batch_status_command(project_dir: str) -> bool:
     Returns:
         True if successful
     """
-    specs_dir = Path(project_dir) / ".auto-claude" / "specs"
+    cases_dir = Path(project_dir) / ".auto-sleuth" / "cases"
 
-    if not specs_dir.exists():
-        print_status("No specs found in project", "warning")
+    if not cases_dir.exists():
+        print_status("No cases found in project", "warning")
         return True
 
-    specs = sorted([d for d in specs_dir.iterdir() if d.is_dir()])
+    cases = sorted([d for d in cases_dir.iterdir() if d.is_dir()])
 
-    if not specs:
-        print_status("No specs found", "warning")
+    if not cases:
+        print_status("No cases found", "warning")
         return True
 
-    print_status(f"Found {len(specs)} spec(s)", "info")
+    print_status(f"Found {len(cases)} case(s)", "info")
     print()
 
-    for spec_dir in specs:
-        spec_name = spec_dir.name
-        req_file = spec_dir / "requirements.json"
+    for case_dir in cases:
+        case_name = case_dir.name
+        req_file = case_dir / "requirements.json"
 
         status = "unknown"
-        title = spec_name
+        title = case_name
 
         if req_file.exists():
             try:
@@ -151,32 +151,32 @@ def handle_batch_status_command(project_dir: str) -> bool:
             except json.JSONDecodeError:
                 pass
 
-        # Determine status
-        if (spec_dir / "spec.md").exists():
-            status = "spec_created"
-        elif (spec_dir / "implementation_plan.json").exists():
-            status = "building"
-        elif (spec_dir / "qa_report.md").exists():
+        # Determine status (check most advanced state first)
+        if (case_dir / "qa_report.md").exists():
             status = "qa_approved"
+        elif (case_dir / "investigation_plan.json").exists():
+            status = "building"
+        elif (case_dir / "case.md").exists() or (case_dir / "case.md").exists():
+            status = "case_created"
         else:
-            status = "pending_spec"
+            status = "pending_case"
 
         status_icon = {
-            "pending_spec": "⏳",
-            "spec_created": "📋",
+            "pending_case": "⏳",
+            "case_created": "📋",
             "building": "⚙️",
             "qa_approved": "✅",
             "unknown": "❓",
         }.get(status, "❓")
 
-        print(f"{status_icon} {spec_name:<40} {title}")
+        print(f"{status_icon} {case_name:<40} {title}")
 
     return True
 
 
 def handle_batch_cleanup_command(project_dir: str, dry_run: bool = True) -> bool:
     """
-    Clean up completed specs and worktrees.
+    Clean up completed cases and worktrees.
 
     Args:
         project_dir: Project directory
@@ -185,41 +185,41 @@ def handle_batch_cleanup_command(project_dir: str, dry_run: bool = True) -> bool
     Returns:
         True if successful
     """
-    specs_dir = Path(project_dir) / ".auto-claude" / "specs"
-    worktrees_dir = Path(project_dir) / ".auto-claude" / "worktrees" / "tasks"
+    cases_dir = Path(project_dir) / ".auto-sleuth" / "cases"
+    worktrees_dir = Path(project_dir) / ".auto-sleuth" / "worktrees" / "tasks"
 
-    if not specs_dir.exists():
-        print_status("No specs directory found", "info")
+    if not cases_dir.exists():
+        print_status("No cases directory found", "info")
         return True
 
-    # Find completed specs
+    # Find completed cases
     completed = []
-    for spec_dir in specs_dir.iterdir():
-        if spec_dir.is_dir() and (spec_dir / "qa_report.md").exists():
-            completed.append(spec_dir.name)
+    for case_dir in cases_dir.iterdir():
+        if case_dir.is_dir() and (case_dir / "qa_report.md").exists():
+            completed.append(case_dir.name)
 
     if not completed:
-        print_status("No completed specs to clean up", "info")
+        print_status("No completed cases to clean up", "info")
         return True
 
-    print_status(f"Found {len(completed)} completed spec(s)", "info")
+    print_status(f"Found {len(completed)} completed case(s)", "info")
 
     if dry_run:
         print()
         print("Would remove:")
-        for spec_name in completed:
-            print(f"  - {spec_name}")
-            wt_path = worktrees_dir / spec_name
+        for case_name in completed:
+            print(f"  - {case_name}")
+            wt_path = worktrees_dir / case_name
             if wt_path.exists():
-                print(f"    └─ .auto-claude/worktrees/tasks/{spec_name}/")
+                print(f"    └─ .auto-sleuth/worktrees/tasks/{case_name}/")
         print()
         print("Run with --no-dry-run to actually delete")
     else:
-        # Actually delete specs and worktrees
+        # Actually delete cases and worktrees
         deleted_count = 0
-        for spec_name in completed:
-            spec_path = specs_dir / spec_name
-            wt_path = worktrees_dir / spec_name
+        for case_name in completed:
+            case_path = cases_dir / case_name
+            wt_path = worktrees_dir / case_name
 
             # Remove worktree first (if exists)
             if wt_path.exists():
@@ -232,35 +232,35 @@ def handle_batch_cleanup_command(project_dir: str, dry_run: bool = True) -> bool
                         timeout=30,
                     )
                     if result.returncode == 0:
-                        print_status(f"Removed worktree: {spec_name}", "success")
+                        print_status(f"Removed worktree: {case_name}", "success")
                     else:
                         # Fallback: remove directory manually if git fails
                         shutil.rmtree(wt_path, ignore_errors=True)
                         print_status(
-                            f"Removed worktree directory: {spec_name}", "success"
+                            f"Removed worktree directory: {case_name}", "success"
                         )
                 except subprocess.TimeoutExpired:
                     # Timeout: fall back to manual removal
                     shutil.rmtree(wt_path, ignore_errors=True)
                     print_status(
-                        f"Worktree removal timed out, removed directory: {spec_name}",
+                        f"Worktree removal timed out, removed directory: {case_name}",
                         "warning",
                     )
                 except Exception as e:
                     print_status(
-                        f"Failed to remove worktree {spec_name}: {e}", "warning"
+                        f"Failed to remove worktree {case_name}: {e}", "warning"
                     )
 
-            # Remove spec directory
-            if spec_path.exists():
+            # Remove case directory
+            if case_path.exists():
                 try:
-                    shutil.rmtree(spec_path)
-                    print_status(f"Removed spec: {spec_name}", "success")
+                    shutil.rmtree(case_path)
+                    print_status(f"Removed case: {case_name}", "success")
                     deleted_count += 1
                 except Exception as e:
-                    print_status(f"Failed to remove spec {spec_name}: {e}", "error")
+                    print_status(f"Failed to remove case {case_name}: {e}", "error")
 
         print()
-        print_status(f"Cleaned up {deleted_count} spec(s)", "info")
+        print_status(f"Cleaned up {deleted_count} case(s)", "info")
 
     return True

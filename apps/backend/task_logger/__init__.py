@@ -2,8 +2,8 @@
 Task Logger Package
 ===================
 
-Persistent logging system for Auto Claude tasks.
-Logs are organized by phase (planning, coding, validation) and stored in the spec directory.
+Persistent logging system for Auto Sleuth tasks.
+Logs are organized by phase (planning, coding, validation) and stored in the case directory.
 
 Key features:
 - Phase-based log organization (collapsible in UI)

@@ -50,7 +50,7 @@ from typing import Optional
 
 def get_or_create_profile(
     project_dir: Path,
-    spec_dir: Path | None = None,
+    case_dir: Path | None = None,
     force_reanalyze: bool = False,
 ) -> SecurityProfile:
     """
@@ -60,13 +60,13 @@ def get_or_create_profile(
 
     Args:
         project_dir: Project root directory
-        spec_dir: Optional spec directory for storing profile
+        case_dir: Optional case directory for storing profile
         force_reanalyze: Force re-analysis even if profile exists
 
     Returns:
         SecurityProfile for the project
     """
-    analyzer = ProjectAnalyzer(project_dir, spec_dir)
+    analyzer = ProjectAnalyzer(project_dir, case_dir)
     return analyzer.analyze(force=force_reanalyze)
 
 

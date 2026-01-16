@@ -3,13 +3,13 @@ Command Registry for Dynamic Security Profiles
 ==============================================
 
 FACADE MODULE: This module re-exports all functionality from the
-auto-claude/project/command_registry/ package for backward compatibility.
+auto-sleuth/project/command_registry/ package for backward compatibility.
 
 The implementation has been refactored into focused modules:
 - command_registry/base.py - Core commands and validated commands
-- command_registry/languages.py - Language-specific commands
+- command_registry/languages.py - Language-caseific commands
 - command_registry/package_managers.py - Package manager commands
-- command_registry/frameworks.py - Framework-specific commands
+- command_registry/frameworks.py - Framework-caseific commands
 - command_registry/databases.py - Database commands
 - command_registry/infrastructure.py - Infrastructure/DevOps commands
 - command_registry/cloud.py - Cloud provider commands

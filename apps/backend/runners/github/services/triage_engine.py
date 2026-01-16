@@ -73,7 +73,7 @@ class TriageEngine:
         # Run AI
         client = create_client(
             project_dir=self.project_dir,
-            spec_dir=self.github_dir,
+            case_dir=self.github_dir,
             model=self.config.model,
             agent_type="qa_reviewer",
         )

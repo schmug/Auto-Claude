@@ -32,7 +32,7 @@ class GraphitiSearch:
         self,
         client,
         group_id: str,
-        spec_context_id: str,
+        case_context_id: str,
         group_id_mode: str,
         project_dir: Path,
     ):
@@ -42,13 +42,13 @@ class GraphitiSearch:
         Args:
             client: GraphitiClient instance
             group_id: Group ID for memory namespace
-            spec_context_id: Spec-specific context ID
-            group_id_mode: "spec" or "project" mode
+            case_context_id: Case-caseific context ID
+            group_id_mode: "case" or "project" mode
             project_dir: Project root directory
         """
         self.client = client
         self.group_id = group_id
-        self.spec_context_id = spec_context_id
+        self.case_context_id = case_context_id
         self.group_id_mode = group_id_mode
         self.project_dir = project_dir
 
@@ -74,7 +74,7 @@ class GraphitiSearch:
             # Determine which group IDs to search
             group_ids = [self.group_id]
 
-            # In spec mode, optionally include project context too
+            # In case mode, optionally include project context too
             if self.group_id_mode == GroupIdMode.SPEC and include_project_context:
                 project_name = self.project_dir.name
                 path_hash = hashlib.md5(
@@ -107,7 +107,7 @@ class GraphitiSearch:
                     }
                 )
 
-            # Filter by minimum score if specified
+            # Filter by minimum score if caseified
             if min_score > 0:
                 context_items = [
                     item for item in context_items if item.get("score", 0) >= min_score
@@ -125,14 +125,14 @@ class GraphitiSearch:
     async def get_session_history(
         self,
         limit: int = 5,
-        spec_only: bool = True,
+        case_only: bool = True,
     ) -> list[dict]:
         """
         Get recent session insights from the knowledge graph.
 
         Args:
             limit: Maximum number of sessions to return
-            spec_only: If True, only return sessions from this spec
+            case_only: If True, only return sessions from this case
 
         Returns:
             List of session insight summaries
@@ -155,10 +155,10 @@ class GraphitiSearch:
                             json.loads(content) if isinstance(content, str) else content
                         )
                         if data.get("type") == EPISODE_TYPE_SESSION_INSIGHT:
-                            # Filter by spec if requested
+                            # Filter by case if requested
                             if (
-                                spec_only
-                                and data.get("spec_id") != self.spec_context_id
+                                case_only
+                                and data.get("case_id") != self.case_context_id
                             ):
                                 continue
                             sessions.append(data)
@@ -232,7 +232,7 @@ class GraphitiSearch:
         """
         Retrieve patterns and gotchas relevant to the current task.
 
-        Unlike get_relevant_context(), this specifically filters for
+        Unlike get_relevant_context(), this caseifically filters for
         EPISODE_TYPE_PATTERN and EPISODE_TYPE_GOTCHA episodes to enable
         cross-session learning.
 

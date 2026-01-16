@@ -367,7 +367,7 @@ class PRContextGatherer:
             return False
 
         try:
-            # Fetch the specific commits - this works even for fork PRs
+            # Fetch the caseific commits - this works even for fork PRs
             proc = await asyncio.create_subprocess_exec(
                 "git",
                 "fetch",
@@ -447,7 +447,7 @@ class PRContextGatherer:
             # Get base content (from base commit)
             base_content = await self._read_file_content(path, base_ref)
 
-            # Get the patch for this specific file
+            # Get the patch for this caseific file
             patch = await self._get_file_patch(path, base_ref, head_ref)
 
             changed_files.append(
@@ -480,7 +480,7 @@ class PRContextGatherer:
 
     async def _read_file_content(self, path: str, ref: str) -> str:
         """
-        Read file content from a specific git ref.
+        Read file content from a caseific git ref.
 
         Args:
             path: File path relative to repo root
@@ -523,7 +523,7 @@ class PRContextGatherer:
 
     async def _get_file_patch(self, path: str, base_ref: str, head_ref: str) -> str:
         """
-        Get the diff patch for a specific file using git diff.
+        Get the diff patch for a caseific file using git diff.
 
         Args:
             path: File path relative to repo root
@@ -842,7 +842,7 @@ class PRContextGatherer:
         test_patterns = [
             # Jest/Vitest patterns
             source_path.parent / f"{source_path.stem}.test{source_path.suffix}",
-            source_path.parent / f"{source_path.stem}.spec{source_path.suffix}",
+            source_path.parent / f"{source_path.stem}.case{source_path.suffix}",
             source_path.parent / "__tests__" / f"{source_path.name}",
             # Python patterns
             source_path.parent / f"test_{source_path.stem}.py",
@@ -973,7 +973,7 @@ class PRContextGatherer:
 
 class FollowupContextGatherer:
     """
-    Gathers context specifically for follow-up reviews.
+    Gathers context caseifically for follow-up reviews.
 
     Unlike the full PRContextGatherer, this only fetches:
     - New commits since last review

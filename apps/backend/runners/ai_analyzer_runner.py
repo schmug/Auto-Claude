@@ -9,7 +9,7 @@ Example:
     # Run full analysis
     python ai_analyzer_runner.py --project-dir /path/to/project
 
-    # Run specific analyzers only
+    # Run caseific analyzers only
     python ai_analyzer_runner.py --analyzers security performance
 
     # Skip cache
@@ -44,7 +44,7 @@ def main() -> int:
     parser.add_argument(
         "--analyzers",
         nargs="+",
-        help="Run only specific analyzers (code_relationships, business_logic, etc.)",
+        help="Run only caseific analyzers (code_relationships, business_logic, etc.)",
     )
 
     args = parser.parse_args()

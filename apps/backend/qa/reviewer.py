@@ -34,7 +34,7 @@ from .criteria import get_qa_signoff_status
 async def run_qa_agent_session(
     client: ClaudeSDKClient,
     project_dir: Path,
-    spec_dir: Path,
+    case_dir: Path,
     qa_session: int,
     max_iterations: int,
     verbose: bool = False,
@@ -46,7 +46,7 @@ async def run_qa_agent_session(
     Args:
         client: Claude SDK client
         project_dir: Project root directory (for capability detection)
-        spec_dir: Spec directory
+        case_dir: Case directory
         qa_session: QA iteration number
         max_iterations: Maximum number of QA iterations
         verbose: Whether to show detailed output
@@ -62,7 +62,7 @@ async def run_qa_agent_session(
     debug(
         "qa_reviewer",
         "Starting QA reviewer session",
-        spec_dir=str(spec_dir),
+        case_dir=str(case_dir),
         qa_session=qa_session,
         max_iterations=max_iterations,
     )
@@ -73,24 +73,24 @@ async def run_qa_agent_session(
     print(f"{'=' * 70}\n")
 
     # Get task logger for streaming markers
-    task_logger = get_task_logger(spec_dir)
+    task_logger = get_task_logger(case_dir)
     current_tool = None
     message_count = 0
     tool_count = 0
 
-    # Load QA prompt with dynamically-injected project-specific MCP tools
+    # Load QA prompt with dynamically-injected project-caseific MCP tools
     # This includes Electron validation for Electron apps, Puppeteer for web, etc.
-    prompt = get_qa_reviewer_prompt(spec_dir, project_dir)
+    prompt = get_qa_reviewer_prompt(case_dir, project_dir)
     debug_detailed(
         "qa_reviewer",
-        "Loaded QA reviewer prompt with project-specific tools",
+        "Loaded QA reviewer prompt with project-caseific tools",
         prompt_length=len(prompt),
         project_dir=str(project_dir),
     )
 
     # Retrieve memory context for QA (past patterns, gotchas, validation insights)
     qa_memory_context = await get_graphiti_context(
-        spec_dir,
+        case_dir,
         project_dir,
         {
             "description": "QA validation and acceptance criteria review",
@@ -127,15 +127,15 @@ The previous QA session failed with the following error:
 
 ### What Went Wrong
 
-You did NOT update the `implementation_plan.json` file with the required `qa_signoff` object.
+You did NOT update the `investigation_plan.json` file with the required `qa_signoff` object.
 
 ### Required Action
 
 After completing your QA review, you MUST:
 
-1. **Read the current implementation_plan.json**:
+1. **Read the current investigation_plan.json**:
    ```bash
-   cat {spec_dir}/implementation_plan.json
+   cat {case_dir}/investigation_plan.json
    ```
 
 2. **Update it with your qa_signoff** by editing the JSON file to add/update the `qa_signoff` field:
@@ -170,11 +170,11 @@ After completing your QA review, you MUST:
    ```
 
 3. **Use the Edit tool or Write tool** to update the file. The file path is:
-   `{spec_dir}/implementation_plan.json`
+   `{case_dir}/investigation_plan.json`
 
 ### FAILURE TO DO THIS WILL CAUSE ANOTHER ERROR
 
-This is attempt {previous_error.get("consecutive_errors", 1) + 1}. If you fail to update implementation_plan.json again, the QA process will be escalated to human review.
+This is attempt {previous_error.get("consecutive_errors", 1) + 1}. If you fail to update investigation_plan.json again, the QA process will be escalated to human review.
 
 ---
 
@@ -317,8 +317,8 @@ This is attempt {previous_error.get("consecutive_errors", 1) + 1}. If you fail t
 
         print("\n" + "-" * 70 + "\n")
 
-        # Check the QA result from implementation_plan.json
-        status = get_qa_signoff_status(spec_dir)
+        # Check the QA result from investigation_plan.json
+        status = get_qa_signoff_status(case_dir)
         debug(
             "qa_reviewer",
             "QA session completed",
@@ -342,7 +342,7 @@ This is attempt {previous_error.get("consecutive_errors", 1) + 1}. If you fail t
             )
             # Save successful QA session to memory
             await save_session_memory(
-                spec_dir=spec_dir,
+                case_dir=case_dir,
                 project_dir=project_dir,
                 subtask_id=f"qa_reviewer_{qa_session}",
                 session_num=qa_session,
@@ -361,7 +361,7 @@ This is attempt {previous_error.get("consecutive_errors", 1) + 1}. If you fail t
                 )
             # Save rejected QA session to memory (learning from failures)
             await save_session_memory(
-                spec_dir=spec_dir,
+                case_dir=case_dir,
                 project_dir=project_dir,
                 subtask_id=f"qa_reviewer_{qa_session}",
                 session_num=qa_session,
@@ -374,7 +374,7 @@ This is attempt {previous_error.get("consecutive_errors", 1) + 1}. If you fail t
             # Agent didn't update the status properly - provide detailed error
             debug_error(
                 "qa_reviewer",
-                "QA agent did not update implementation_plan.json",
+                "QA agent did not update investigation_plan.json",
                 message_count=message_count,
                 tool_count=tool_count,
                 response_preview=response_text[:500] if response_text else "empty",
@@ -389,7 +389,7 @@ This is attempt {previous_error.get("consecutive_errors", 1) + 1}. If you fail t
             if not response_text:
                 error_details.append("Agent produced no output")
 
-            error_msg = "QA agent did not update implementation_plan.json"
+            error_msg = "QA agent did not update investigation_plan.json"
             if error_details:
                 error_msg += f" ({'; '.join(error_details)})"
 

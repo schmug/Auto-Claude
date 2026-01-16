@@ -165,12 +165,12 @@ FRAMEWORK_PATTERNS = {
         "coverage_command": "go test -cover ./...",
     },
     # Ruby
-    "rspec": {
-        "config_files": [".rspec", "spec/spec_helper.rb"],
-        "gemfile_key": "rspec",
+    "rcase": {
+        "config_files": [".rcase", "case/case_helper.rb"],
+        "gemfile_key": "rcase",
         "type": "all",
-        "command": "bundle exec rspec",
-        "coverage_command": "bundle exec rspec --format documentation",
+        "command": "bundle exec rcase",
+        "coverage_command": "bundle exec rcase --format documentation",
     },
     "minitest": {
         "config_files": [],
@@ -194,7 +194,7 @@ class TestDiscovery:
     Analyzes:
     - Package files (package.json, pyproject.toml, Cargo.toml, etc.)
     - Configuration files (jest.config.js, pytest.ini, etc.)
-    - Directory structure (tests/, spec/, __tests__/)
+    - Directory structure (tests/, case/, __tests__/)
     """
 
     __test__ = False  # Prevent pytest from collecting this as a test class
@@ -351,7 +351,7 @@ class TestDiscovery:
             test_script = scripts["test"]
             if (
                 test_script
-                and test_script != 'echo "Error: no test specified" && exit 1'
+                and test_script != 'echo "Error: no test caseified" && exit 1'
             ):
                 # Try to infer framework from script
                 framework_name = "npm_test"
@@ -498,13 +498,13 @@ class TestDiscovery:
 
         content = gemfile.read_text().lower()
 
-        if "rspec" in content or (project_dir / ".rspec").exists():
+        if "rcase" in content or (project_dir / ".rcase").exists():
             result.frameworks.append(
                 TestFramework(
-                    name="rspec",
+                    name="rcase",
                     type="all",
-                    command="bundle exec rspec",
-                    config_file=".rspec" if (project_dir / ".rspec").exists() else None,
+                    command="bundle exec rcase",
+                    config_file=".rcase" if (project_dir / ".rcase").exists() else None,
                 )
             )
         elif "minitest" in content:
@@ -522,9 +522,9 @@ class TestDiscovery:
         test_dir_patterns = [
             "tests",
             "test",
-            "spec",
+            "case",
             "__tests__",
-            "specs",
+            "cases",
             "test_*",
         ]
 
@@ -551,13 +551,13 @@ class TestDiscovery:
             "**/*.test.js",
             "**/*.test.ts",
             "**/*.test.tsx",
-            "**/*.spec.js",
-            "**/*.spec.ts",
-            "**/*.spec.tsx",
+            "**/*.case.js",
+            "**/*.case.ts",
+            "**/*.case.tsx",
             "**/test_*.go",
             "**/*_test.go",
             "**/*_test.rs",
-            "**/spec/**/*_spec.rb",
+            "**/case/**/*_case.rb",
         ]
 
         # Check in test directories

@@ -2,7 +2,7 @@
 Followup Commands
 =================
 
-CLI commands for adding follow-up tasks to completed specs.
+CLI commands for adding follow-up tasks to completed cases.
 """
 
 import asyncio
@@ -32,7 +32,7 @@ from ui import (
 )
 
 
-def collect_followup_task(spec_dir: Path, max_retries: int = 3) -> str | None:
+def collect_followup_task(case_dir: Path, max_retries: int = 3) -> str | None:
     """
     Collect a follow-up task description from the user.
 
@@ -41,7 +41,7 @@ def collect_followup_task(spec_dir: Path, max_retries: int = 3) -> str | None:
     logic for empty input.
 
     Args:
-        spec_dir: The spec directory where FOLLOWUP_REQUEST.md will be saved
+        case_dir: The case directory where FOLLOWUP_REQUEST.md will be saved
         max_retries: Maximum number of times to prompt on empty input (default: 3)
 
     Returns:
@@ -79,7 +79,7 @@ def collect_followup_task(spec_dir: Path, max_retries: int = 3) -> str | None:
         ]
 
         # Show retry message if this is a retry
-        subtitle = "Describe the additional work you want to add to this spec."
+        subtitle = "Describe the additional work you want to add to this case."
         if retry_count > 0:
             subtitle = warning(
                 f"Empty input received. Please try again. ({max_retries - retry_count} attempts remaining)"
@@ -194,7 +194,7 @@ def collect_followup_task(spec_dir: Path, max_retries: int = 3) -> str | None:
             continue
 
         # Save to FOLLOWUP_REQUEST.md
-        request_file = spec_dir / "FOLLOWUP_REQUEST.md"
+        request_file = case_dir / "FOLLOWUP_REQUEST.md"
         request_file.write_text(followup_task)
 
         # Show confirmation
@@ -218,7 +218,7 @@ def collect_followup_task(spec_dir: Path, max_retries: int = 3) -> str | None:
 
 def handle_followup_command(
     project_dir: Path,
-    spec_dir: Path,
+    case_dir: Path,
     model: str,
     verbose: bool = False,
 ) -> None:
@@ -227,7 +227,7 @@ def handle_followup_command(
 
     Args:
         project_dir: Project root directory
-        spec_dir: Spec directory path
+        case_dir: Case directory path
         model: Model to use
         verbose: Enable verbose output
     """
@@ -237,21 +237,21 @@ def handle_followup_command(
     from .utils import print_banner, validate_environment
 
     print_banner()
-    print(f"\nFollow-up request for: {spec_dir.name}")
+    print(f"\nFollow-up request for: {case_dir.name}")
 
-    # Check if implementation_plan.json exists
-    plan_file = spec_dir / "implementation_plan.json"
+    # Check if investigation_plan.json exists
+    plan_file = case_dir / "investigation_plan.json"
     if not plan_file.exists():
         print()
         print(error(f"{icon(Icons.ERROR)} No implementation plan found."))
         print()
         content = [
-            "This spec has not been built yet.",
+            "This case has not been built yet.",
             "",
-            "Follow-up tasks can only be added to specs that have been",
+            "Follow-up tasks can only be added to cases that have been",
             "built at least once. Run a regular build first:",
             "",
-            highlight(f"  python auto-claude/run.py --spec {spec_dir.name}"),
+            highlight(f"  python auto-sleuth/run.py --case {case_dir.name}"),
             "",
             muted("After the build completes, you can add follow-up tasks."),
         ]
@@ -259,8 +259,8 @@ def handle_followup_command(
         sys.exit(1)
 
     # Check if build is complete
-    if not is_build_complete(spec_dir):
-        completed, total = count_subtasks(spec_dir)
+    if not is_build_complete(case_dir):
+        completed, total = count_subtasks(case_dir)
         pending = total - completed
         print()
         print(
@@ -275,7 +275,7 @@ def handle_followup_command(
             "Follow-up tasks can only be added after all current subtasks",
             "are finished. Complete the current build first:",
             "",
-            highlight(f"  python auto-claude/run.py --spec {spec_dir.name}"),
+            highlight(f"  python auto-sleuth/run.py --case {case_dir.name}"),
             "",
             muted("The build will continue from where it left off."),
         ]
@@ -312,7 +312,7 @@ def handle_followup_command(
         )
 
     # Collect follow-up task from user
-    followup_task = collect_followup_task(spec_dir)
+    followup_task = collect_followup_task(case_dir)
 
     if followup_task is None:
         # User cancelled
@@ -325,14 +325,14 @@ def handle_followup_command(
     # Now run the follow-up planner to add new subtasks
     print()
 
-    if not validate_environment(spec_dir):
+    if not validate_environment(case_dir):
         sys.exit(1)
 
     try:
         success_result = asyncio.run(
             run_followup_planner(
                 project_dir=project_dir,
-                spec_dir=spec_dir,
+                case_dir=case_dir,
                 model=model,
                 verbose=verbose,
             )
@@ -346,7 +346,7 @@ def handle_followup_command(
                 "New subtasks have been added to your implementation plan.",
                 "",
                 highlight("To continue building:"),
-                f"  python auto-claude/run.py --spec {spec_dir.name}",
+                f"  python auto-sleuth/run.py --case {case_dir.name}",
             ]
             print(box(content, width=70, style="heavy"))
         else:
@@ -363,7 +363,7 @@ def handle_followup_command(
 
     except KeyboardInterrupt:
         print("\n\nFollow-up planning paused.")
-        print(f"To retry: python auto-claude/run.py --spec {spec_dir.name} --followup")
+        print(f"To retry: python auto-sleuth/run.py --case {case_dir.name} --followup")
         sys.exit(0)
     except Exception as e:
         print()

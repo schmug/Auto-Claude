@@ -3,7 +3,7 @@ UI Utilities for Auto-Build
 ===========================
 
 Main entry point for UI utilities. This module re-exports all UI components
-from specialized submodules for backward compatibility.
+from caseialized submodules for backward compatibility.
 
 Provides:
 - Icons and symbols with fallback support

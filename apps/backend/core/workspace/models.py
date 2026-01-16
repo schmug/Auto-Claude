@@ -12,7 +12,7 @@ from pathlib import Path
 
 
 class WorkspaceMode(Enum):
-    """How auto-claude should work."""
+    """How auto-sleuth should work."""
 
     ISOLATED = "isolated"  # Work in a separate worktree (safe)
     DIRECT = "direct"  # Work directly in user's project
@@ -35,7 +35,7 @@ class ParallelMergeTask:
     main_content: str
     worktree_content: str
     base_content: str | None
-    spec_name: str
+    case_name: str
     project_dir: Path
 
 
@@ -60,15 +60,15 @@ class MergeLock:
     """
     Context manager for merge locking to prevent concurrent merges.
 
-    Uses a lock file in .auto-claude/ to ensure only one merge operation
+    Uses a lock file in .auto-sleuth/ to ensure only one merge operation
     runs at a time for a given project.
     """
 
-    def __init__(self, project_dir: Path, spec_name: str):
+    def __init__(self, project_dir: Path, case_name: str):
         self.project_dir = project_dir
-        self.spec_name = spec_name
-        self.lock_dir = project_dir / ".auto-claude" / ".locks"
-        self.lock_file = self.lock_dir / f"merge-{spec_name}.lock"
+        self.case_name = case_name
+        self.lock_dir = project_dir / ".auto-sleuth" / ".locks"
+        self.lock_file = self.lock_dir / f"merge-{case_name}.lock"
         self.acquired = False
 
     def __enter__(self):
@@ -123,7 +123,7 @@ class MergeLock:
                 # Active lock - wait or timeout
                 if time.time() - start_time >= max_wait:
                     raise MergeLockError(
-                        f"Could not acquire merge lock for {self.spec_name} after {max_wait}s"
+                        f"Could not acquire merge lock for {self.case_name} after {max_wait}s"
                     )
 
                 time.sleep(0.5)
@@ -137,33 +137,33 @@ class MergeLock:
                 pass  # Best effort cleanup
 
 
-class SpecNumberLockError(Exception):
-    """Raised when a spec number lock cannot be acquired."""
+class CaseNumberLockError(Exception):
+    """Raised when a case number lock cannot be acquired."""
 
     pass
 
 
-class SpecNumberLock:
+class CaseNumberLock:
     """
-    Context manager for spec number coordination across main project and worktrees.
+    Context manager for case number coordination across main project and worktrees.
 
-    Prevents race conditions when creating specs by:
+    Prevents race conditions when creating cases by:
     1. Acquiring an exclusive file lock
-    2. Scanning ALL spec locations (main + worktrees)
-    3. Finding global maximum spec number
-    4. Allowing atomic spec directory creation
+    2. Scanning ALL case locations (main + worktrees)
+    3. Finding global maximum case number
+    4. Allowing atomic case directory creation
     5. Releasing lock
     """
 
     def __init__(self, project_dir: Path):
         self.project_dir = project_dir
-        self.lock_dir = project_dir / ".auto-claude" / ".locks"
-        self.lock_file = self.lock_dir / "spec-numbering.lock"
+        self.lock_dir = project_dir / ".auto-sleuth" / ".locks"
+        self.lock_file = self.lock_dir / "case-numbering.lock"
         self.acquired = False
         self._global_max: int | None = None
 
-    def __enter__(self) -> "SpecNumberLock":
-        """Acquire the spec numbering lock."""
+    def __enter__(self) -> "CaseNumberLock":
+        """Acquire the case numbering lock."""
         import os
         import time
 
@@ -211,32 +211,32 @@ class SpecNumberLock:
 
                 # Active lock - wait or timeout
                 if time.time() - start_time >= max_wait:
-                    raise SpecNumberLockError(
-                        f"Could not acquire spec numbering lock after {max_wait}s"
+                    raise CaseNumberLockError(
+                        f"Could not acquire case numbering lock after {max_wait}s"
                     )
 
-                time.sleep(0.1)  # Shorter sleep for spec creation
+                time.sleep(0.1)  # Shorter sleep for case creation
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        """Release the spec numbering lock."""
+        """Release the case numbering lock."""
         if self.acquired and self.lock_file.exists():
             try:
                 self.lock_file.unlink()
             except Exception:
                 pass  # Best effort cleanup
 
-    def get_next_spec_number(self) -> int:
+    def get_next_case_number(self) -> int:
         """
-        Scan all spec locations and return the next available spec number.
+        Scan all case locations and return the next available case number.
 
         Must be called while lock is held.
 
         Returns:
-            Next available spec number (global max + 1)
+            Next available case number (global max + 1)
         """
         if not self.acquired:
-            raise SpecNumberLockError(
-                "Lock must be acquired before getting next spec number"
+            raise CaseNumberLockError(
+                "Lock must be acquired before getting next case number"
             )
 
         if self._global_max is not None:
@@ -244,28 +244,28 @@ class SpecNumberLock:
 
         max_number = 0
 
-        # 1. Scan main project specs
-        main_specs_dir = self.project_dir / ".auto-claude" / "specs"
-        max_number = max(max_number, self._scan_specs_dir(main_specs_dir))
+        # 1. Scan main project cases
+        main_cases_dir = self.project_dir / ".auto-sleuth" / "cases"
+        max_number = max(max_number, self._scan_cases_dir(main_cases_dir))
 
-        # 2. Scan all worktree specs
-        worktrees_dir = self.project_dir / ".auto-claude" / "worktrees" / "tasks"
+        # 2. Scan all worktree cases
+        worktrees_dir = self.project_dir / ".auto-sleuth" / "worktrees" / "tasks"
         if worktrees_dir.exists():
             for worktree in worktrees_dir.iterdir():
                 if worktree.is_dir():
-                    worktree_specs = worktree / ".auto-claude" / "specs"
-                    max_number = max(max_number, self._scan_specs_dir(worktree_specs))
+                    worktree_cases = worktree / ".auto-sleuth" / "cases"
+                    max_number = max(max_number, self._scan_cases_dir(worktree_cases))
 
         self._global_max = max_number
         return max_number + 1
 
-    def _scan_specs_dir(self, specs_dir: Path) -> int:
-        """Scan a specs directory and return the highest spec number found."""
-        if not specs_dir.exists():
+    def _scan_cases_dir(self, cases_dir: Path) -> int:
+        """Scan a cases directory and return the highest case number found."""
+        if not cases_dir.exists():
             return 0
 
         max_num = 0
-        for folder in specs_dir.glob("[0-9][0-9][0-9]-*"):
+        for folder in cases_dir.glob("[0-9][0-9][0-9]-*"):
             try:
                 num = int(folder.name[:3])
                 max_num = max(max_num, num)

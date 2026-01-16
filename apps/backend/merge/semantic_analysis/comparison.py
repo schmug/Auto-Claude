@@ -21,7 +21,7 @@ def compare_elements(
     Args:
         before: Elements extracted from the before version
         after: Elements extracted from the after version
-        ext: File extension for language-specific classification
+        ext: File extension for language-caseific classification
 
     Returns:
         List of semantic changes
@@ -153,7 +153,7 @@ def classify_modification(
     Args:
         before: Element before modification
         after: Element after modification
-        ext: File extension for language-specific classification
+        ext: File extension for language-caseific classification
 
     Returns:
         ChangeType describing the modification
@@ -164,7 +164,7 @@ def classify_modification(
         return ChangeType.MODIFY_IMPORT
 
     if element_type in {"function", "method"}:
-        # Analyze the function content for specific changes
+        # Analyze the function content for caseific changes
         return classify_function_modification(before.content, after.content, ext)
 
     if element_type == "class":
@@ -193,10 +193,10 @@ def classify_function_modification(
     Args:
         before: Function content before changes
         after: Function content after changes
-        ext: File extension for language-specific classification
+        ext: File extension for language-caseific classification
 
     Returns:
-        Specific ChangeType for the function modification
+        Caseific ChangeType for the function modification
     """
     # Check for React hook additions
     hook_pattern = r"\buse[A-Z]\w*\s*\("

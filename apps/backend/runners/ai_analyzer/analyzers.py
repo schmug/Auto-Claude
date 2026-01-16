@@ -1,5 +1,5 @@
 """
-Individual analyzer implementations for different aspects of code analysis.
+Individual analyzer implementations for different acasets of code analysis.
 """
 
 from typing import Any

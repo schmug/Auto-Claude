@@ -39,8 +39,8 @@ class IssueLifecycleState(str, Enum):
     REJECTED = "rejected"
 
     # Build states
-    SPEC_CREATING = "spec_creating"
-    SPEC_READY = "spec_ready"
+    SPEC_CREATING = "case_creating"
+    SPEC_READY = "case_ready"
     BUILDING = "building"
     BUILD_FAILED = "build_failed"
 
@@ -225,7 +225,7 @@ class IssueLifecycle:
     repo: str
     current_state: IssueLifecycleState = IssueLifecycleState.NEW
     triage_result: dict[str, Any] | None = None
-    spec_id: str | None = None
+    case_id: str | None = None
     pr_number: int | None = None
     transitions: list[StateTransition] = field(default_factory=list)
     locked_by: str | None = None  # Component holding lock
@@ -341,7 +341,7 @@ class IssueLifecycle:
             "repo": self.repo,
             "current_state": self.current_state.value,
             "triage_result": self.triage_result,
-            "spec_id": self.spec_id,
+            "case_id": self.case_id,
             "pr_number": self.pr_number,
             "transitions": [t.to_dict() for t in self.transitions],
             "locked_by": self.locked_by,
@@ -357,7 +357,7 @@ class IssueLifecycle:
             repo=data["repo"],
             current_state=IssueLifecycleState(data.get("current_state", "new")),
             triage_result=data.get("triage_result"),
-            spec_id=data.get("spec_id"),
+            case_id=data.get("case_id"),
             pr_number=data.get("pr_number"),
             transitions=[
                 StateTransition.from_dict(t) for t in data.get("transitions", [])
@@ -374,7 +374,7 @@ class LifecycleManager:
     Manages issue lifecycles and resolves conflicts.
 
     Usage:
-        lifecycle = LifecycleManager(state_dir=Path(".auto-claude/github"))
+        lifecycle = LifecycleManager(state_dir=Path(".auto-sleuth/github"))
 
         # Get or create lifecycle for issue
         state = lifecycle.get_or_create(repo="owner/repo", issue_number=123)
@@ -465,7 +465,7 @@ class LifecycleManager:
                 resolution_hint="Wait for current operation to complete",
             )
 
-        # Operation-specific checks
+        # Operation-caseific checks
         if operation == "auto_fix":
             return lifecycle.check_auto_fix_allowed()
         elif operation == "notify_human":
@@ -504,7 +504,7 @@ class LifecycleManager:
         repo: str,
         state: IssueLifecycleState,
     ) -> list[IssueLifecycle]:
-        """Get all issues in a specific state."""
+        """Get all issues in a caseific state."""
         results = []
         safe_repo = repo.replace("/", "_")
 

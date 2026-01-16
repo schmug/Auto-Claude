@@ -1,6 +1,6 @@
 """
-Agent Session Management
-========================
+Agent Session Management - Auto-Sleuth DFIR
+=============================================
 
 Handles running agent sessions and post-session processing including
 memory updates, recovery tracking, and Linear integration.
@@ -39,15 +39,15 @@ from .utils import (
     find_subtask_in_plan,
     get_commit_count,
     get_latest_commit,
-    load_implementation_plan,
-    sync_spec_to_source,
+    load_investigation_plan,
+    sync_case_to_source,
 )
 
 logger = logging.getLogger(__name__)
 
 
 async def post_session_processing(
-    spec_dir: Path,
+    case_dir: Path,
     project_dir: Path,
     subtask_id: str,
     session_num: int,
@@ -56,7 +56,7 @@ async def post_session_processing(
     recovery_manager: RecoveryManager,
     linear_enabled: bool = False,
     status_manager: StatusManager | None = None,
-    source_spec_dir: Path | None = None,
+    source_case_dir: Path | None = None,
 ) -> bool:
     """
     Process session results and update memory automatically.
@@ -64,7 +64,7 @@ async def post_session_processing(
     This runs in Python (100% reliable) instead of relying on agent compliance.
 
     Args:
-        spec_dir: Spec directory containing memory/
+        case_dir: Case directory containing memory/
         project_dir: Project root for git operations
         subtask_id: The subtask that was being worked on
         session_num: Current session number
@@ -73,7 +73,7 @@ async def post_session_processing(
         recovery_manager: Recovery manager instance
         linear_enabled: Whether Linear integration is enabled
         status_manager: Optional status manager for ccstatusline
-        source_spec_dir: Original spec directory (for syncing back from worktree)
+        source_case_dir: Original case directory (for syncing back from worktree)
 
     Returns:
         True if subtask was completed successfully
@@ -82,18 +82,18 @@ async def post_session_processing(
     print(muted("--- Post-Session Processing ---"))
 
     # Sync implementation plan back to source (for worktree mode)
-    if sync_spec_to_source(spec_dir, source_spec_dir):
-        print_status("Implementation plan synced to main project", "success")
+    if sync_case_to_source(case_dir, source_case_dir):
+        print_status("Investigation plan synced to main project", "success")
 
     # Check if implementation plan was updated
-    plan = load_implementation_plan(spec_dir)
+    plan = load_investigation_plan(case_dir)
     if not plan:
         print("  Warning: Could not load implementation plan")
         return False
 
     subtask = find_subtask_in_plan(plan, subtask_id)
     if not subtask:
-        print(f"  Warning: Subtask {subtask_id} not found in plan")
+        print(f"  Warning: Analysis task {subtask_id} not found in plan")
         return False
 
     subtask_status = subtask.get("status", "pending")
@@ -108,11 +108,11 @@ async def post_session_processing(
 
     if subtask_status == "completed":
         # Success! Record the attempt and good commit
-        print_status(f"Subtask {subtask_id} completed successfully", "success")
+        print_status(f"Analysis task {subtask_id} completed successfully", "success")
 
         # Update status file
         if status_manager:
-            subtasks = count_subtasks_detailed(spec_dir)
+            subtasks = count_subtasks_detailed(case_dir)
             status_manager.update_subtasks(
                 completed=subtasks["completed"],
                 total=subtasks["total"],
@@ -124,7 +124,7 @@ async def post_session_processing(
             subtask_id=subtask_id,
             session=session_num,
             success=True,
-            approach=f"Implemented: {subtask.get('description', 'subtask')[:100]}",
+            approach=f"Analyzed: {subtask.get('description', 'analysis task')[:100]}",
         )
 
         # Record good commit for rollback safety
@@ -135,9 +135,9 @@ async def post_session_processing(
         # Record Linear session result (if enabled)
         if linear_enabled:
             # Get progress counts for the comment
-            subtasks_detail = count_subtasks_detailed(spec_dir)
+            subtasks_detail = count_subtasks_detailed(case_dir)
             await linear_subtask_completed(
-                spec_dir=spec_dir,
+                case_dir=case_dir,
                 subtask_id=subtask_id,
                 completed_count=subtasks_detail["completed"],
                 total_count=subtasks_detail["total"],
@@ -147,7 +147,7 @@ async def post_session_processing(
         # Extract rich insights from session (LLM-powered analysis)
         try:
             extracted_insights = await extract_session_insights(
-                spec_dir=spec_dir,
+                case_dir=case_dir,
                 project_dir=project_dir,
                 subtask_id=subtask_id,
                 session_num=session_num,
@@ -170,7 +170,7 @@ async def post_session_processing(
         # Save session memory (Graphiti=primary, file-based=fallback)
         try:
             save_success, storage_type = await save_session_memory(
-                spec_dir=spec_dir,
+                case_dir=case_dir,
                 project_dir=project_dir,
                 subtask_id=subtask_id,
                 session_num=session_num,
@@ -195,14 +195,14 @@ async def post_session_processing(
 
     elif subtask_status == "in_progress":
         # Session ended without completion
-        print_status(f"Subtask {subtask_id} still in progress", "warning")
+        print_status(f"Analysis task {subtask_id} still in progress", "warning")
 
         recovery_manager.record_attempt(
             subtask_id=subtask_id,
             session=session_num,
             success=False,
-            approach="Session ended with subtask in_progress",
-            error="Subtask not marked as completed",
+            approach="Session ended with analysis task in_progress",
+            error="Analysis task not marked as completed",
         )
 
         # Still record commit if one was made (partial progress)
@@ -216,7 +216,7 @@ async def post_session_processing(
         if linear_enabled:
             attempt_count = recovery_manager.get_attempt_count(subtask_id)
             await linear_subtask_failed(
-                spec_dir=spec_dir,
+                case_dir=case_dir,
                 subtask_id=subtask_id,
                 attempt=attempt_count,
                 error_summary="Session ended without completion",
@@ -225,7 +225,7 @@ async def post_session_processing(
         # Extract insights even from failed sessions (valuable for future attempts)
         try:
             extracted_insights = await extract_session_insights(
-                spec_dir=spec_dir,
+                case_dir=case_dir,
                 project_dir=project_dir,
                 subtask_id=subtask_id,
                 session_num=session_num,
@@ -241,7 +241,7 @@ async def post_session_processing(
         # Save failed session memory (to track what didn't work)
         try:
             await save_session_memory(
-                spec_dir=spec_dir,
+                case_dir=case_dir,
                 project_dir=project_dir,
                 subtask_id=subtask_id,
                 session_num=session_num,
@@ -255,9 +255,9 @@ async def post_session_processing(
         return False
 
     else:
-        # Subtask still pending or failed
+        # Analysis task still pending or failed
         print_status(
-            f"Subtask {subtask_id} not completed (status: {subtask_status})", "error"
+            f"Analysis task {subtask_id} not completed (status: {subtask_status})", "error"
         )
 
         recovery_manager.record_attempt(
@@ -265,14 +265,14 @@ async def post_session_processing(
             session=session_num,
             success=False,
             approach="Session ended without progress",
-            error=f"Subtask status is {subtask_status}",
+            error=f"Analysis task status is {subtask_status}",
         )
 
         # Record Linear session result (if enabled)
         if linear_enabled:
             attempt_count = recovery_manager.get_attempt_count(subtask_id)
             await linear_subtask_failed(
-                spec_dir=spec_dir,
+                case_dir=case_dir,
                 subtask_id=subtask_id,
                 attempt=attempt_count,
                 error_summary=f"Subtask status: {subtask_status}",
@@ -281,7 +281,7 @@ async def post_session_processing(
         # Extract insights even from completely failed sessions
         try:
             extracted_insights = await extract_session_insights(
-                spec_dir=spec_dir,
+                case_dir=case_dir,
                 project_dir=project_dir,
                 subtask_id=subtask_id,
                 session_num=session_num,
@@ -297,7 +297,7 @@ async def post_session_processing(
         # Save failed session memory (to track what didn't work)
         try:
             await save_session_memory(
-                spec_dir=spec_dir,
+                case_dir=case_dir,
                 project_dir=project_dir,
                 subtask_id=subtask_id,
                 session_num=session_num,
@@ -314,7 +314,7 @@ async def post_session_processing(
 async def run_agent_session(
     client: ClaudeSDKClient,
     message: str,
-    spec_dir: Path,
+    case_dir: Path,
     verbose: bool = False,
     phase: LogPhase = LogPhase.CODING,
 ) -> tuple[str, str]:
@@ -324,29 +324,29 @@ async def run_agent_session(
     Args:
         client: Claude SDK client
         message: The prompt to send
-        spec_dir: Spec directory path
+        case_dir: Case directory path
         verbose: Whether to show detailed output
         phase: Current execution phase for logging
 
     Returns:
         (status, response_text) where status is:
         - "continue" if agent should continue working
-        - "complete" if all subtasks complete
+        - "complete" if all analysis tasks complete
         - "error" if an error occurred
     """
     debug_section("session", f"Agent Session - {phase.value}")
     debug(
         "session",
         "Starting agent session",
-        spec_dir=str(spec_dir),
+        case_dir=str(case_dir),
         phase=phase.value,
         prompt_length=len(message),
         prompt_preview=message[:200] + "..." if len(message) > 200 else message,
     )
     print("Sending prompt to Claude Agent SDK...\n")
 
-    # Get task logger for this spec
-    task_logger = get_task_logger(spec_dir)
+    # Get task logger for this case
+    task_logger = get_task_logger(case_dir)
     current_tool = None
     message_count = 0
     tool_count = 0
@@ -521,7 +521,7 @@ async def run_agent_session(
         print("\n" + "-" * 70 + "\n")
 
         # Check if build is complete
-        if is_build_complete(spec_dir):
+        if is_build_complete(case_dir):
             debug_success(
                 "session",
                 "Session completed - build is complete",

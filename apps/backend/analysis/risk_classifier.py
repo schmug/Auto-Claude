@@ -13,12 +13,12 @@ Usage:
     from risk_classifier import RiskClassifier
 
     classifier = RiskClassifier()
-    assessment = classifier.load_assessment(spec_dir)
+    assessment = classifier.load_assessment(case_dir)
 
-    if classifier.should_skip_validation(spec_dir):
+    if classifier.should_skip_validation(case_dir):
         print("Validation can be skipped for this task")
 
-    test_types = classifier.get_required_test_types(spec_dir)
+    test_types = classifier.get_required_test_types(case_dir)
 """
 
 from __future__ import annotations
@@ -110,7 +110,7 @@ class ValidationRecommendations:
 
 @dataclass
 class AssessmentFlags:
-    """Flags indicating special requirements."""
+    """Flags indicating caseial requirements."""
 
     needs_research: bool = False
     needs_self_critique: bool = False
@@ -155,24 +155,24 @@ class RiskClassifier:
         """Initialize the risk classifier."""
         self._cache: dict[str, RiskAssessment] = {}
 
-    def load_assessment(self, spec_dir: Path) -> RiskAssessment | None:
+    def load_assessment(self, case_dir: Path) -> RiskAssessment | None:
         """
-        Load complexity_assessment.json from spec directory.
+        Load complexity_assessment.json from case directory.
 
         Args:
-            spec_dir: Path to the spec directory containing complexity_assessment.json
+            case_dir: Path to the case directory containing complexity_assessment.json
 
         Returns:
             RiskAssessment object if file exists and is valid, None otherwise
         """
-        spec_dir = Path(spec_dir)
-        cache_key = str(spec_dir.resolve())
+        case_dir = Path(case_dir)
+        cache_key = str(case_dir.resolve())
 
         # Return cached result if available
         if cache_key in self._cache:
             return self._cache[cache_key]
 
-        assessment_file = spec_dir / "complexity_assessment.json"
+        assessment_file = case_dir / "complexity_assessment.json"
         if not assessment_file.exists():
             return None
 
@@ -365,129 +365,129 @@ class RiskClassifier:
             reasoning="Inferred from complexity analysis (no explicit recommendations found)",
         )
 
-    def should_skip_validation(self, spec_dir: Path) -> bool:
+    def should_skip_validation(self, case_dir: Path) -> bool:
         """
         Quick check if validation can be skipped entirely.
 
         Args:
-            spec_dir: Path to the spec directory
+            case_dir: Path to the case directory
 
         Returns:
             True if validation can be skipped (trivial changes), False otherwise
         """
-        assessment = self.load_assessment(spec_dir)
+        assessment = self.load_assessment(case_dir)
         if not assessment:
             return False  # When in doubt, don't skip
 
         return assessment.validation.skip_validation
 
-    def should_use_minimal_mode(self, spec_dir: Path) -> bool:
+    def should_use_minimal_mode(self, case_dir: Path) -> bool:
         """
         Check if minimal validation mode should be used.
 
         Args:
-            spec_dir: Path to the spec directory
+            case_dir: Path to the case directory
 
         Returns:
             True if minimal mode is recommended, False otherwise
         """
-        assessment = self.load_assessment(spec_dir)
+        assessment = self.load_assessment(case_dir)
         if not assessment:
             return False
 
         return assessment.validation.minimal_mode
 
-    def get_required_test_types(self, spec_dir: Path) -> list[str]:
+    def get_required_test_types(self, case_dir: Path) -> list[str]:
         """
         Get list of required test types based on risk.
 
         Args:
-            spec_dir: Path to the spec directory
+            case_dir: Path to the case directory
 
         Returns:
             List of test types (e.g., ["unit", "integration", "e2e"])
         """
-        assessment = self.load_assessment(spec_dir)
+        assessment = self.load_assessment(case_dir)
         if not assessment:
             return ["unit"]  # Default to unit tests
 
         return assessment.validation.test_types_required
 
-    def requires_security_scan(self, spec_dir: Path) -> bool:
+    def requires_security_scan(self, case_dir: Path) -> bool:
         """
         Check if security scanning is required.
 
         Args:
-            spec_dir: Path to the spec directory
+            case_dir: Path to the case directory
 
         Returns:
             True if security scan is required, False otherwise
         """
-        assessment = self.load_assessment(spec_dir)
+        assessment = self.load_assessment(case_dir)
         if not assessment:
             return False
 
         return assessment.validation.security_scan_required
 
-    def requires_staging_deployment(self, spec_dir: Path) -> bool:
+    def requires_staging_deployment(self, case_dir: Path) -> bool:
         """
         Check if staging deployment is required.
 
         Args:
-            spec_dir: Path to the spec directory
+            case_dir: Path to the case directory
 
         Returns:
             True if staging deployment is required, False otherwise
         """
-        assessment = self.load_assessment(spec_dir)
+        assessment = self.load_assessment(case_dir)
         if not assessment:
             return False
 
         return assessment.validation.staging_deployment_required
 
-    def get_risk_level(self, spec_dir: Path) -> str:
+    def get_risk_level(self, case_dir: Path) -> str:
         """
         Get the risk level for the task.
 
         Args:
-            spec_dir: Path to the spec directory
+            case_dir: Path to the case directory
 
         Returns:
             Risk level string (trivial, low, medium, high, critical)
         """
-        assessment = self.load_assessment(spec_dir)
+        assessment = self.load_assessment(case_dir)
         if not assessment:
             return "medium"  # Default to medium when unknown
 
         return assessment.validation.risk_level
 
-    def get_complexity(self, spec_dir: Path) -> str:
+    def get_complexity(self, case_dir: Path) -> str:
         """
         Get the complexity level for the task.
 
         Args:
-            spec_dir: Path to the spec directory
+            case_dir: Path to the case directory
 
         Returns:
             Complexity level string (simple, standard, complex)
         """
-        assessment = self.load_assessment(spec_dir)
+        assessment = self.load_assessment(case_dir)
         if not assessment:
             return "standard"  # Default to standard when unknown
 
         return assessment.complexity
 
-    def get_validation_summary(self, spec_dir: Path) -> dict[str, Any]:
+    def get_validation_summary(self, case_dir: Path) -> dict[str, Any]:
         """
         Get a summary of validation requirements.
 
         Args:
-            spec_dir: Path to the spec directory
+            case_dir: Path to the case directory
 
         Returns:
             Dictionary with validation summary
         """
-        assessment = self.load_assessment(spec_dir)
+        assessment = self.load_assessment(case_dir)
         if not assessment:
             return {
                 "risk_level": "unknown",
@@ -522,32 +522,32 @@ class RiskClassifier:
 # =============================================================================
 
 
-def load_risk_assessment(spec_dir: Path) -> RiskAssessment | None:
+def load_risk_assessment(case_dir: Path) -> RiskAssessment | None:
     """
     Convenience function to load a risk assessment.
 
     Args:
-        spec_dir: Path to the spec directory
+        case_dir: Path to the case directory
 
     Returns:
         RiskAssessment object or None
     """
     classifier = RiskClassifier()
-    return classifier.load_assessment(spec_dir)
+    return classifier.load_assessment(case_dir)
 
 
-def get_validation_requirements(spec_dir: Path) -> dict[str, Any]:
+def get_validation_requirements(case_dir: Path) -> dict[str, Any]:
     """
     Convenience function to get validation requirements.
 
     Args:
-        spec_dir: Path to the spec directory
+        case_dir: Path to the case directory
 
     Returns:
         Dictionary with validation requirements
     """
     classifier = RiskClassifier()
-    return classifier.get_validation_summary(spec_dir)
+    return classifier.get_validation_summary(case_dir)
 
 
 # =============================================================================
@@ -561,16 +561,16 @@ def main() -> None:
 
     parser = argparse.ArgumentParser(description="Load and display risk assessment")
     parser.add_argument(
-        "spec_dir",
+        "case_dir",
         type=Path,
-        help="Path to spec directory with complexity_assessment.json",
+        help="Path to case directory with complexity_assessment.json",
     )
     parser.add_argument("--json", action="store_true", help="Output as JSON")
 
     args = parser.parse_args()
 
     classifier = RiskClassifier()
-    summary = classifier.get_validation_summary(args.spec_dir)
+    summary = classifier.get_validation_summary(args.case_dir)
 
     if args.json:
         print(json.dumps(summary, indent=2))

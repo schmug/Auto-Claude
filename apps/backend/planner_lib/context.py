@@ -6,7 +6,7 @@ import json
 import re
 from pathlib import Path
 
-from implementation_plan import WorkflowType
+from investigation_plan import WorkflowType
 
 from .models import PlannerContext
 
@@ -34,24 +34,24 @@ _WORKFLOW_TYPE_MAPPING: dict[str, WorkflowType] = {
 class ContextLoader:
     """Loads context files and determines workflow type."""
 
-    def __init__(self, spec_dir: Path):
-        self.spec_dir = spec_dir
+    def __init__(self, case_dir: Path):
+        self.case_dir = case_dir
 
     def load_context(self) -> PlannerContext:
-        """Load all context files from spec directory."""
-        # Read spec.md
-        spec_file = self.spec_dir / "spec.md"
-        spec_content = spec_file.read_text() if spec_file.exists() else ""
+        """Load all context files from case directory."""
+        # Read case.md
+        case_file = self.case_dir / "case.md"
+        case_content = case_file.read_text() if case_file.exists() else ""
 
         # Read project_index.json
-        index_file = self.spec_dir / "project_index.json"
+        index_file = self.case_dir / "project_index.json"
         project_index = {}
         if index_file.exists():
             with open(index_file) as f:
                 project_index = json.load(f)
 
         # Read context.json
-        context_file = self.spec_dir / "context.json"
+        context_file = self.case_dir / "context.json"
         task_context = {}
         if context_file.exists():
             with open(context_file) as f:
@@ -63,10 +63,10 @@ class ContextLoader:
             services = list(project_index.get("services", {}).keys())
 
         # Determine workflow type from multiple sources (priority order)
-        workflow_type = self._determine_workflow_type(spec_content)
+        workflow_type = self._determine_workflow_type(case_content)
 
         return PlannerContext(
-            spec_content=spec_content,
+            case_content=case_content,
             project_index=project_index,
             task_context=task_context,
             services_involved=services,
@@ -75,18 +75,18 @@ class ContextLoader:
             files_to_reference=task_context.get("files_to_reference", []),
         )
 
-    def _determine_workflow_type(self, spec_content: str) -> WorkflowType:
+    def _determine_workflow_type(self, case_content: str) -> WorkflowType:
         """Determine workflow type from multiple sources.
 
         Priority order (highest to lowest):
         1. requirements.json - User's explicit intent
         2. complexity_assessment.json - AI's assessment
-        3. spec.md explicit declaration - Spec writer's declaration
+        3. case.md explicit declaration - Case writer's declaration
         4. Keyword-based detection - Last resort fallback
         """
 
         # 1. Check requirements.json (user's explicit intent)
-        requirements_file = self.spec_dir / "requirements.json"
+        requirements_file = self.case_dir / "requirements.json"
         if requirements_file.exists():
             try:
                 with open(requirements_file) as f:
@@ -100,7 +100,7 @@ class ContextLoader:
                 pass
 
         # 2. Check complexity_assessment.json (AI's assessment)
-        assessment_file = self.spec_dir / "complexity_assessment.json"
+        assessment_file = self.case_dir / "complexity_assessment.json"
         if assessment_file.exists():
             try:
                 with open(assessment_file) as f:
@@ -113,19 +113,19 @@ class ContextLoader:
             except (json.JSONDecodeError, KeyError):
                 pass
 
-        # 3. & 4. Fall back to spec content detection
-        return self._detect_workflow_type_from_spec(spec_content)
+        # 3. & 4. Fall back to case content detection
+        return self._detect_workflow_type_from_case(case_content)
 
-    def _detect_workflow_type_from_spec(self, spec_content: str) -> WorkflowType:
-        """Detect workflow type from spec content (fallback method).
+    def _detect_workflow_type_from_case(self, case_content: str) -> WorkflowType:
+        """Detect workflow type from case content (fallback method).
 
         Priority:
-        1. Explicit Type: declaration in spec.md
+        1. Explicit Type: declaration in case.md
         2. Keyword-based detection (last resort)
         """
-        content_lower = spec_content.lower()
+        content_lower = case_content.lower()
 
-        # Check for explicit workflow type declaration in spec
+        # Check for explicit workflow type declaration in case
         # Look for patterns like "**Type**: feature" or "Type: refactor"
         explicit_type_patterns = [
             r"\*\*type\*\*:\s*(\w+)",  # **Type**: feature
@@ -172,7 +172,7 @@ class ContextLoader:
             "transition",
         ]
         # Check if refactor keyword appears in a heading or workflow type context
-        for line in spec_content.split("\n"):
+        for line in case_content.split("\n"):
             line_lower = line.lower().strip()
             # Only trigger on headings or explicit task descriptions
             if line_lower.startswith(("#", "**", "- [ ]", "- [x]")):

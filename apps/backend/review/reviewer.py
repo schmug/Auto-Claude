@@ -30,7 +30,7 @@ from ui import (
 from .formatters import (
     display_plan_summary,
     display_review_status,
-    display_spec_summary,
+    display_case_summary,
 )
 from .state import ReviewState
 
@@ -39,8 +39,8 @@ class ReviewChoice(Enum):
     """User choices during review checkpoint."""
 
     APPROVE = "approve"  # Approve and proceed to build
-    EDIT_SPEC = "edit_spec"  # Edit spec.md
-    EDIT_PLAN = "edit_plan"  # Edit implementation_plan.json
+    EDIT_SPEC = "edit_case"  # Edit case.md
+    EDIT_PLAN = "edit_plan"  # Edit investigation_plan.json
     FEEDBACK = "feedback"  # Add feedback comment
     REJECT = "reject"  # Reject and exit
 
@@ -61,15 +61,15 @@ def get_review_menu_options() -> list[MenuOption]:
         ),
         MenuOption(
             key=ReviewChoice.EDIT_SPEC.value,
-            label="Edit specification (spec.md)",
+            label="Edit caseification (case.md)",
             icon=Icons.EDIT,
-            description="Open spec.md in your editor to make changes",
+            description="Open case.md in your editor to make changes",
         ),
         MenuOption(
             key=ReviewChoice.EDIT_PLAN.value,
             label="Edit implementation plan",
             icon=Icons.DOCUMENT,
-            description="Open implementation_plan.json in your editor",
+            description="Open investigation_plan.json in your editor",
         ),
         MenuOption(
             key=ReviewChoice.FEEDBACK.value,
@@ -175,17 +175,17 @@ def open_file_in_editor(file_path: Path) -> bool:
 
 
 def run_review_checkpoint(
-    spec_dir: Path,
+    case_dir: Path,
     auto_approve: bool = False,
 ) -> ReviewState:
     """
-    Run the human review checkpoint for a spec.
+    Run the human review checkpoint for a case.
 
-    Displays spec summary and implementation plan, then prompts user to
-    approve, edit, provide feedback, or reject the spec before build starts.
+    Displays case summary and implementation plan, then prompts user to
+    approve, edit, provide feedback, or reject the case before build starts.
 
     Args:
-        spec_dir: Path to the spec directory
+        case_dir: Path to the case directory
         auto_approve: If True, skip interactive review and auto-approve
 
     Returns:
@@ -194,17 +194,17 @@ def run_review_checkpoint(
     Raises:
         SystemExit: If user chooses to reject or cancels with Ctrl+C
     """
-    spec_dir = Path(spec_dir)
-    state = ReviewState.load(spec_dir)
+    case_dir = Path(case_dir)
+    state = ReviewState.load(case_dir)
 
     # Handle auto-approve mode
     if auto_approve:
-        state.approve(spec_dir, approved_by="auto")
+        state.approve(case_dir, approved_by="auto")
         print_status("Auto-approved (--auto-approve flag)", "success")
         return state
 
     # Check if already approved and still valid
-    if state.is_approval_valid(spec_dir):
+    if state.is_approval_valid(case_dir):
         content = [
             success(f"{icon(Icons.SUCCESS)} ALREADY APPROVED"),
             "",
@@ -222,24 +222,24 @@ def run_review_checkpoint(
         print()
         return state
 
-    # If previously approved but spec changed, inform user
-    if state.approved and not state.is_approval_valid(spec_dir):
+    # If previously approved but case changed, inform user
+    if state.approved and not state.is_approval_valid(case_dir):
         content = [
             warning(f"{icon(Icons.WARNING)} SPEC CHANGED SINCE APPROVAL"),
             "",
-            "The specification has been modified since it was approved.",
+            "The caseification has been modified since it was approved.",
             "Please review and re-approve before building.",
         ]
         print()
         print(box(content, width=60, style="heavy"))
         # Invalidate the old approval
-        state.invalidate(spec_dir)
+        state.invalidate(case_dir)
 
     # Display header
     content = [
         bold(f"{icon(Icons.SEARCH)} HUMAN REVIEW CHECKPOINT"),
         "",
-        "Please review the specification and implementation plan",
+        "Please review the caseification and implementation plan",
         "before the autonomous build begins.",
     ]
     print()
@@ -248,17 +248,17 @@ def run_review_checkpoint(
     # Main review loop with graceful Ctrl+C handling
     try:
         while True:
-            # Display spec and plan summaries
-            display_spec_summary(spec_dir)
-            display_plan_summary(spec_dir)
+            # Display case and plan summaries
+            display_case_summary(case_dir)
+            display_plan_summary(case_dir)
 
             # Show current review status
-            display_review_status(spec_dir)
+            display_review_status(case_dir)
 
             # Show menu
             options = get_review_menu_options()
             choice = select_menu(
-                title="Review Implementation Plan",
+                title="Review Investigation Plan",
                 options=options,
                 subtitle="What would you like to do?",
                 allow_quit=True,
@@ -269,46 +269,46 @@ def run_review_checkpoint(
                 print()
                 print_status("Review paused. Your feedback has been saved.", "info")
                 print(muted("Run review again to continue."))
-                state.save(spec_dir)
+                state.save(case_dir)
                 sys.exit(0)
 
             # Handle user choice
             if choice == ReviewChoice.APPROVE.value:
-                state.approve(spec_dir, approved_by="user")
+                state.approve(case_dir, approved_by="user")
                 print()
-                print_status("Spec approved! Ready to start build.", "success")
+                print_status("Case approved! Ready to start build.", "success")
                 return state
 
             elif choice == ReviewChoice.EDIT_SPEC.value:
-                spec_file = spec_dir / "spec.md"
-                if not spec_file.exists():
-                    print_status("spec.md not found", "error")
+                case_file = case_dir / "case.md"
+                if not case_file.exists():
+                    print_status("case.md not found", "error")
                     continue
-                open_file_in_editor(spec_file)
+                open_file_in_editor(case_file)
                 # After editing, invalidate any previous approval
                 if state.approved:
-                    state.invalidate(spec_dir)
+                    state.invalidate(case_dir)
                 print()
-                print_status("spec.md updated. Please re-review.", "info")
+                print_status("case.md updated. Please re-review.", "info")
                 continue
 
             elif choice == ReviewChoice.EDIT_PLAN.value:
-                plan_file = spec_dir / "implementation_plan.json"
+                plan_file = case_dir / "investigation_plan.json"
                 if not plan_file.exists():
-                    print_status("implementation_plan.json not found", "error")
+                    print_status("investigation_plan.json not found", "error")
                     continue
                 open_file_in_editor(plan_file)
                 # After editing, invalidate any previous approval
                 if state.approved:
-                    state.invalidate(spec_dir)
+                    state.invalidate(case_dir)
                 print()
-                print_status("Implementation plan updated. Please re-review.", "info")
+                print_status("Investigation plan updated. Please re-review.", "info")
                 continue
 
             elif choice == ReviewChoice.FEEDBACK.value:
                 feedback = prompt_feedback()
                 if feedback:
-                    state.add_feedback(feedback, spec_dir)
+                    state.add_feedback(feedback, case_dir)
                     print()
                     print_status("Feedback saved.", "success")
                 else:
@@ -317,13 +317,13 @@ def run_review_checkpoint(
                 continue
 
             elif choice == ReviewChoice.REJECT.value:
-                state.reject(spec_dir)
+                state.reject(case_dir)
                 print()
                 content = [
                     error(f"{icon(Icons.ERROR)} SPEC REJECTED"),
                     "",
                     "The build will not proceed.",
-                    muted("You can edit the spec and try again later."),
+                    muted("You can edit the case and try again later."),
                 ]
                 print(box(content, width=60, style="heavy"))
                 sys.exit(1)
@@ -333,5 +333,5 @@ def run_review_checkpoint(
         print()
         print_status("Review interrupted. Your feedback has been saved.", "info")
         print(muted("Run review again to continue."))
-        state.save(spec_dir)
+        state.save(case_dir)
         sys.exit(0)

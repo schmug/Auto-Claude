@@ -92,7 +92,7 @@ def create_ollama_embedder(config: "GraphitiConfig") -> Any:
 
     Raises:
         ProviderNotInstalled: If graphiti-core is not installed
-        ProviderError: If model is not specified
+        ProviderError: If model is not caseified
     """
     if not config.ollama_embedding_model:
         raise ProviderError("Ollama embedder requires OLLAMA_EMBEDDING_MODEL")

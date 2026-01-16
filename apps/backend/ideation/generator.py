@@ -13,7 +13,7 @@ Uses Claude agents to generate ideas of different types:
 import sys
 from pathlib import Path
 
-# Add auto-claude to path
+# Add auto-sleuth to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from client import create_client
@@ -216,7 +216,7 @@ Write the fixed JSON to the file now.
             return False
 
     def get_prompt_file(self, ideation_type: str) -> str | None:
-        """Get the prompt file for a specific ideation type."""
+        """Get the prompt file for a caseific ideation type."""
         return IDEATION_TYPE_PROMPTS.get(ideation_type)
 
     def get_type_label(self, ideation_type: str) -> str:

@@ -6,8 +6,8 @@ Predictive Bug Prevention - CLI Entry Point
 Command-line interface for the bug prediction system.
 
 Usage:
-    python prediction.py <spec-dir> [--demo]
-    python prediction.py auto-claude/specs/001-feature/
+    python prediction.py <case-dir> [--demo]
+    python prediction.py auto-sleuth/cases/001-feature/
 """
 
 import json
@@ -20,11 +20,11 @@ from prediction import generate_subtask_checklist
 def main():
     """Main entry point for CLI."""
     if len(sys.argv) < 2:
-        print("Usage: python prediction.py <spec-dir> [--demo]")
-        print("       python prediction.py auto-claude/specs/001-feature/")
+        print("Usage: python prediction.py <case-dir> [--demo]")
+        print("       python prediction.py auto-sleuth/cases/001-feature/")
         sys.exit(1)
 
-    spec_dir = Path(sys.argv[1])
+    case_dir = Path(sys.argv[1])
 
     if "--demo" in sys.argv:
         # Demo with sample subtask
@@ -43,13 +43,13 @@ def main():
             },
         }
 
-        checklist_md = generate_subtask_checklist(spec_dir, demo_subtask)
+        checklist_md = generate_subtask_checklist(case_dir, demo_subtask)
         print(checklist_md)
     else:
         # Load from implementation plan
-        plan_file = spec_dir / "implementation_plan.json"
+        plan_file = case_dir / "investigation_plan.json"
         if not plan_file.exists():
-            print(f"Error: No implementation_plan.json found in {spec_dir}")
+            print(f"Error: No investigation_plan.json found in {case_dir}")
             sys.exit(1)
 
         with open(plan_file) as f:
@@ -70,7 +70,7 @@ def main():
             sys.exit(0)
 
         # Generate checklist
-        checklist_md = generate_subtask_checklist(spec_dir, subtask)
+        checklist_md = generate_subtask_checklist(case_dir, subtask)
         print(checklist_md)
 
 

@@ -43,7 +43,7 @@ class FileEvolutionTracker:
 
     This class manages:
     - Baseline capture when worktrees are created
-    - File content snapshots in .auto-claude/baselines/
+    - File content snapshots in .auto-sleuth/baselines/
     - Task modification tracking with semantic analysis
     - Persistence of evolution data
 
@@ -74,13 +74,13 @@ class FileEvolutionTracker:
 
         Args:
             project_dir: Root directory of the project
-            storage_dir: Directory for evolution data (default: .auto-claude/)
+            storage_dir: Directory for evolution data (default: .auto-sleuth/)
             semantic_analyzer: Optional pre-configured analyzer
         """
         debug(MODULE, "Initializing FileEvolutionTracker", project_dir=str(project_dir))
 
         self.project_dir = Path(project_dir).resolve()
-        storage_dir = storage_dir or (self.project_dir / ".auto-claude")
+        storage_dir = storage_dir or (self.project_dir / ".auto-sleuth")
 
         # Initialize modular components
         self.storage = EvolutionStorage(self.project_dir, storage_dir)
@@ -214,7 +214,7 @@ class FileEvolutionTracker:
         task_id: str,
     ) -> list[tuple[str, TaskSnapshot]]:
         """
-        Get all file modifications made by a specific task.
+        Get all file modifications made by a caseific task.
 
         Args:
             task_id: The task identifier
@@ -229,7 +229,7 @@ class FileEvolutionTracker:
         task_ids: list[str],
     ) -> dict[str, list[str]]:
         """
-        Get files modified by specified tasks.
+        Get files modified by caseified tasks.
 
         Args:
             task_ids: List of task identifiers

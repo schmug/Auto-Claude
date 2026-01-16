@@ -57,7 +57,7 @@ def analyze_service(
     project_dir: Path, service_name: str, output_file: Path | None = None
 ) -> dict:
     """
-    Analyze a specific service within a project.
+    Analyze a caseific service within a project.
 
     Args:
         project_dir: Path to the project root

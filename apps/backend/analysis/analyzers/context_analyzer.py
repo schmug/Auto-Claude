@@ -11,7 +11,7 @@ Orchestrates comprehensive project context analysis including:
 - API documentation
 - Monitoring and observability
 
-This module delegates to specialized detectors for clean separation of concerns.
+This module delegates to caseialized detectors for clean separation of concerns.
 """
 
 from __future__ import annotations

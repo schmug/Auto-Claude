@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Memory Query CLI for auto-claude-ui.
+Memory Query CLI for auto-sleuth-ui.
 
 Provides a subprocess interface for querying the LadybugDB/Graphiti memory database.
 Called from Node.js (Electron main process) via child_process.spawn().
@@ -338,10 +338,10 @@ async def _async_semantic_search(args):
         return {"success": False, "error": "LadybugDB not installed"}
 
     try:
-        # Add auto-claude to path for imports
-        auto_claude_dir = Path(__file__).parent
-        if str(auto_claude_dir) not in sys.path:
-            sys.path.insert(0, str(auto_claude_dir))
+        # Add auto-sleuth to path for imports
+        auto_sleuth_dir = Path(__file__).parent
+        if str(auto_sleuth_dir) not in sys.path:
+            sys.path.insert(0, str(auto_sleuth_dir))
 
         # Import Graphiti components
         from integrations.graphiti.config import GraphitiConfig
@@ -351,8 +351,8 @@ async def _async_semantic_search(args):
         config = GraphitiConfig.from_env()
 
         # Override database location from CLI args
-        # Note: We only override db_path/database for CLI-specified locations.
-        # The config.enabled flag is respected - if the user has disabled memory,
+        # Note: We only override db_path/database for CLI-caseified locations.
+        # The config.enabled flag is recaseted - if the user has disabled memory,
         # this CLI tool should not be used. The caller (main()) routes to this
         # function only when semantic-search command is explicitly requested.
         config.db_path = args.db_path
@@ -667,7 +667,7 @@ def extract_session_number(name: str) -> int | None:
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Query LadybugDB memory database for auto-claude-ui"
+        description="Query LadybugDB memory database for auto-sleuth-ui"
     )
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
@@ -738,7 +738,7 @@ def main():
 
     if not args.command:
         parser.print_help()
-        output_error("No command specified")
+        output_error("No command caseified")
         return
 
     # Route to command handler

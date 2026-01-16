@@ -124,7 +124,7 @@ class AIResolver:
                 task_changes.append(
                     (
                         snapshot.task_id,
-                        snapshot.task_intent or "No intent specified",
+                        snapshot.task_intent or "No intent caseified",
                         relevant_changes,
                     )
                 )

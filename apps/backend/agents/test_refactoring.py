@@ -30,7 +30,7 @@ def test_imports():
     from agents import utils
 
     assert hasattr(utils, "get_latest_commit")
-    assert hasattr(utils, "load_implementation_plan")
+    assert hasattr(utils, "load_investigation_plan")
     print("  ✓ agents.utils")
 
     # Test memory module
@@ -77,7 +77,7 @@ def test_public_api():
         "run_agent_session",
         "post_session_processing",
         "get_latest_commit",
-        "load_implementation_plan",
+        "load_investigation_plan",
     ]
 
     for func_name in required_functions:

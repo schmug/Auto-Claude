@@ -6,17 +6,17 @@ GitHub Automation Runner
 CLI interface for GitHub automation features:
 - PR Review: AI-powered code review
 - Issue Triage: Classification, duplicate/spam detection
-- Issue Auto-Fix: Automatic spec creation from issues
-- Issue Batching: Group similar issues and create combined specs
+- Issue Auto-Fix: Automatic case creation from issues
+- Issue Batching: Group similar issues and create combined cases
 
 Usage:
-    # Review a specific PR
+    # Review a caseific PR
     python runner.py review-pr 123
 
     # Triage all open issues
     python runner.py triage --apply-labels
 
-    # Triage specific issues
+    # Triage caseific issues
     python runner.py triage 1 2 3
 
     # Start auto-fix for an issue
@@ -28,10 +28,10 @@ Usage:
     # Show auto-fix queue
     python runner.py queue
 
-    # Batch similar issues and create combined specs
+    # Batch similar issues and create combined cases
     python runner.py batch-issues
 
-    # Batch specific issues
+    # Batch caseific issues
     python runner.py batch-issues 1 2 3 4 5
 
     # Show batch status
@@ -46,7 +46,7 @@ import os
 import sys
 from pathlib import Path
 
-# Fix Windows console encoding for Unicode output (emojis, special chars)
+# Fix Windows console encoding for Unicode output (emojis, caseial chars)
 if sys.platform == "win32":
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -210,7 +210,7 @@ async def cmd_review_pr(args) -> int:
             f"[DEBUG] Calling orchestrator.review_pr({args.pr_number})...", flush=True
         )
 
-    # Pass force_review flag if --force was specified
+    # Pass force_review flag if --force was caseified
     force_review = getattr(args, "force", False)
     result = await orchestrator.review_pr(args.pr_number, force_review=force_review)
 
@@ -375,8 +375,8 @@ async def cmd_auto_fix(args) -> int:
     print(f"Auto-Fix State for Issue #{state.issue_number}")
     print(f"{'=' * 60}")
     print(f"Status: {state.status.value}")
-    if state.spec_id:
-        print(f"Spec ID: {state.spec_id}")
+    if state.case_id:
+        print(f"Case ID: {state.case_id}")
     if state.pr_number:
         print(f"PR: #{state.pr_number}")
     if state.error:
@@ -447,7 +447,7 @@ async def cmd_queue(args) -> int:
         status_emoji = {
             "pending": "...",
             "analyzing": "...",
-            "creating_spec": "...",
+            "creating_case": "...",
             "building": "...",
             "qa_review": "...",
             "pr_created": "+++",
@@ -465,7 +465,7 @@ async def cmd_queue(args) -> int:
 
 
 async def cmd_batch_issues(args) -> int:
-    """Batch similar issues and create combined specs."""
+    """Batch similar issues and create combined cases."""
     config = get_config(args)
     config.auto_fix_enabled = True
     orchestrator = GitHubOrchestrator(
@@ -491,8 +491,8 @@ async def cmd_batch_issues(args) -> int:
         print(f"    Issues: {issue_nums}")
         print(f"    Theme: {batch.theme}")
         print(f"    Status: {batch.status.value}")
-        if batch.spec_id:
-            print(f"    Spec: {batch.spec_id}")
+        if batch.case_id:
+            print(f"    Case: {batch.case_id}")
 
     return 0
 
@@ -704,7 +704,7 @@ def main():
         "issues",
         type=int,
         nargs="*",
-        help="Specific issue numbers (or all open if none)",
+        help="Caseific issue numbers (or all open if none)",
     )
     triage_parser.add_argument(
         "--apply-labels",
@@ -731,13 +731,13 @@ def main():
 
     # batch-issues command
     batch_parser = subparsers.add_parser(
-        "batch-issues", help="Batch similar issues and create combined specs"
+        "batch-issues", help="Batch similar issues and create combined cases"
     )
     batch_parser.add_argument(
         "issues",
         type=int,
         nargs="*",
-        help="Specific issue numbers (or all open if none)",
+        help="Caseific issue numbers (or all open if none)",
     )
 
     # batch-status command
@@ -752,7 +752,7 @@ def main():
         "issues",
         type=int,
         nargs="*",
-        help="Specific issue numbers (or all open if none)",
+        help="Caseific issue numbers (or all open if none)",
     )
     analyze_parser.add_argument(
         "--max-issues",

@@ -3,7 +3,7 @@ Command Validators
 ==================
 
 Entry point for command validation. This module provides a unified interface
-to all specialized validators.
+to all caseialized validators.
 
 The validation logic is organized into separate modules:
 - validation_models.py: Type definitions and common types

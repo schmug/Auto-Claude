@@ -2,7 +2,7 @@
 Build Commands
 ==============
 
-CLI commands for building specs and handling the main build flow.
+CLI commands for building cases and handling the main build flow.
 """
 
 import asyncio
@@ -51,7 +51,7 @@ from .input_handlers import (
 
 def handle_build_command(
     project_dir: Path,
-    spec_dir: Path,
+    case_dir: Path,
     model: str,
     max_iterations: int | None,
     verbose: bool,
@@ -67,7 +67,7 @@ def handle_build_command(
 
     Args:
         project_dir: Project root directory
-        spec_dir: Spec directory path
+        case_dir: Case directory path
         model: Model to use (used as default; may be overridden by task_metadata.json)
         max_iterations: Maximum number of iterations (None for unlimited)
         verbose: Enable verbose output
@@ -79,7 +79,7 @@ def handle_build_command(
         base_branch: Base branch for worktree creation (default: current branch)
     """
     # Lazy imports to avoid loading heavy modules
-    from agent import run_autonomous_agent, sync_spec_to_source
+    from agent import run_autonomous_agent, sync_case_to_source
     from debug import (
         debug,
         debug_info,
@@ -93,15 +93,15 @@ def handle_build_command(
     from .utils import print_banner, validate_environment
 
     # Get the resolved model for the planning phase (first phase of build)
-    # This respects task_metadata.json phase configuration from the UI
-    planning_model = get_phase_model(spec_dir, "planning", model)
-    coding_model = get_phase_model(spec_dir, "coding", model)
-    qa_model = get_phase_model(spec_dir, "qa", model)
+    # This recasets task_metadata.json phase configuration from the UI
+    planning_model = get_phase_model(case_dir, "planning", model)
+    coding_model = get_phase_model(case_dir, "coding", model)
+    qa_model = get_phase_model(case_dir, "qa", model)
 
     print_banner()
     print(f"\nProject directory: {project_dir}")
-    print(f"Spec: {spec_dir.name}")
-    # Show phase-specific models if they differ
+    print(f"Case: {case_dir.name}")
+    # Show phase-caseific models if they differ
     if planning_model != coding_model or coding_model != qa_model:
         print(
             f"Models: Planning={planning_model.split('-')[1] if '-' in planning_model else planning_model}, "
@@ -119,12 +119,12 @@ def handle_build_command(
     print()
 
     # Validate environment
-    if not validate_environment(spec_dir):
+    if not validate_environment(case_dir):
         sys.exit(1)
 
     # Check human review approval
-    review_state = ReviewState.load(spec_dir)
-    if not review_state.is_approval_valid(spec_dir):
+    review_state = ReviewState.load(case_dir)
+    if not review_state.is_approval_valid(case_dir):
         if force_bypass_approval:
             # User explicitly bypassed approval check
             print()
@@ -133,27 +133,27 @@ def handle_build_command(
                     f"{icon(Icons.WARNING)} WARNING: Bypassing approval check with --force"
                 )
             )
-            print(muted("This spec has not been approved for building."))
+            print(muted("This case has not been approved for building."))
             print()
         else:
             print()
             content = [
                 bold(f"{icon(Icons.WARNING)} BUILD BLOCKED - REVIEW REQUIRED"),
                 "",
-                "This spec requires human approval before building.",
+                "This case requires human approval before building.",
             ]
 
-            if review_state.approved and not review_state.is_approval_valid(spec_dir):
-                # Spec changed after approval
+            if review_state.approved and not review_state.is_approval_valid(case_dir):
+                # Case changed after approval
                 content.append("")
-                content.append(warning("The spec has been modified since approval."))
+                content.append(warning("The case has been modified since approval."))
                 content.append("Please re-review and re-approve.")
 
             content.extend(
                 [
                     "",
                     highlight("To review and approve:"),
-                    f"  python auto-claude/review.py --spec-dir {spec_dir}",
+                    f"  python auto-sleuth/review.py --case-dir {case_dir}",
                     "",
                     muted("Or use --force to bypass this check (not recommended)."),
                 ]
@@ -167,13 +167,13 @@ def handle_build_command(
         )
 
     # Check for existing build
-    if get_existing_build_worktree(project_dir, spec_dir.name):
+    if get_existing_build_worktree(project_dir, case_dir.name):
         if auto_continue:
             # Non-interactive mode: auto-continue with existing build
             debug("run.py", "Auto-continue mode: continuing with existing build")
             print("Auto-continue: Resuming existing build...")
         else:
-            continue_existing = check_existing_build(project_dir, spec_dir.name)
+            continue_existing = check_existing_build(project_dir, case_dir.name)
             if continue_existing:
                 # Continue with existing worktree
                 pass
@@ -184,12 +184,12 @@ def handle_build_command(
     # Choose workspace (skip for parallel mode - it always uses worktrees)
     working_dir = project_dir
     worktree_manager = None
-    source_spec_dir = None  # Track original spec dir for syncing back from worktree
+    source_case_dir = None  # Track original case dir for syncing back from worktree
 
     # Let user choose workspace mode (or auto-select if --auto-continue)
     workspace_mode = choose_workspace(
         project_dir,
-        spec_dir.name,
+        case_dir.name,
         force_isolated=force_isolated,
         force_direct=force_direct,
         auto_continue=auto_continue,
@@ -198,25 +198,25 @@ def handle_build_command(
     # If base_branch not provided via CLI, try to read from task_metadata.json
     # This ensures the backend uses the branch configured in the frontend
     if base_branch is None:
-        metadata_branch = get_base_branch_from_metadata(spec_dir)
+        metadata_branch = get_base_branch_from_metadata(case_dir)
         if metadata_branch:
             base_branch = metadata_branch
             debug("run.py", f"Using base branch from task metadata: {base_branch}")
 
     if workspace_mode == WorkspaceMode.ISOLATED:
-        # Keep reference to original spec directory for syncing progress back
-        source_spec_dir = spec_dir
+        # Keep reference to original case directory for syncing progress back
+        source_case_dir = case_dir
 
-        working_dir, worktree_manager, localized_spec_dir = setup_workspace(
+        working_dir, worktree_manager, localized_case_dir = setup_workspace(
             project_dir,
-            spec_dir.name,
+            case_dir.name,
             workspace_mode,
-            source_spec_dir=spec_dir,
+            source_case_dir=case_dir,
             base_branch=base_branch,
         )
-        # Use the localized spec directory (inside worktree) for AI access
-        if localized_spec_dir:
-            spec_dir = localized_spec_dir
+        # Use the localized case directory (inside worktree) for AI access
+        if localized_case_dir:
+            case_dir = localized_case_dir
 
     # Run the autonomous agent
     debug_section("run.py", "Starting Build Execution")
@@ -226,7 +226,7 @@ def handle_build_command(
         model=model,
         workspace_mode=str(workspace_mode),
         working_dir=str(working_dir),
-        spec_dir=str(spec_dir),
+        case_dir=str(case_dir),
     )
 
     try:
@@ -235,11 +235,11 @@ def handle_build_command(
         asyncio.run(
             run_autonomous_agent(
                 project_dir=working_dir,  # Use worktree if isolated
-                spec_dir=spec_dir,
+                case_dir=case_dir,
                 model=model,
                 max_iterations=max_iterations,
                 verbose=verbose,
-                source_spec_dir=source_spec_dir,  # For syncing progress back to main project
+                source_case_dir=source_case_dir,  # For syncing progress back to main project
             )
         )
         debug_success("run.py", "Agent execution completed")
@@ -247,7 +247,7 @@ def handle_build_command(
         # Run QA validation BEFORE finalization (while worktree still exists)
         # QA must sign off before the build is considered complete
         qa_approved = True  # Default to approved if QA is skipped
-        if not skip_qa and should_run_qa(spec_dir):
+        if not skip_qa and should_run_qa(case_dir):
             print("\n" + "=" * 70)
             print("  SUBTASKS COMPLETE - STARTING QA VALIDATION")
             print("=" * 70)
@@ -258,7 +258,7 @@ def handle_build_command(
                 qa_approved = asyncio.run(
                     run_qa_validation_loop(
                         project_dir=working_dir,
-                        spec_dir=spec_dir,
+                        case_dir=case_dir,
                         model=model,
                         verbose=verbose,
                     )
@@ -275,21 +275,21 @@ def handle_build_command(
                     print("  ⚠️  QA VALIDATION INCOMPLETE")
                     print("=" * 70)
                     print("\nSome issues require manual attention.")
-                    print(f"See: {spec_dir / 'qa_report.md'}")
-                    print(f"Or:  {spec_dir / 'QA_FIX_REQUEST.md'}")
+                    print(f"See: {case_dir / 'qa_report.md'}")
+                    print(f"Or:  {case_dir / 'QA_FIX_REQUEST.md'}")
                     print(
-                        f"\nResume QA: python auto-claude/run.py --spec {spec_dir.name} --qa\n"
+                        f"\nResume QA: python auto-sleuth/run.py --case {case_dir.name} --qa\n"
                     )
 
                 # Sync implementation plan to main project after QA
                 # This ensures the main project has the latest status (human_review)
-                if sync_spec_to_source(spec_dir, source_spec_dir):
+                if sync_case_to_source(case_dir, source_case_dir):
                     debug_info(
-                        "run.py", "Implementation plan synced to main project after QA"
+                        "run.py", "Investigation plan synced to main project after QA"
                     )
             except KeyboardInterrupt:
                 print("\n\nQA validation paused.")
-                print(f"Resume: python auto-claude/run.py --spec {spec_dir.name} --qa")
+                print(f"Resume: python auto-sleuth/run.py --case {case_dir.name} --qa")
                 qa_approved = False
 
         # Post-build finalization (only for isolated sequential mode)
@@ -297,17 +297,17 @@ def handle_build_command(
         if worktree_manager:
             choice = finalize_workspace(
                 project_dir,
-                spec_dir.name,
+                case_dir.name,
                 worktree_manager,
                 auto_continue=auto_continue,
             )
             handle_workspace_choice(
-                choice, project_dir, spec_dir.name, worktree_manager
+                choice, project_dir, case_dir.name, worktree_manager
             )
 
     except KeyboardInterrupt:
         _handle_build_interrupt(
-            spec_dir=spec_dir,
+            case_dir=case_dir,
             project_dir=project_dir,
             worktree_manager=worktree_manager,
             working_dir=working_dir,
@@ -325,7 +325,7 @@ def handle_build_command(
 
 
 def _handle_build_interrupt(
-    spec_dir: Path,
+    case_dir: Path,
     project_dir: Path,
     worktree_manager,
     working_dir: Path,
@@ -337,7 +337,7 @@ def _handle_build_interrupt(
     Handle keyboard interrupt during build.
 
     Args:
-        spec_dir: Spec directory path
+        case_dir: Case directory path
         project_dir: Project root directory
         worktree_manager: Worktree manager instance (if using isolated mode)
         working_dir: Current working directory
@@ -348,7 +348,7 @@ def _handle_build_interrupt(
     from agent import run_autonomous_agent
 
     # Print paused banner
-    print_paused_banner(spec_dir, spec_dir.name, has_worktree=bool(worktree_manager))
+    print_paused_banner(case_dir, case_dir.name, has_worktree=bool(worktree_manager))
 
     # Update status file
     status_manager = StatusManager(project_dir)
@@ -420,7 +420,7 @@ def _handle_build_interrupt(
 
         if human_input:
             # Save to HUMAN_INPUT.md
-            input_file = spec_dir / "HUMAN_INPUT.md"
+            input_file = case_dir / "HUMAN_INPUT.md"
             input_file.write_text(human_input)
 
             content = [
@@ -446,7 +446,7 @@ def _handle_build_interrupt(
             asyncio.run(
                 run_autonomous_agent(
                     project_dir=working_dir,
-                    spec_dir=spec_dir,
+                    case_dir=case_dir,
                     model=model,
                     max_iterations=max_iterations,
                     verbose=verbose,
@@ -471,7 +471,7 @@ def _handle_build_interrupt(
     content = [
         bold(f"{icon(Icons.PLAY)} TO RESUME"),
         "",
-        f"Run: {highlight(f'python auto-claude/run.py --spec {spec_dir.name}')}",
+        f"Run: {highlight(f'python auto-sleuth/run.py --case {case_dir.name}')}",
     ]
     if worktree_manager:
         content.append("")

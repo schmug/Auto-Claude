@@ -3,8 +3,8 @@
 Workspace Management Package
 =============================
 
-Handles workspace isolation through Git worktrees, where each spec
-gets its own isolated worktree in .auto-claude/worktrees/tasks/{spec-name}/.
+Handles workspace isolation through Git worktrees, where each case
+gets its own isolated worktree in .auto-sleuth/worktrees/tasks/{case-name}/.
 
 This package provides:
 - Workspace setup and configuration
@@ -23,9 +23,9 @@ from pathlib import Path
 # Import merge functions from workspace.py (which coexists with this package)
 # We use importlib to explicitly load workspace.py since Python prefers the package
 _workspace_file = Path(__file__).parent.parent / "workspace.py"
-_spec = importlib.util.spec_from_file_location("workspace_module", _workspace_file)
-_workspace_module = importlib.util.module_from_spec(_spec)
-_spec.loader.exec_module(_workspace_module)
+_case = importlib.util.case_from_file_location("workspace_module", _workspace_file)
+_workspace_module = importlib.util.module_from_case(_case)
+_case.loader.exec_module(_workspace_module)
 merge_existing_build = _workspace_module.merge_existing_build
 _run_parallel_merges = _workspace_module._run_parallel_merges
 
@@ -97,7 +97,7 @@ from .setup import (
     _ensure_timeline_hook_installed,
     _initialize_timeline_tracking,
     choose_workspace,
-    copy_spec_to_worktree,
+    copy_case_to_worktree,
     ensure_timeline_hook_installed,
     initialize_timeline_tracking,
     setup_workspace,
@@ -127,7 +127,7 @@ __all__ = [
     "create_conflict_file_with_git",
     # Setup
     "choose_workspace",
-    "copy_spec_to_worktree",
+    "copy_case_to_worktree",
     "setup_workspace",
     "ensure_timeline_hook_installed",
     "initialize_timeline_tracking",

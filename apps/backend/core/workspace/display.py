@@ -16,10 +16,10 @@ from ui import (
 from worktree import WorktreeManager
 
 
-def show_build_summary(manager: WorktreeManager, spec_name: str) -> None:
+def show_build_summary(manager: WorktreeManager, case_name: str) -> None:
     """Show a summary of what was built."""
-    summary = manager.get_change_summary(spec_name)
-    files = manager.get_changed_files(spec_name)
+    summary = manager.get_change_summary(case_name)
+    files = manager.get_changed_files(case_name)
 
     total = summary["new_files"] + summary["modified_files"] + summary["deleted_files"]
 
@@ -49,9 +49,9 @@ def show_build_summary(manager: WorktreeManager, spec_name: str) -> None:
         )
 
 
-def show_changed_files(manager: WorktreeManager, spec_name: str) -> None:
+def show_changed_files(manager: WorktreeManager, case_name: str) -> None:
     """Show detailed list of changed files."""
-    files = manager.get_changed_files(spec_name)
+    files = manager.get_changed_files(case_name)
 
     if not files:
         print_status("No changes.", "info")
@@ -73,7 +73,7 @@ def show_changed_files(manager: WorktreeManager, spec_name: str) -> None:
 def print_merge_success(
     no_commit: bool,
     stats: dict | None = None,
-    spec_name: str | None = None,
+    case_name: str | None = None,
     keep_worktree: bool = False,
 ) -> None:
     """Print a success message after merge."""
@@ -94,10 +94,10 @@ def print_merge_success(
             lines.append("Regenerate: npm install / pip install / cargo update")
 
         # Add worktree cleanup instructions
-        if keep_worktree and spec_name:
+        if keep_worktree and case_name:
             lines.append("")
             lines.append("Worktree kept for testing. Delete when satisfied:")
-            lines.append(f"  python auto-claude/run.py --spec {spec_name} --discard")
+            lines.append(f"  python auto-sleuth/run.py --case {case_name} --discard")
 
         content = lines
     else:
@@ -130,9 +130,9 @@ def print_merge_success(
                     "Worktree kept for testing. Delete when satisfied:",
                 ]
             )
-            if spec_name:
+            if case_name:
                 lines.append(
-                    f"  python auto-claude/run.py --spec {spec_name} --discard"
+                    f"  python auto-sleuth/run.py --case {case_name} --discard"
                 )
         else:
             lines.extend(

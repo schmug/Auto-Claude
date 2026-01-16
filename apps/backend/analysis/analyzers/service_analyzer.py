@@ -228,7 +228,7 @@ class ServiceAnalyzer(BaseAnalyzer):
             self.analysis["testing"] = "pytest"
 
         # Find test directory
-        for test_dir in ["tests", "test", "__tests__", "spec"]:
+        for test_dir in ["tests", "test", "__tests__", "case"]:
             if self._exists(test_dir):
                 self.analysis["test_directory"] = test_dir
                 break

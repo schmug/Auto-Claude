@@ -8,7 +8,7 @@ This module handles the actual merging of file content:
 - Applying single task changes
 - Combining non-conflicting changes from multiple tasks
 - Finding import locations
-- Extracting content from specific code locations
+- Extracting content from caseific code locations
 """
 
 from __future__ import annotations
@@ -211,7 +211,7 @@ def find_import_end(lines: list[str], file_path: str) -> int:
 
 def extract_location_content(content: str, location: str) -> str:
     """
-    Extract content at a specific location (e.g., function:App).
+    Extract content at a caseific location (e.g., function:App).
 
     Args:
         content: Full file content

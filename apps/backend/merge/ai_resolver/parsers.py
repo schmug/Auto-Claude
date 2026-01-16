@@ -82,7 +82,7 @@ def extract_batch_code_blocks(
     language: str,
 ) -> str | None:
     """
-    Extract code block for a specific location from a batch response.
+    Extract code block for a caseific location from a batch response.
 
     Args:
         response: The batch AI response

@@ -30,7 +30,7 @@ from agents import (
     get_graphiti_context,
     # Utility functions
     get_latest_commit,
-    load_implementation_plan,
+    load_investigation_plan,
     post_session_processing,
     # Session management
     run_agent_session,
@@ -39,7 +39,7 @@ from agents import (
     run_followup_planner,
     save_session_memory,
     save_session_to_graphiti,
-    sync_spec_to_source,
+    sync_case_to_source,
 )
 
 # Ensure all exports are available at module level
@@ -54,10 +54,10 @@ __all__ = [
     "post_session_processing",
     "get_latest_commit",
     "get_commit_count",
-    "load_implementation_plan",
+    "load_investigation_plan",
     "find_subtask_in_plan",
     "find_phase_for_subtask",
-    "sync_spec_to_source",
+    "sync_case_to_source",
     "AUTO_CONTINUE_DELAY_SECONDS",
     "HUMAN_INTERVENTION_FILE",
 ]

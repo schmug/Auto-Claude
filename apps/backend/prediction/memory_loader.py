@@ -15,7 +15,7 @@ class MemoryLoader:
         Initialize the memory loader.
 
         Args:
-            memory_dir: Path to the memory directory (e.g., specs/001/memory/)
+            memory_dir: Path to the memory directory (e.g., cases/001/memory/)
         """
         self.memory_dir = Path(memory_dir)
         self.gotchas_file = self.memory_dir / "gotchas.md"

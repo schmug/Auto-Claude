@@ -29,7 +29,7 @@ Perform a focused, efficient follow-up review by:
 - ❌ "This code from commit `fix: something (#584)` has an issue" - BAD (different PR)
 
 **Why this matters:**
-When authors merge the base branch into their feature branch, the commit range includes commits from other PRs. The context gathering system filters these out, but if any slip through, recognize them as out-of-scope.
+When authors merge the base branch into their remediation branch, the commit range includes commits from other PRs. The context gathering system filters these out, but if any slip through, recognize them as out-of-scope.
 
 ## Merge Conflicts
 

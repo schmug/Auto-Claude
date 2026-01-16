@@ -1,0 +1,109 @@
+#!/usr/bin/env python3
+"""
+Case Validation System - Entry Point
+=====================================
+
+Validates case outputs at each checkpoint to ensure reliability.
+This is the enforcement layer that catches errors before they propagate.
+
+Usage:
+    python auto-sleuth/validate_case.py --case-dir auto-sleuth/cases/001-feature/ --checkpoint prereqs
+    python auto-sleuth/validate_case.py --case-dir auto-sleuth/cases/001-feature/ --checkpoint context
+    python auto-sleuth/validate_case.py --case-dir auto-sleuth/cases/001-feature/ --checkpoint case
+    python auto-sleuth/validate_case.py --case-dir auto-sleuth/cases/001-feature/ --checkpoint plan
+    python auto-sleuth/validate_case.py --case-dir auto-sleuth/cases/001-feature/ --checkpoint all
+"""
+
+import argparse
+import json
+import sys
+from pathlib import Path
+
+from validate_pkg import CaseValidator, auto_fix_plan
+
+
+def main() -> None:
+    """CLI entry point."""
+    parser = argparse.ArgumentParser(description="Validate case outputs at checkpoints")
+    parser.add_argument(
+        "--case-dir",
+        type=Path,
+        required=True,
+        help="Directory containing case files",
+    )
+    parser.add_argument(
+        "--checkpoint",
+        choices=["prereqs", "context", "case", "plan", "all"],
+        default="all",
+        help="Which checkpoint to validate",
+    )
+    parser.add_argument(
+        "--auto-fix",
+        action="store_true",
+        help="Attempt to auto-fix common issues",
+    )
+    parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Output results as JSON",
+    )
+
+    args = parser.parse_args()
+
+    validator = CaseValidator(args.case_dir)
+
+    if args.auto_fix:
+        auto_fix_plan(args.case_dir)
+
+    # Run validations
+    if args.checkpoint == "all":
+        results = validator.validate_all()
+    elif args.checkpoint == "prereqs":
+        results = [validator.validate_prereqs()]
+    elif args.checkpoint == "context":
+        results = [validator.validate_context()]
+    elif args.checkpoint == "case":
+        results = [validator.validate_case_document()]
+    elif args.checkpoint == "plan":
+        results = [validator.validate_investigation_plan()]
+
+    # Output
+    all_valid = all(r.valid for r in results)
+
+    if args.json:
+        output = {
+            "valid": all_valid,
+            "results": [
+                {
+                    "checkpoint": r.checkpoint,
+                    "valid": r.valid,
+                    "errors": r.errors,
+                    "warnings": r.warnings,
+                    "fixes": r.fixes,
+                }
+                for r in results
+            ],
+        }
+        print(json.dumps(output, indent=2))
+    else:
+        print("=" * 60)
+        print("  SPEC VALIDATION REPORT")
+        print("=" * 60)
+        print()
+
+        for result in results:
+            print(result)
+            print()
+
+        print("=" * 60)
+        if all_valid:
+            print("  ✓ ALL CHECKPOINTS PASSED")
+        else:
+            print("  ✗ VALIDATION FAILED - See errors above")
+        print("=" * 60)
+
+    sys.exit(0 if all_valid else 1)
+
+
+if __name__ == "__main__":
+    main()

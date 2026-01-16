@@ -108,7 +108,7 @@ def invalidate_project_cache(project_dir: Path | None = None) -> None:
     Invalidate the project index cache.
 
     Args:
-        project_dir: Specific project to invalidate, or None to clear all
+        project_dir: Caseific project to invalidate, or None to clear all
     """
     with _CACHE_LOCK:
         if project_dir is None:
@@ -127,7 +127,7 @@ from agents.tools_pkg import (
     GRAPHITI_MCP_TOOLS,
     LINEAR_TOOLS,
     PUPPETEER_TOOLS,
-    create_auto_claude_mcp_server,
+    create_auto_sleuth_mcp_server,
     get_allowed_tools,
     get_required_mcp_servers,
     is_tools_available,
@@ -218,7 +218,7 @@ def _validate_custom_mcp_server(server: dict) -> bool:
         "-r",  # Node.js require shorthand
     }
 
-    # Type-specific validation
+    # Type-caseific validation
     if server["type"] == "command":
         if not isinstance(server.get("command"), str) or not server["command"]:
             logger.warning("Command-type MCP server missing 'command' field")
@@ -303,7 +303,7 @@ def _validate_custom_mcp_server(server: dict) -> bool:
 
 def load_project_mcp_config(project_dir: Path) -> dict:
     """
-    Load MCP configuration from project's .auto-claude/.env file.
+    Load MCP configuration from project's .auto-sleuth/.env file.
 
     Returns a dict of MCP-related env vars:
     - CONTEXT7_ENABLED (default: true)
@@ -320,7 +320,7 @@ def load_project_mcp_config(project_dir: Path) -> dict:
     Returns:
         Dict of MCP configuration values (string values, except CUSTOM_MCP_SERVERS which is parsed JSON)
     """
-    env_path = project_dir / ".auto-claude" / ".env"
+    env_path = project_dir / ".auto-sleuth" / ".env"
     if not env_path.exists():
         return {}
 
@@ -436,7 +436,7 @@ def load_claude_md(project_dir: Path) -> str | None:
 
 def create_client(
     project_dir: Path,
-    spec_dir: Path,
+    case_dir: Path,
     model: str,
     agent_type: str = "coder",
     max_thinking_tokens: int | None = None,
@@ -452,12 +452,12 @@ def create_client(
 
     Args:
         project_dir: Root directory for the project (working directory)
-        spec_dir: Directory containing the spec (for settings file)
+        case_dir: Directory containing the case (for settings file)
         model: Claude model to use
         agent_type: Agent type identifier from AGENT_CONFIGS
-                   (e.g., 'coder', 'planner', 'qa_reviewer', 'spec_gatherer')
+                   (e.g., 'coder', 'planner', 'qa_reviewer', 'case_gatherer')
         max_thinking_tokens: Token budget for extended thinking (None = disabled)
-                            - ultrathink: 16000 (spec creation)
+                            - ultrathink: 16000 (case creation)
                             - high: 10000 (QA review)
                             - medium: 5000 (planning, validation)
                             - None: disabled (coding)
@@ -499,20 +499,20 @@ def create_client(
     linear_enabled = is_linear_enabled()
     linear_api_key = os.environ.get("LINEAR_API_KEY", "")
 
-    # Check if custom auto-claude tools are available
-    auto_claude_tools_enabled = is_tools_available()
+    # Check if custom auto-sleuth tools are available
+    auto_sleuth_tools_enabled = is_tools_available()
 
     # Load project capabilities for dynamic MCP tool selection
     # This enables context-aware tool injection based on project type
     # Uses caching to avoid reloading on every create_client() call
     project_index, project_capabilities = _get_cached_project_data(project_dir)
 
-    # Load per-project MCP configuration from .auto-claude/.env
+    # Load per-project MCP configuration from .auto-sleuth/.env
     mcp_config = load_project_mcp_config(project_dir)
 
     # Get allowed tools using phase-aware configuration
-    # This respects AGENT_CONFIGS and only includes tools the agent needs
-    # Also respects per-project MCP configuration
+    # This recasets AGENT_CONFIGS and only includes tools the agent needs
+    # Also recasets per-project MCP configuration
     allowed_tools_list = get_allowed_tools(
         agent_type,
         project_capabilities,
@@ -522,7 +522,7 @@ def create_client(
 
     # Get required MCP servers for this agent type
     # This is the key optimization - only start servers the agent needs
-    # Now also respects per-project MCP configuration
+    # Now also recasets per-project MCP configuration
     required_servers = get_required_mcp_servers(
         agent_type,
         project_capabilities,
@@ -544,23 +544,23 @@ def create_client(
     # Note: Using both relative paths ("./**") and absolute paths to handle
     # cases where Claude uses absolute paths for file operations
     project_path_str = str(project_dir.resolve())
-    spec_path_str = str(spec_dir.resolve())
+    case_path_str = str(case_dir.resolve())
 
     # Detect if we're running in a worktree and get the original project directory
     # Worktrees are located in either:
-    # - .auto-claude/worktrees/tasks/{spec-name}/ (new location)
-    # - .worktrees/{spec-name}/ (legacy location)
+    # - .auto-sleuth/worktrees/tasks/{case-name}/ (new location)
+    # - .worktrees/{case-name}/ (legacy location)
     # When running in a worktree, we need to allow access to both the worktree
-    # and the original project's .auto-claude/ directory for spec files
+    # and the original project's .auto-sleuth/ directory for case files
     original_project_permissions = []
     resolved_project_path = project_dir.resolve()
 
     # Check for worktree paths and extract original project directory
-    # This handles spec worktrees, PR review worktrees, and legacy worktrees
+    # This handles case worktrees, PR review worktrees, and legacy worktrees
     # Note: Windows paths are normalized to forward slashes before comparison
     worktree_markers = [
-        "/.auto-claude/worktrees/tasks/",  # Spec/task worktrees
-        "/.auto-claude/github/pr/worktrees/",  # PR review worktrees
+        "/.auto-sleuth/worktrees/tasks/",  # Case/task worktrees
+        "/.auto-sleuth/github/pr/worktrees/",  # PR review worktrees
         "/.worktrees/",  # Legacy worktree location
     ]
     project_path_posix = str(resolved_project_path).replace("\\", "/")
@@ -575,7 +575,7 @@ def create_client(
             # Grant permissions for relevant directories in the original project
             permission_ops = ["Read", "Write", "Edit", "Glob", "Grep"]
             dirs_to_permit = [
-                original_project_dir / ".auto-claude",
+                original_project_dir / ".auto-sleuth",
                 original_project_dir / ".worktrees",  # Legacy support
             ]
 
@@ -605,11 +605,11 @@ def create_client(
                 f"Edit({project_path_str}/**)",
                 f"Glob({project_path_str}/**)",
                 f"Grep({project_path_str}/**)",
-                # Allow spec directory explicitly (needed when spec is in worktree)
-                f"Read({spec_path_str}/**)",
-                f"Write({spec_path_str}/**)",
-                f"Edit({spec_path_str}/**)",
-                # Allow original project's .auto-claude/ and .worktrees/ directories
+                # Allow case directory explicitly (needed when case is in worktree)
+                f"Read({case_path_str}/**)",
+                f"Write({case_path_str}/**)",
+                f"Edit({case_path_str}/**)",
+                # Allow original project's .auto-sleuth/ and .worktrees/ directories
                 # when running in a worktree (fixes issue #385 - permission errors)
                 *original_project_permissions,
                 # Bash permission granted here, but actual commands are validated
@@ -670,8 +670,8 @@ def create_client(
         mcp_servers_list.append("linear (project management)")
     if graphiti_mcp_enabled:
         mcp_servers_list.append("graphiti-memory (knowledge graph)")
-    if "auto-claude" in required_servers and auto_claude_tools_enabled:
-        mcp_servers_list.append(f"auto-claude ({agent_type} tools)")
+    if "auto-sleuth" in required_servers and auto_sleuth_tools_enabled:
+        mcp_servers_list.append(f"auto-sleuth ({agent_type} tools)")
     if mcp_servers_list:
         print(f"   - MCP servers: {', '.join(mcp_servers_list)}")
     else:
@@ -726,11 +726,11 @@ def create_client(
             "url": get_graphiti_mcp_url(),
         }
 
-    # Add custom auto-claude MCP server if required and available
-    if "auto-claude" in required_servers and auto_claude_tools_enabled:
-        auto_claude_mcp_server = create_auto_claude_mcp_server(spec_dir, project_dir)
-        if auto_claude_mcp_server:
-            mcp_servers["auto-claude"] = auto_claude_mcp_server
+    # Add custom auto-sleuth MCP server if required and available
+    if "auto-sleuth" in required_servers and auto_sleuth_tools_enabled:
+        auto_sleuth_mcp_server = create_auto_sleuth_mcp_server(case_dir, project_dir)
+        if auto_sleuth_mcp_server:
+            mcp_servers["auto-sleuth"] = auto_sleuth_mcp_server
 
     # Add custom MCP servers from project config
     custom_servers = mcp_config.get("CUSTOM_MCP_SERVERS", [])
@@ -804,12 +804,12 @@ def create_client(
         "enable_file_checkpointing": True,
     }
 
-    # Add structured output format if specified
+    # Add structured output format if caseified
     # See: https://platform.claude.com/docs/en/agent-sdk/structured-outputs
     if output_format:
         options_kwargs["output_format"] = output_format
 
-    # Add subagent definitions if specified
+    # Add subagent definitions if caseified
     # See: https://platform.claude.com/docs/en/agent-sdk/subagents
     if agents:
         options_kwargs["agents"] = agents

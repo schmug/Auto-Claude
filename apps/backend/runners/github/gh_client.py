@@ -1109,7 +1109,7 @@ class GHClient:
         reviewed_file_blobs: dict[str, str] | None = None,
     ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
         """
-        Get files and commits that are part of the PR and changed since a specific commit.
+        Get files and commits that are part of the PR and changed since a caseific commit.
 
         This method solves the "merge introduced commits" problem by:
         1. Getting the canonical list of PR files (excludes files from merged branches)

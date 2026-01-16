@@ -1,8 +1,8 @@
 """
-Auto Claude CLI - Main Entry Point
+Auto Sleuth CLI - Main Entry Point
 ===================================
 
-Command-line interface for the Auto Claude autonomous coding framework.
+Command-line interface for the Auto Sleuth autonomous coding framework.
 """
 
 import argparse
@@ -28,10 +28,10 @@ from .qa_commands import (
     handle_qa_status_command,
     handle_review_status_command,
 )
-from .spec_commands import print_specs_list
+from .case_commands import print_cases_list
 from .utils import (
     DEFAULT_MODEL,
-    find_spec,
+    find_case,
     get_project_dir,
     print_banner,
     setup_environment,
@@ -49,32 +49,32 @@ from .workspace_commands import (
 def parse_args() -> argparse.Namespace:
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(
-        description="Auto Claude Framework - Autonomous multi-session coding agent",
+        description="Auto Sleuth Framework - Autonomous multi-session coding agent",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  # List all specs
-  python auto-claude/run.py --list
+  # List all cases
+  python auto-sleuth/run.py --list
 
-  # Run a specific spec (by number or full name)
-  python auto-claude/run.py --spec 001
-  python auto-claude/run.py --spec 001-initial-app
+  # Run a caseific case (by number or full name)
+  python auto-sleuth/run.py --case 001
+  python auto-sleuth/run.py --case 001-initial-app
 
   # Workspace management (after build completes)
-  python auto-claude/run.py --spec 001 --merge     # Add build to your project
-  python auto-claude/run.py --spec 001 --review    # See what was built
-  python auto-claude/run.py --spec 001 --discard   # Delete build (with confirmation)
+  python auto-sleuth/run.py --case 001 --merge     # Add build to your project
+  python auto-sleuth/run.py --case 001 --review    # See what was built
+  python auto-sleuth/run.py --case 001 --discard   # Delete build (with confirmation)
 
   # Advanced options
-  python auto-claude/run.py --spec 001 --direct       # Skip workspace isolation
-  python auto-claude/run.py --spec 001 --isolated     # Force workspace isolation
+  python auto-sleuth/run.py --case 001 --direct       # Skip workspace isolation
+  python auto-sleuth/run.py --case 001 --isolated     # Force workspace isolation
 
   # Status checks
-  python auto-claude/run.py --spec 001 --review-status  # Check human review status
-  python auto-claude/run.py --spec 001 --qa-status      # Check QA validation status
+  python auto-sleuth/run.py --case 001 --review-status  # Check human review status
+  python auto-sleuth/run.py --case 001 --qa-status      # Check QA validation status
 
 Prerequisites:
-  1. Create a spec first: claude /spec
+  1. Create a case first: claude /case
   2. Run 'claude setup-token' and set CLAUDE_CODE_OAUTH_TOKEN
 
 Environment Variables:
@@ -87,14 +87,14 @@ Environment Variables:
     parser.add_argument(
         "--list",
         action="store_true",
-        help="List all available specs and their status",
+        help="List all available cases and their status",
     )
 
     parser.add_argument(
-        "--spec",
+        "--case",
         type=str,
         default=None,
-        help="Spec to run (e.g., '001' or '001-feature-name')",
+        help="Case to run (e.g., '001' or '001-feature-name')",
     )
 
     parser.add_argument(
@@ -171,7 +171,7 @@ Environment Variables:
         "--pr-title",
         type=str,
         metavar="TITLE",
-        help="With --create-pr: custom PR title (default: generated from spec name)",
+        help="With --create-pr: custom PR title (default: generated from case name)",
     )
     parser.add_argument(
         "--pr-draft",
@@ -200,7 +200,7 @@ Environment Variables:
     parser.add_argument(
         "--qa-status",
         action="store_true",
-        help="Show QA validation status for a spec",
+        help="Show QA validation status for a case",
     )
     parser.add_argument(
         "--skip-qa",
@@ -212,14 +212,14 @@ Environment Variables:
     parser.add_argument(
         "--followup",
         action="store_true",
-        help="Add follow-up tasks to a completed spec (extends existing implementation plan)",
+        help="Add follow-up tasks to a completed case (extends existing investigation plan)",
     )
 
     # Review options
     parser.add_argument(
         "--review-status",
         action="store_true",
-        help="Show human review/approval status for a spec",
+        help="Show human review/approval status for a case",
     )
 
     # Non-interactive mode (for UI/automation)
@@ -233,12 +233,12 @@ Environment Variables:
     parser.add_argument(
         "--list-worktrees",
         action="store_true",
-        help="List all spec worktrees and their status",
+        help="List all case worktrees and their status",
     )
     parser.add_argument(
         "--cleanup-worktrees",
         action="store_true",
-        help="Remove all spec worktrees and their branches (with confirmation)",
+        help="Remove all case worktrees and their branches (with confirmation)",
     )
 
     # Force bypass
@@ -267,12 +267,12 @@ Environment Variables:
     parser.add_argument(
         "--batch-status",
         action="store_true",
-        help="Show status of all specs in the project",
+        help="Show status of all cases in the project",
     )
     parser.add_argument(
         "--batch-cleanup",
         action="store_true",
-        help="Clean up completed specs (dry-run by default)",
+        help="Clean up completed cases (dry-run by default)",
     )
     parser.add_argument(
         "--no-dry-run",
@@ -308,7 +308,7 @@ def main() -> None:
     # Handle --list command
     if args.list:
         print_banner()
-        print_specs_list(project_dir)
+        print_cases_list(project_dir)
         return
 
     # Handle --list-worktrees command
@@ -334,36 +334,36 @@ def main() -> None:
         handle_batch_cleanup_command(str(project_dir), dry_run=not args.no_dry_run)
         return
 
-    # Require --spec if not listing
-    if not args.spec:
+    # Require --case if not listing
+    if not args.case:
         print_banner()
-        print("\nError: --spec is required")
+        print("\nError: --case is required")
         print("\nUsage:")
-        print("  python auto-claude/run.py --list           # See all specs")
-        print("  python auto-claude/run.py --spec 001       # Run a spec")
-        print("\nCreate a new spec with:")
-        print("  claude /spec")
+        print("  python auto-sleuth/run.py --list           # See all cases")
+        print("  python auto-sleuth/run.py --case 001       # Run a case")
+        print("\nCreate a new case with:")
+        print("  claude /case")
         sys.exit(1)
 
-    # Find the spec
-    debug("run.py", "Finding spec", spec_identifier=args.spec)
-    spec_dir = find_spec(project_dir, args.spec)
-    if not spec_dir:
-        debug_error("run.py", "Spec not found", spec=args.spec)
+    # Find the case
+    debug("run.py", "Finding case", case_identifier=args.case)
+    case_dir = find_case(project_dir, args.case)
+    if not case_dir:
+        debug_error("run.py", "Case not found", case=args.case)
         print_banner()
-        print(f"\nError: Spec '{args.spec}' not found")
-        print("\nAvailable specs:")
-        print_specs_list(project_dir)
+        print(f"\nError: Case '{args.case}' not found")
+        print("\nAvailable cases:")
+        print_cases_list(project_dir)
         sys.exit(1)
 
-    debug_success("run.py", "Spec found", spec_dir=str(spec_dir))
+    debug_success("run.py", "Case found", case_dir=str(case_dir))
 
     # Handle build management commands
     if args.merge_preview:
         from cli.workspace_commands import handle_merge_preview_command
 
         result = handle_merge_preview_command(
-            project_dir, spec_dir.name, base_branch=args.base_branch
+            project_dir, case_dir.name, base_branch=args.base_branch
         )
         # Output as JSON for the UI to parse
         import json
@@ -374,7 +374,7 @@ def main() -> None:
     if args.merge:
         success = handle_merge_command(
             project_dir,
-            spec_dir.name,
+            case_dir.name,
             no_commit=args.no_commit,
             base_branch=args.base_branch,
         )
@@ -383,11 +383,11 @@ def main() -> None:
         return
 
     if args.review:
-        handle_review_command(project_dir, spec_dir.name)
+        handle_review_command(project_dir, case_dir.name)
         return
 
     if args.discard:
-        handle_discard_command(project_dir, spec_dir.name)
+        handle_discard_command(project_dir, case_dir.name)
         return
 
     if args.create_pr:
@@ -395,7 +395,7 @@ def main() -> None:
         # handles base branch detection internally when target_branch is None
         result = handle_create_pr_command(
             project_dir=project_dir,
-            spec_name=spec_dir.name,
+            case_name=case_dir.name,
             target_branch=args.pr_target,
             title=args.pr_title,
             draft=args.pr_draft,
@@ -407,17 +407,17 @@ def main() -> None:
 
     # Handle QA commands
     if args.qa_status:
-        handle_qa_status_command(spec_dir)
+        handle_qa_status_command(case_dir)
         return
 
     if args.review_status:
-        handle_review_status_command(spec_dir)
+        handle_review_status_command(case_dir)
         return
 
     if args.qa:
         handle_qa_command(
             project_dir=project_dir,
-            spec_dir=spec_dir,
+            case_dir=case_dir,
             model=model,
             verbose=args.verbose,
         )
@@ -427,7 +427,7 @@ def main() -> None:
     if args.followup:
         handle_followup_command(
             project_dir=project_dir,
-            spec_dir=spec_dir,
+            case_dir=case_dir,
             model=model,
             verbose=args.verbose,
         )
@@ -436,7 +436,7 @@ def main() -> None:
     # Normal build flow
     handle_build_command(
         project_dir=project_dir,
-        spec_dir=spec_dir,
+        case_dir=case_dir,
         model=model,
         max_iterations=args.max_iterations,
         verbose=args.verbose,

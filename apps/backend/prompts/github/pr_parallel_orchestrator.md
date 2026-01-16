@@ -64,7 +64,7 @@ You have access to these specialized review agents via the Task tool:
 
 Analyze the PR thoroughly:
 
-1. **Understand the Goal**: What does this PR claim to do? Bug fix? Feature? Refactor?
+1. **Understand the Goal**: What does this PR claim to do? Bug fix? Remediation? Refactor?
 2. **Assess Scope**: How many files? What types? What areas of the codebase?
 3. **Identify Risk Areas**: Security-sensitive? Complex logic? New patterns?
 4. **Check for AI Comments**: Are there existing AI reviewer comments to triage?

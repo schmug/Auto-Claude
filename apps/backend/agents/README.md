@@ -7,7 +7,7 @@ Modular agent system for autonomous coding. This module refactors the original m
 The agent system is now organized by concern:
 
 ```
-auto-claude/agents/
+auto-sleuth/agents/
 ├── __init__.py          # Public API exports
 ├── base.py              # Shared constants and imports
 ├── utils.py             # Git operations and plan management
@@ -25,7 +25,7 @@ auto-claude/agents/
 
 ### `utils.py` (3.6 KB)
 - Git operations: `get_latest_commit()`, `get_commit_count()`
-- Plan management: `load_implementation_plan()`, `find_subtask_in_plan()`, `find_phase_for_subtask()`
+- Plan management: `load_investigation_plan()`, `find_subtask_in_plan()`, `find_phase_for_subtask()`
 - Workspace sync: `sync_spec_to_source()`
 
 ### `memory.py` (13 KB)
@@ -72,7 +72,7 @@ from agents import (
 
     # Utilities
     get_latest_commit,
-    load_implementation_plan,
+    load_investigation_plan,
     sync_spec_to_source,
 )
 ```
@@ -124,7 +124,7 @@ memory.py
 Run the verification script to test the refactoring:
 
 ```bash
-python3 auto-claude/agents/test_refactoring.py
+python3 auto-sleuth/agents/test_refactoring.py
 ```
 
 This verifies:

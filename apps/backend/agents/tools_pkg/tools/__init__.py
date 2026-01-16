@@ -1,5 +1,5 @@
 """
-Auto-Claude MCP Tools
+Auto-Sleuth MCP Tools
 =====================
 
 Individual tool implementations organized by functionality.

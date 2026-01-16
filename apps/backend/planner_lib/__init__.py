@@ -1,8 +1,8 @@
 """
-Implementation Planner Package
+Investigation Planner Package
 ===============================
 
-Generates implementation plans from specs by analyzing the task and codebase.
+Generates implementation plans from cases by analyzing the task and codebase.
 """
 
 from .context import ContextLoader

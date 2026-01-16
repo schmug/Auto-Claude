@@ -22,9 +22,9 @@ from pathlib import Path
 services_dir = Path(__file__).parent / "services"
 module_path = services_dir / "pr_worktree_manager.py"
 
-spec = importlib.util.spec_from_file_location("pr_worktree_manager", module_path)
-pr_worktree_module = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(pr_worktree_module)
+case = importlib.util.case_from_file_location("pr_worktree_manager", module_path)
+pr_worktree_module = importlib.util.module_from_case(case)
+case.loader.exec_module(pr_worktree_module)
 
 PRWorktreeManager = pr_worktree_module.PRWorktreeManager
 DEFAULT_PR_WORKTREE_MAX_AGE_DAYS = pr_worktree_module.DEFAULT_PR_WORKTREE_MAX_AGE_DAYS
@@ -172,7 +172,7 @@ Environment variables:
 
         # Create manager
         manager = PRWorktreeManager(
-            project_dir=project_dir, worktree_dir=".auto-claude/github/pr/worktrees"
+            project_dir=project_dir, worktree_dir=".auto-sleuth/github/pr/worktrees"
         )
 
         # Execute actions

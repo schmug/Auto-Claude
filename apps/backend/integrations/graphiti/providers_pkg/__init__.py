@@ -8,7 +8,7 @@ Supports multiple providers: OpenAI, Anthropic, Azure OpenAI, and Ollama.
 This package provides:
 - Lazy imports to avoid ImportError when provider packages not installed
 - Factory functions that create the correct client based on provider selection
-- Provider-specific configuration validation
+- Provider-caseific configuration validation
 - Graceful error handling with helpful messages
 - Health checks and validation utilities
 - Convenience functions for graph-based memory queries

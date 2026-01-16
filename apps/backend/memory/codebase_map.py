@@ -17,7 +17,7 @@ from .paths import get_memory_dir
 logger = logging.getLogger(__name__)
 
 
-def update_codebase_map(spec_dir: Path, discoveries: dict[str, str]) -> None:
+def update_codebase_map(case_dir: Path, discoveries: dict[str, str]) -> None:
     """
     Update the codebase map with newly discovered file purposes.
 
@@ -25,14 +25,14 @@ def update_codebase_map(spec_dir: Path, discoveries: dict[str, str]) -> None:
     already exists, its purpose will be updated.
 
     Args:
-        spec_dir: Path to spec directory
+        case_dir: Path to case directory
         discoveries: Dictionary mapping file paths to their purposes
             Example: {
                 "src/api/auth.py": "Handles JWT authentication",
                 "src/models/user.py": "User database model"
             }
     """
-    memory_dir = get_memory_dir(spec_dir)
+    memory_dir = get_memory_dir(case_dir)
     map_file = memory_dir / "codebase_map.json"
 
     # Load existing map or create new
@@ -64,7 +64,7 @@ def update_codebase_map(spec_dir: Path, discoveries: dict[str, str]) -> None:
     # Also save to Graphiti if enabled
     if is_graphiti_memory_enabled() and discoveries:
         try:
-            graphiti = get_graphiti_memory(spec_dir)
+            graphiti = get_graphiti_memory(case_dir)
             if graphiti:
                 run_async(graphiti.save_codebase_discoveries(discoveries))
                 logger.info("Codebase discoveries also saved to Graphiti")
@@ -72,18 +72,18 @@ def update_codebase_map(spec_dir: Path, discoveries: dict[str, str]) -> None:
             logger.warning(f"Graphiti codebase save failed: {e}")
 
 
-def load_codebase_map(spec_dir: Path) -> dict[str, str]:
+def load_codebase_map(case_dir: Path) -> dict[str, str]:
     """
     Load the codebase map.
 
     Args:
-        spec_dir: Path to spec directory
+        case_dir: Path to case directory
 
     Returns:
         Dictionary mapping file paths to their purposes.
         Returns empty dict if no map exists.
     """
-    memory_dir = get_memory_dir(spec_dir)
+    memory_dir = get_memory_dir(case_dir)
     map_file = memory_dir / "codebase_map.json"
 
     if not map_file.exists():

@@ -15,7 +15,7 @@ from .paths import get_memory_dir
 logger = logging.getLogger(__name__)
 
 
-def append_gotcha(spec_dir: Path, gotcha: str) -> None:
+def append_gotcha(case_dir: Path, gotcha: str) -> None:
     """
     Append a gotcha (pitfall to avoid) to the gotchas list.
 
@@ -23,14 +23,14 @@ def append_gotcha(spec_dir: Path, gotcha: str) -> None:
     it won't be added again.
 
     Args:
-        spec_dir: Path to spec directory
+        case_dir: Path to case directory
         gotcha: Description of the pitfall to avoid
 
     Example:
-        append_gotcha(spec_dir, "Database connections must be closed in workers")
-        append_gotcha(spec_dir, "API rate limits: 100 req/min per IP")
+        append_gotcha(case_dir, "Database connections must be closed in workers")
+        append_gotcha(case_dir, "API rate limits: 100 req/min per IP")
     """
-    memory_dir = get_memory_dir(spec_dir)
+    memory_dir = get_memory_dir(case_dir)
     gotchas_file = memory_dir / "gotchas.md"
 
     # Load existing gotchas
@@ -57,24 +57,24 @@ def append_gotcha(spec_dir: Path, gotcha: str) -> None:
         # Also save to Graphiti if enabled
         if is_graphiti_memory_enabled():
             try:
-                graphiti = get_graphiti_memory(spec_dir)
+                graphiti = get_graphiti_memory(case_dir)
                 if graphiti:
                     run_async(graphiti.save_gotcha(gotcha_stripped))
             except Exception as e:
                 logger.warning(f"Graphiti gotcha save failed: {e}")
 
 
-def load_gotchas(spec_dir: Path) -> list[str]:
+def load_gotchas(case_dir: Path) -> list[str]:
     """
     Load all gotchas.
 
     Args:
-        spec_dir: Path to spec directory
+        case_dir: Path to case directory
 
     Returns:
         List of gotcha strings
     """
-    memory_dir = get_memory_dir(spec_dir)
+    memory_dir = get_memory_dir(case_dir)
     gotchas_file = memory_dir / "gotchas.md"
 
     if not gotchas_file.exists():
@@ -91,7 +91,7 @@ def load_gotchas(spec_dir: Path) -> list[str]:
     return gotchas
 
 
-def append_pattern(spec_dir: Path, pattern: str) -> None:
+def append_pattern(case_dir: Path, pattern: str) -> None:
     """
     Append a code pattern to follow.
 
@@ -99,14 +99,14 @@ def append_pattern(spec_dir: Path, pattern: str) -> None:
     it won't be added again.
 
     Args:
-        spec_dir: Path to spec directory
+        case_dir: Path to case directory
         pattern: Description of the code pattern
 
     Example:
-        append_pattern(spec_dir, "Use try/except with specific exceptions")
-        append_pattern(spec_dir, "All API responses use {success: bool, data: any, error: string}")
+        append_pattern(case_dir, "Use try/except with caseific exceptions")
+        append_pattern(case_dir, "All API responses use {success: bool, data: any, error: string}")
     """
-    memory_dir = get_memory_dir(spec_dir)
+    memory_dir = get_memory_dir(case_dir)
     patterns_file = memory_dir / "patterns.md"
 
     # Load existing patterns
@@ -133,24 +133,24 @@ def append_pattern(spec_dir: Path, pattern: str) -> None:
         # Also save to Graphiti if enabled
         if is_graphiti_memory_enabled():
             try:
-                graphiti = get_graphiti_memory(spec_dir)
+                graphiti = get_graphiti_memory(case_dir)
                 if graphiti:
                     run_async(graphiti.save_pattern(pattern_stripped))
             except Exception as e:
                 logger.warning(f"Graphiti pattern save failed: {e}")
 
 
-def load_patterns(spec_dir: Path) -> list[str]:
+def load_patterns(case_dir: Path) -> list[str]:
     """
     Load all code patterns.
 
     Args:
-        spec_dir: Path to spec directory
+        case_dir: Path to case directory
 
     Returns:
         List of pattern strings
     """
-    memory_dir = get_memory_dir(spec_dir)
+    memory_dir = get_memory_dir(case_dir)
     patterns_file = memory_dir / "patterns.md"
 
     if not patterns_file.exists():

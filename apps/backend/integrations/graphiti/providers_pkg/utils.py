@@ -30,20 +30,20 @@ async def get_graph_hints(
     query: str,
     project_id: str,
     max_results: int = 10,
-    spec_dir: Optional["Path"] = None,
+    case_dir: Optional["Path"] = None,
 ) -> list[dict]:
     """
     Get relevant hints from the Graphiti knowledge graph.
 
     This is a convenience function for querying historical context
-    from the memory system. Used by spec_runner, ideation_runner,
+    from the memory system. Used by case_runner, ideation_runner,
     and roadmap_runner to inject historical insights.
 
     Args:
         query: Search query (e.g., "authentication patterns", "API design")
         project_id: Project identifier for scoping results
         max_results: Maximum number of hints to return
-        spec_dir: Optional spec directory for loading memory instance
+        case_dir: Optional case directory for loading memory instance
 
     Returns:
         List of hint dictionaries with keys:
@@ -67,16 +67,16 @@ async def get_graph_hints(
         # Determine project directory from project_id or use current dir
         project_dir = Path.cwd()
 
-        # Use spec_dir if provided, otherwise create a temp context
-        if spec_dir is None:
-            # Create a temporary spec dir for the query
+        # Use case_dir if provided, otherwise create a temp context
+        if case_dir is None:
+            # Create a temporary case dir for the query
             import tempfile
 
-            spec_dir = Path(tempfile.mkdtemp(prefix="graphiti_query_"))
+            case_dir = Path(tempfile.mkdtemp(prefix="graphiti_query_"))
 
-        # Create memory instance with project-level scope for cross-spec hints
+        # Create memory instance with project-level scope for cross-case hints
         memory = GraphitiMemory(
-            spec_dir=spec_dir,
+            case_dir=case_dir,
             project_dir=project_dir,
             group_id_mode=GroupIdMode.PROJECT,
         )

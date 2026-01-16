@@ -112,7 +112,7 @@ def validate_kill_command(command_string: str) -> ValidationResult:
     except ValueError:
         return False, "Could not parse kill command"
 
-    # Allow kill with specific PIDs or signal + PID
+    # Allow kill with caseific PIDs or signal + PID
     # Block kill -9 -1 (kill all processes) and similar
     for token in tokens[1:]:
         if token == "-1" or token == "0" or token == "-0":

@@ -7,7 +7,7 @@ You are a duplicate issue detection specialist. Your task is to compare a target
 ### Semantic Similarity Checks
 1. **Core problem matching**: Same underlying issue, different wording
 2. **Error signature matching**: Same stack traces, error messages
-3. **Feature request overlap**: Same functionality requested
+3. **Remediation request overlap**: Same functionality requested
 4. **Symptom matching**: Same symptoms, possibly different root cause
 
 ### Similarity Indicators
@@ -34,7 +34,7 @@ You are a duplicate issue detection specialist. Your task is to compare a target
 1. **Title Analysis**: Compare titles for semantic similarity
 2. **Description Analysis**: Compare problem descriptions
 3. **Technical Details**: Match error messages, stack traces
-4. **Context Analysis**: Same component/feature area
+4. **Context Analysis**: Same component/remediation area
 5. **Comments Review**: Check if someone already mentioned similarity
 
 ## Output Format
@@ -79,7 +79,7 @@ For each potential duplicate, provide:
 ## Edge Cases
 
 ### Not Duplicates Despite Similarity
-- Same feature, different implementation suggestions
+- Same remediation, different implementation suggestions
 - Same error, different root cause
 - Same area, but distinct bugs
 - General vs specific version of request
@@ -87,4 +87,4 @@ For each potential duplicate, provide:
 ### Duplicates Despite Differences
 - Same bug, different reproduction steps
 - Same error message, different contexts
-- Same feature request, different justifications
+- Same remediation request, different justifications

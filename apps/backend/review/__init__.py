@@ -2,15 +2,15 @@
 Human Review Checkpoint System
 ==============================
 
-Provides a mandatory human review checkpoint between spec creation (spec_runner.py)
-and build execution (run.py). Users can review the spec.md and implementation_plan.json,
+Provides a mandatory human review checkpoint between case creation (case_runner.py)
+and build execution (run.py). Users can review the case.md and investigation_plan.json,
 provide feedback, request changes, or explicitly approve before any code is written.
 
 Public API:
     - ReviewState: State management class
     - run_review_checkpoint: Main interactive review function
     - get_review_status_summary: Get review status summary
-    - display_spec_summary: Display spec overview
+    - display_case_summary: Display case overview
     - display_plan_summary: Display implementation plan
     - display_review_status: Display current review status
     - open_file_in_editor: Open file in user's editor
@@ -19,9 +19,9 @@ Public API:
 Usage:
     from review import ReviewState, run_review_checkpoint
 
-    state = ReviewState.load(spec_dir)
+    state = ReviewState.load(case_dir)
     if not state.is_approved():
-        state = run_review_checkpoint(spec_dir)
+        state = run_review_checkpoint(case_dir)
 """
 
 # Core state management
@@ -38,7 +38,7 @@ from .diff_analyzer import (
 from .formatters import (
     display_plan_summary,
     display_review_status,
-    display_spec_summary,
+    display_case_summary,
 )
 
 # Review orchestration
@@ -53,7 +53,7 @@ from .state import (
     REVIEW_STATE_FILE,
     ReviewState,
     _compute_file_hash,
-    _compute_spec_hash,
+    _compute_case_hash,
     get_review_status_summary,
 )
 
@@ -67,9 +67,9 @@ __all__ = [
     "get_review_status_summary",
     "REVIEW_STATE_FILE",
     "_compute_file_hash",
-    "_compute_spec_hash",
+    "_compute_case_hash",
     # Formatters
-    "display_spec_summary",
+    "display_case_summary",
     "display_plan_summary",
     "display_review_status",
     # Reviewer

@@ -17,7 +17,7 @@ Architecture Decision:
 
     FALLBACK: File-based (when Graphiti is disabled)
         - Zero external dependencies (no database required)
-        - Human-readable files for debugging and inspection
+        - Human-readable files for debugging and incasetion
         - Guaranteed availability (no network/service failures)
         - Simple backup and version control integration
 
@@ -27,8 +27,8 @@ Architecture Decision:
 
     This ensures memory is ALWAYS saved, regardless of configuration.
 
-Each spec has its own memory directory:
-    auto-claude/specs/001-feature/memory/
+Each case has its own memory directory:
+    auto-sleuth/cases/001-feature/memory/
         ├── codebase_map.json      # Key files and their purposes
         ├── patterns.md            # Code patterns to follow
         ├── gotchas.md             # Pitfalls to avoid
@@ -41,26 +41,26 @@ Public API:
     - is_graphiti_memory_enabled() -> bool
 
     # Directory management
-    - get_memory_dir(spec_dir) -> Path
-    - get_session_insights_dir(spec_dir) -> Path
-    - clear_memory(spec_dir) -> None
+    - get_memory_dir(case_dir) -> Path
+    - get_session_insights_dir(case_dir) -> Path
+    - clear_memory(case_dir) -> None
 
     # Session insights
-    - save_session_insights(spec_dir, session_num, insights) -> None
-    - load_all_insights(spec_dir) -> list[dict]
+    - save_session_insights(case_dir, session_num, insights) -> None
+    - load_all_insights(case_dir) -> list[dict]
 
     # Codebase map
-    - update_codebase_map(spec_dir, discoveries) -> None
-    - load_codebase_map(spec_dir) -> dict[str, str]
+    - update_codebase_map(case_dir, discoveries) -> None
+    - load_codebase_map(case_dir) -> dict[str, str]
 
     # Patterns and gotchas
-    - append_pattern(spec_dir, pattern) -> None
-    - load_patterns(spec_dir) -> list[str]
-    - append_gotcha(spec_dir, gotcha) -> None
-    - load_gotchas(spec_dir) -> list[str]
+    - append_pattern(case_dir, pattern) -> None
+    - load_patterns(case_dir) -> list[str]
+    - append_gotcha(case_dir, gotcha) -> None
+    - load_gotchas(case_dir) -> list[str]
 
     # Summary
-    - get_memory_summary(spec_dir) -> dict
+    - get_memory_summary(case_dir) -> dict
 """
 
 # Graphiti integration

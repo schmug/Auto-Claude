@@ -1,8 +1,8 @@
 """
-Coder Agent Module
-==================
+Evidence Analyzer Agent Module - Auto-Sleuth DFIR
+==================================================
 
-Main autonomous agent loop that runs the coder agent to implement subtasks.
+Main autonomous agent loop that runs the evidence analyzer agent to complete analysis tasks.
 """
 
 import asyncio
@@ -63,8 +63,8 @@ from .utils import (
     find_phase_for_subtask,
     get_commit_count,
     get_latest_commit,
-    load_implementation_plan,
-    sync_spec_to_source,
+    load_investigation_plan,
+    sync_case_to_source,
 )
 
 logger = logging.getLogger(__name__)
@@ -72,11 +72,11 @@ logger = logging.getLogger(__name__)
 
 async def run_autonomous_agent(
     project_dir: Path,
-    spec_dir: Path,
+    case_dir: Path,
     model: str,
     max_iterations: int | None = None,
     verbose: bool = False,
-    source_spec_dir: Path | None = None,
+    source_case_dir: Path | None = None,
 ) -> None:
     """
     Run the autonomous agent loop with automatic memory management.
@@ -86,31 +86,31 @@ async def run_autonomous_agent(
 
     Args:
         project_dir: Root directory for the project
-        spec_dir: Directory containing the spec (auto-claude/specs/001-name/)
+        case_dir: Directory containing the case (auto-sleuth/cases/001-name/)
         model: Claude model to use
         max_iterations: Maximum number of iterations (None for unlimited)
         verbose: Whether to show detailed output
-        source_spec_dir: Original spec directory in main project (for syncing from worktree)
+        source_case_dir: Original case directory in main project (for syncing from worktree)
     """
     # Set environment variable for security hooks to find the correct project directory
     # This is needed because os.getcwd() may return the wrong directory in worktree mode
     os.environ[PROJECT_DIR_ENV_VAR] = str(project_dir.resolve())
 
     # Initialize recovery manager (handles memory persistence)
-    recovery_manager = RecoveryManager(spec_dir, project_dir)
+    recovery_manager = RecoveryManager(case_dir, project_dir)
 
     # Initialize status manager for ccstatusline
     status_manager = StatusManager(project_dir)
-    status_manager.set_active(spec_dir.name, BuildState.BUILDING)
+    status_manager.set_active(case_dir.name, BuildState.BUILDING)
 
     # Initialize task logger for persistent logging
-    task_logger = get_task_logger(spec_dir)
+    task_logger = get_task_logger(case_dir)
 
     # Debug: Print memory system status at startup
     debug_memory_system_status()
 
     # Update initial subtask counts
-    subtasks = count_subtasks_detailed(spec_dir)
+    subtasks = count_subtasks_detailed(case_dir)
     status_manager.update_subtasks(
         completed=subtasks["completed"],
         total=subtasks["total"],
@@ -120,18 +120,18 @@ async def run_autonomous_agent(
     # Check Linear integration status
     linear_task = None
     if is_linear_enabled():
-        linear_task = LinearTaskState.load(spec_dir)
+        linear_task = LinearTaskState.load(case_dir)
         if linear_task and linear_task.task_id:
             print_status("Linear integration: ENABLED", "success")
             print_key_value("Task", linear_task.task_id)
             print_key_value("Status", linear_task.status)
             print()
         else:
-            print_status("Linear enabled but no task created for this spec", "warning")
+            print_status("Linear enabled but no task created for this case", "warning")
             print()
 
     # Check if this is a fresh start or continuation
-    first_run = is_first_run(spec_dir)
+    first_run = is_first_run(case_dir)
 
     # Track which phase we're in for logging
     current_log_phase = LogPhase.CODING
@@ -142,10 +142,10 @@ async def run_autonomous_agent(
             "Fresh start - will use Planner Agent to create implementation plan", "info"
         )
         content = [
-            bold(f"{icon(Icons.GEAR)} PLANNER SESSION"),
+            bold(f"{icon(Icons.GEAR)} INVESTIGATION PLANNER SESSION"),
             "",
-            f"Spec: {highlight(spec_dir.name)}",
-            muted("The agent will analyze your spec and create a subtask-based plan."),
+            f"Case: {highlight(case_dir.name)}",
+            muted("The agent will analyze your case and create an analysis task-based plan."),
         ]
         print()
         print(box(content, width=70, style="heavy"))
@@ -166,14 +166,14 @@ async def run_autonomous_agent(
         # Update Linear to "In Progress" when build starts
         if linear_task and linear_task.task_id:
             print_status("Updating Linear task to In Progress...", "progress")
-            await linear_task_started(spec_dir)
+            await linear_task_started(case_dir)
     else:
-        print(f"Continuing build: {highlight(spec_dir.name)}")
-        print_progress_summary(spec_dir)
+        print(f"Continuing investigation: {highlight(case_dir.name)}")
+        print_progress_summary(case_dir)
 
         # Check if already complete
-        if is_build_complete(spec_dir):
-            print_build_complete_banner(spec_dir)
+        if is_build_complete(case_dir):
+            print_build_complete_banner(case_dir)
             status_manager.update(state=BuildState.COMPLETE)
             return
 
@@ -201,7 +201,7 @@ async def run_autonomous_agent(
         iteration += 1
 
         # Check for human intervention (PAUSE file)
-        pause_file = spec_dir / HUMAN_INTERVENTION_FILE
+        pause_file = case_dir / HUMAN_INTERVENTION_FILE
         if pause_file.exists():
             print("\n" + "=" * 70)
             print("  PAUSED BY HUMAN")
@@ -214,7 +214,7 @@ async def run_autonomous_agent(
             print("\nTo resume, delete the PAUSE file:")
             print(f"  rm {pause_file}")
             print("\nThen run again:")
-            print(f"  python auto-claude/run.py --spec {spec_dir.name}")
+            print(f"  python auto-sleuth/run.py --case {case_dir.name}")
             return
 
         # Check max iterations
@@ -224,14 +224,14 @@ async def run_autonomous_agent(
             break
 
         # Get the next subtask to work on
-        next_subtask = get_next_subtask(spec_dir)
+        next_subtask = get_next_subtask(case_dir)
         subtask_id = next_subtask.get("id") if next_subtask else None
         phase_name = next_subtask.get("phase_name") if next_subtask else None
 
         # Update status for this session
         status_manager.update_session(iteration)
         if phase_name:
-            current_phase = get_current_phase(spec_dir)
+            current_phase = get_current_phase(case_dir)
             if current_phase:
                 status_manager.update_phase(
                     current_phase.get("name", ""),
@@ -256,17 +256,17 @@ async def run_autonomous_agent(
         commit_before = get_latest_commit(project_dir)
         commit_count_before = get_commit_count(project_dir)
 
-        # Get the phase-specific model and thinking level (respects task_metadata.json configuration)
+        # Get the phase-caseific model and thinking level (recasets task_metadata.json configuration)
         # first_run means we're in planning phase, otherwise coding phase
         current_phase = "planning" if first_run else "coding"
-        phase_model = get_phase_model(spec_dir, current_phase, model)
-        phase_thinking_budget = get_phase_thinking_budget(spec_dir, current_phase)
+        phase_model = get_phase_model(case_dir, current_phase, model)
+        phase_thinking_budget = get_phase_thinking_budget(case_dir, current_phase)
 
-        # Create client (fresh context) with phase-specific model and thinking
+        # Create client (fresh context) with phase-caseific model and thinking
         # Use appropriate agent_type for correct tool permissions and thinking budget
         client = create_client(
             project_dir,
-            spec_dir,
+            case_dir,
             phase_model,
             agent_type="planner" if first_run else "coder",
             max_thinking_tokens=phase_thinking_budget,
@@ -274,12 +274,12 @@ async def run_autonomous_agent(
 
         # Generate appropriate prompt
         if first_run:
-            prompt = generate_planner_prompt(spec_dir, project_dir)
+            prompt = generate_planner_prompt(case_dir, project_dir)
 
             # Retrieve Graphiti memory context for planning phase
             # This gives the planner knowledge of previous patterns, gotchas, and insights
             planner_context = await get_graphiti_context(
-                spec_dir,
+                case_dir,
                 project_dir,
                 {
                     "description": "Planning implementation for new feature",
@@ -306,14 +306,14 @@ async def run_autonomous_agent(
                     task_logger.end_phase(
                         LogPhase.PLANNING,
                         success=True,
-                        message="Implementation plan created",
+                        message="Investigation plan created",
                     )
                     task_logger.start_phase(
                         LogPhase.CODING, "Starting implementation..."
                     )
 
             if not next_subtask:
-                print("No pending subtasks found - build may be complete!")
+                print("No pending analysis tasks found - investigation may be complete!")
                 break
 
             # Get attempt count for recovery context
@@ -325,12 +325,12 @@ async def run_autonomous_agent(
             )
 
             # Find the phase for this subtask
-            plan = load_implementation_plan(spec_dir)
+            plan = load_investigation_plan(case_dir)
             phase = find_phase_for_subtask(plan, subtask_id) if plan else {}
 
             # Generate focused, minimal prompt for this subtask
             prompt = generate_subtask_prompt(
-                spec_dir=spec_dir,
+                case_dir=case_dir,
                 project_dir=project_dir,
                 subtask=next_subtask,
                 phase=phase or {},
@@ -339,20 +339,20 @@ async def run_autonomous_agent(
             )
 
             # Load and append relevant file context
-            context = load_subtask_context(spec_dir, project_dir, next_subtask)
+            context = load_subtask_context(case_dir, project_dir, next_subtask)
             if context.get("patterns") or context.get("files_to_modify"):
                 prompt += "\n\n" + format_context_for_prompt(context)
 
             # Retrieve and append Graphiti memory context (if enabled)
             graphiti_context = await get_graphiti_context(
-                spec_dir, project_dir, next_subtask
+                case_dir, project_dir, next_subtask
             )
             if graphiti_context:
                 prompt += "\n\n" + graphiti_context
                 print_status("Graphiti memory context loaded", "success")
 
             # Show what we're working on
-            print(f"Working on: {highlight(subtask_id)}")
+            print(f"Analyzing: {highlight(subtask_id)}")
             print(f"Description: {next_subtask.get('description', 'No description')}")
             if attempt_count > 0:
                 print_status(f"Previous attempts: {attempt_count}", "warning")
@@ -366,7 +366,7 @@ async def run_autonomous_agent(
         # Run session with async context manager
         async with client:
             status, response = await run_agent_session(
-                client, prompt, spec_dir, verbose, phase=current_log_phase
+                client, prompt, case_dir, verbose, phase=current_log_phase
             )
 
         # === POST-SESSION PROCESSING (100% reliable) ===
@@ -375,7 +375,7 @@ async def run_autonomous_agent(
                 linear_task is not None and linear_task.task_id is not None
             )
             success = await post_session_processing(
-                spec_dir=spec_dir,
+                case_dir=case_dir,
                 project_dir=project_dir,
                 subtask_id=subtask_id,
                 session_num=iteration,
@@ -384,7 +384,7 @@ async def run_autonomous_agent(
                 recovery_manager=recovery_manager,
                 linear_enabled=linear_is_enabled,
                 status_manager=status_manager,
-                source_spec_dir=source_spec_dir,
+                source_case_dir=source_case_dir,
             )
 
             # Check for stuck subtasks
@@ -403,32 +403,32 @@ async def run_autonomous_agent(
                 # Record stuck subtask in Linear (if enabled)
                 if linear_is_enabled:
                     await linear_task_stuck(
-                        spec_dir=spec_dir,
+                        case_dir=case_dir,
                         subtask_id=subtask_id,
                         attempt_count=attempt_count,
                     )
                     print_status("Linear notified of stuck subtask", "info")
-        elif is_planning_phase and source_spec_dir:
+        elif is_planning_phase and source_case_dir:
             # After planning phase, sync the newly created implementation plan back to source
-            if sync_spec_to_source(spec_dir, source_spec_dir):
-                print_status("Implementation plan synced to main project", "success")
+            if sync_case_to_source(case_dir, source_case_dir):
+                print_status("Investigation plan synced to main project", "success")
 
         # Handle session status
         if status == "complete":
             # Don't emit COMPLETE here - subtasks are done but QA hasn't run yet
             # QA loop will emit COMPLETE after actual approval
-            print_build_complete_banner(spec_dir)
+            print_build_complete_banner(case_dir)
             status_manager.update(state=BuildState.COMPLETE)
 
             if task_logger:
                 task_logger.end_phase(
                     LogPhase.CODING,
                     success=True,
-                    message="All subtasks completed successfully",
+                    message="All analysis tasks completed successfully",
                 )
 
             if linear_task and linear_task.task_id:
-                await linear_build_complete(spec_dir)
+                await linear_build_complete(case_dir)
                 print_status("Linear notified: build complete, ready for QA", "success")
 
             break
@@ -439,13 +439,13 @@ async def run_autonomous_agent(
                     f"\nAgent will auto-continue in {AUTO_CONTINUE_DELAY_SECONDS}s..."
                 )
             )
-            print_progress_summary(spec_dir)
+            print_progress_summary(case_dir)
 
             # Update state back to building
             status_manager.update(state=BuildState.BUILDING)
 
             # Show next subtask info
-            next_subtask = get_next_subtask(spec_dir)
+            next_subtask = get_next_subtask(case_dir)
             if next_subtask:
                 subtask_id = next_subtask.get("id")
                 print(
@@ -477,12 +477,12 @@ async def run_autonomous_agent(
         bold(f"{icon(Icons.SESSION)} SESSION SUMMARY"),
         "",
         f"Project: {project_dir}",
-        f"Spec: {highlight(spec_dir.name)}",
+        f"Case: {highlight(case_dir.name)}",
         f"Sessions completed: {iteration}",
     ]
     print()
     print(box(content, width=70, style="heavy"))
-    print_progress_summary(spec_dir)
+    print_progress_summary(case_dir)
 
     # Show stuck subtasks if any
     stuck_subtasks = recovery_manager.get_stuck_subtasks()
@@ -493,20 +493,20 @@ async def run_autonomous_agent(
             print(f"  {icon(Icons.ERROR)} {stuck['subtask_id']}: {stuck['reason']}")
 
     # Instructions
-    completed, total = count_subtasks(spec_dir)
+    completed, total = count_subtasks(case_dir)
     if completed < total:
         content = [
             bold(f"{icon(Icons.PLAY)} NEXT STEPS"),
             "",
             f"{total - completed} subtasks remaining.",
-            f"Run again: {highlight(f'python auto-claude/run.py --spec {spec_dir.name}')}",
+            f"Run again: {highlight(f'python auto-sleuth/run.py --case {case_dir.name}')}",
         ]
     else:
         content = [
             bold(f"{icon(Icons.SUCCESS)} NEXT STEPS"),
             "",
             "All subtasks completed!",
-            "  1. Review the auto-claude/* branch",
+            "  1. Review the auto-sleuth/* branch",
             "  2. Run manual tests",
             "  3. Merge to main",
         ]

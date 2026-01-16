@@ -3,7 +3,7 @@ GitHub Automation Data Models
 =============================
 
 Data structures for GitHub automation features.
-Stored in .auto-claude/github/pr/ and .auto-claude/github/issues/
+Stored in .auto-sleuth/github/pr/ and .auto-sleuth/github/issues/
 
 All save() operations use file locking to prevent corruption in concurrent scenarios.
 """
@@ -105,8 +105,8 @@ class AutoFixStatus(str, Enum):
     PENDING = "pending"
     ANALYZING = "analyzing"
 
-    # Spec creation states
-    CREATING_SPEC = "creating_spec"
+    # Case creation states
+    CREATING_SPEC = "creating_case"
     WAITING_APPROVAL = "waiting_approval"  # P1-3: Human review gate
 
     # Build states
@@ -122,8 +122,8 @@ class AutoFixStatus(str, Enum):
     FAILED = "failed"
     CANCELLED = "cancelled"  # P1-3: User cancelled
 
-    # Special states
-    STALE = "stale"  # P1-3: Issue updated after spec creation
+    # Caseial states
+    STALE = "stale"  # P1-3: Issue updated after case creation
     RATE_LIMITED = "rate_limited"  # P1-3: Waiting for rate limit reset
 
     @classmethod
@@ -492,7 +492,7 @@ class PRReviewResult:
         )
 
     async def save(self, github_dir: Path) -> None:
-        """Save review result to .auto-claude/github/pr/ with file locking."""
+        """Save review result to .auto-sleuth/github/pr/ with file locking."""
         pr_dir = github_dir / "pr"
         pr_dir.mkdir(parents=True, exist_ok=True)
 
@@ -646,7 +646,7 @@ class TriageResult:
         )
 
     async def save(self, github_dir: Path) -> None:
-        """Save triage result to .auto-claude/github/issues/ with file locking."""
+        """Save triage result to .auto-sleuth/github/issues/ with file locking."""
         issues_dir = github_dir / "issues"
         issues_dir.mkdir(parents=True, exist_ok=True)
 
@@ -674,8 +674,8 @@ class AutoFixState:
     issue_url: str
     repo: str
     status: AutoFixStatus = AutoFixStatus.PENDING
-    spec_id: str | None = None
-    spec_dir: str | None = None
+    case_id: str | None = None
+    case_dir: str | None = None
     pr_number: int | None = None
     pr_url: str | None = None
     bot_comments: list[str] = field(default_factory=list)
@@ -689,8 +689,8 @@ class AutoFixState:
             "issue_url": self.issue_url,
             "repo": self.repo,
             "status": self.status.value,
-            "spec_id": self.spec_id,
-            "spec_dir": self.spec_dir,
+            "case_id": self.case_id,
+            "case_dir": self.case_dir,
             "pr_number": self.pr_number,
             "pr_url": self.pr_url,
             "bot_comments": self.bot_comments,
@@ -713,8 +713,8 @@ class AutoFixState:
             issue_url=issue_url,
             repo=repo,
             status=AutoFixStatus(data.get("status", "pending")),
-            spec_id=data.get("spec_id"),
-            spec_dir=data.get("spec_dir"),
+            case_id=data.get("case_id"),
+            case_dir=data.get("case_dir"),
             pr_number=data.get("pr_number"),
             pr_url=data.get("pr_url"),
             bot_comments=data.get("bot_comments", []),
@@ -733,7 +733,7 @@ class AutoFixState:
         self.updated_at = datetime.now().isoformat()
 
     async def save(self, github_dir: Path) -> None:
-        """Save auto-fix state to .auto-claude/github/issues/ with file locking."""
+        """Save auto-fix state to .auto-sleuth/github/issues/ with file locking."""
         issues_dir = github_dir / "issues"
         issues_dir.mkdir(parents=True, exist_ok=True)
 
@@ -768,7 +768,7 @@ class AutoFixState:
                 "issue_number": self.issue_number,
                 "repo": self.repo,
                 "status": self.status.value,
-                "spec_id": self.spec_id,
+                "case_id": self.case_id,
                 "pr_number": self.pr_number,
                 "updated_at": self.updated_at,
             }

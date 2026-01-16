@@ -4,8 +4,8 @@ Plan generation logic for different workflow types.
 
 from pathlib import Path
 
-from implementation_plan import (
-    ImplementationPlan,
+from investigation_plan import (
+    InvestigationPlan,
     Phase,
     PhaseType,
     Subtask,
@@ -30,11 +30,11 @@ from .utils import (
 class PlanGenerator:
     """Base class for plan generators."""
 
-    def __init__(self, context: PlannerContext, spec_dir: Path):
+    def __init__(self, context: PlannerContext, case_dir: Path):
         self.context = context
-        self.spec_dir = spec_dir
+        self.case_dir = case_dir
 
-    def generate(self) -> ImplementationPlan:
+    def generate(self) -> InvestigationPlan:
         """Generate implementation plan. Override in subclasses."""
         raise NotImplementedError
 
@@ -42,7 +42,7 @@ class PlanGenerator:
 class FeaturePlanGenerator(PlanGenerator):
     """Generates feature implementation plans."""
 
-    def generate(self) -> ImplementationPlan:
+    def generate(self) -> InvestigationPlan:
         """Generate a feature implementation plan."""
         feature_name = extract_feature_name(self.context)
         files_by_service = group_files_by_service(self.context)
@@ -152,23 +152,23 @@ class FeaturePlanGenerator(PlanGenerator):
                 )
             )
 
-        # Extract final acceptance from spec
+        # Extract final acceptance from case
         final_acceptance = extract_acceptance_criteria(self.context)
 
-        return ImplementationPlan(
+        return InvestigationPlan(
             feature=feature_name,
             workflow_type=WorkflowType.FEATURE,
             services_involved=self.context.services_involved,
             phases=phases,
             final_acceptance=final_acceptance,
-            spec_file=str(self.spec_dir / "spec.md"),
+            case_file=str(self.case_dir / "case.md"),
         )
 
 
 class InvestigationPlanGenerator(PlanGenerator):
     """Generates investigation plans for debugging."""
 
-    def generate(self) -> ImplementationPlan:
+    def generate(self) -> InvestigationPlan:
         """Generate an investigation plan for debugging."""
         feature_name = extract_feature_name(self.context)
 
@@ -180,7 +180,7 @@ class InvestigationPlanGenerator(PlanGenerator):
                 subtasks=[
                     Subtask(
                         id="add-logging",
-                        description="Add detailed logging around suspected problem areas",
+                        description="Add detailed logging around sucaseted problem areas",
                         expected_output="Logs capture relevant state changes and events",
                         files_to_modify=[
                             f.get("path", "") for f in self.context.files_to_modify[:3]
@@ -251,7 +251,7 @@ class InvestigationPlanGenerator(PlanGenerator):
             ),
         ]
 
-        return ImplementationPlan(
+        return InvestigationPlan(
             feature=feature_name,
             workflow_type=WorkflowType.INVESTIGATION,
             services_involved=self.context.services_involved,
@@ -261,14 +261,14 @@ class InvestigationPlanGenerator(PlanGenerator):
                 "Root cause documented",
                 "Regression test in place",
             ],
-            spec_file=str(self.spec_dir / "spec.md"),
+            case_file=str(self.case_dir / "case.md"),
         )
 
 
 class RefactorPlanGenerator(PlanGenerator):
     """Generates refactor plans with stage-based phases."""
 
-    def generate(self) -> ImplementationPlan:
+    def generate(self) -> InvestigationPlan:
         """Generate a refactor plan with stage-based phases."""
         feature_name = extract_feature_name(self.context)
 
@@ -350,7 +350,7 @@ class RefactorPlanGenerator(PlanGenerator):
             ),
         ]
 
-        return ImplementationPlan(
+        return InvestigationPlan(
             feature=feature_name,
             workflow_type=WorkflowType.REFACTOR,
             services_involved=self.context.services_involved,
@@ -360,15 +360,15 @@ class RefactorPlanGenerator(PlanGenerator):
                 "Old system completely removed",
                 "No regressions in existing features",
             ],
-            spec_file=str(self.spec_dir / "spec.md"),
+            case_file=str(self.case_dir / "case.md"),
         )
 
 
-def get_plan_generator(context: PlannerContext, spec_dir: Path) -> PlanGenerator:
+def get_plan_generator(context: PlannerContext, case_dir: Path) -> PlanGenerator:
     """Factory function to get the appropriate plan generator."""
     if context.workflow_type == WorkflowType.INVESTIGATION:
-        return InvestigationPlanGenerator(context, spec_dir)
+        return InvestigationPlanGenerator(context, case_dir)
     elif context.workflow_type == WorkflowType.REFACTOR:
-        return RefactorPlanGenerator(context, spec_dir)
+        return RefactorPlanGenerator(context, case_dir)
     else:
-        return FeaturePlanGenerator(context, spec_dir)
+        return FeaturePlanGenerator(context, case_dir)

@@ -16,7 +16,7 @@ if str(_PARENT_DIR) not in sys.path:
     sys.path.insert(0, str(_PARENT_DIR))
 
 from core.workspace.git_utils import (
-    _is_auto_claude_file,
+    _is_auto_sleuth_file,
     apply_path_mapping,
     detect_file_renames,
     get_file_content_from_ref,
@@ -160,26 +160,26 @@ def _get_changed_files_from_git(
 def _detect_worktree_base_branch(
     project_dir: Path,
     worktree_path: Path,
-    spec_name: str,
+    case_name: str,
 ) -> str | None:
     """
     Detect which branch a worktree was created from.
 
     Tries multiple strategies:
-    1. Check worktree config file (.auto-claude/worktree-config.json)
+    1. Check worktree config file (.auto-sleuth/worktree-config.json)
     2. Find merge-base with known branches (develop, main, master)
     3. Return None if unable to detect
 
     Args:
         project_dir: Project root directory
         worktree_path: Path to the worktree
-        spec_name: Name of the spec
+        case_name: Name of the case
 
     Returns:
         The detected base branch name, or None if unable to detect
     """
     # Strategy 1: Check for worktree config file
-    config_path = worktree_path / ".auto-claude" / "worktree-config.json"
+    config_path = worktree_path / ".auto-sleuth" / "worktree-config.json"
     if config_path.exists():
         try:
             config = json.loads(config_path.read_text())
@@ -194,7 +194,7 @@ def _detect_worktree_base_branch(
 
     # Strategy 2: Find which branch has the closest merge-base
     # Check common branches: develop, main, master
-    spec_branch = f"auto-claude/{spec_name}"
+    case_branch = f"auto-sleuth/{case_name}"
     candidate_branches = ["develop", "main", "master"]
 
     best_branch = None
@@ -214,7 +214,7 @@ def _detect_worktree_base_branch(
 
             # Get merge base
             merge_base_result = subprocess.run(
-                ["git", "merge-base", branch, spec_branch],
+                ["git", "merge-base", branch, case_branch],
                 cwd=project_dir,
                 capture_output=True,
                 text=True,
@@ -368,7 +368,7 @@ MODULE = "cli.workspace_commands"
 
 def handle_merge_command(
     project_dir: Path,
-    spec_name: str,
+    case_name: str,
     no_commit: bool = False,
     base_branch: str | None = None,
 ) -> bool:
@@ -377,7 +377,7 @@ def handle_merge_command(
 
     Args:
         project_dir: Project root directory
-        spec_name: Name of the spec
+        case_name: Name of the case
         no_commit: If True, stage changes but don't commit
         base_branch: Branch to compare against (default: auto-detect)
 
@@ -385,23 +385,23 @@ def handle_merge_command(
         True if merge succeeded, False otherwise
     """
     success = merge_existing_build(
-        project_dir, spec_name, no_commit=no_commit, base_branch=base_branch
+        project_dir, case_name, no_commit=no_commit, base_branch=base_branch
     )
 
     # Generate commit message suggestion if staging succeeded (no_commit mode)
     if success and no_commit:
-        _generate_and_save_commit_message(project_dir, spec_name)
+        _generate_and_save_commit_message(project_dir, case_name)
 
     return success
 
 
-def _generate_and_save_commit_message(project_dir: Path, spec_name: str) -> None:
+def _generate_and_save_commit_message(project_dir: Path, case_name: str) -> None:
     """
     Generate a commit message suggestion and save it for the UI.
 
     Args:
         project_dir: Project root directory
-        spec_name: Name of the spec
+        case_name: Name of the case
     """
     try:
         from commit_message import generate_commit_message_sync
@@ -437,25 +437,25 @@ def _generate_and_save_commit_message(project_dir: Path, spec_name: str) -> None
         debug(MODULE, "Generating commit message suggestion...")
         commit_message = generate_commit_message_sync(
             project_dir=project_dir,
-            spec_name=spec_name,
+            case_name=case_name,
             diff_summary=diff_summary,
             files_changed=files_changed,
         )
 
         if commit_message:
-            # Save to spec directory for UI to read
-            spec_dir = project_dir / ".auto-claude" / "specs" / spec_name
-            if not spec_dir.exists():
-                spec_dir = project_dir / "auto-claude" / "specs" / spec_name
+            # Save to case directory for UI to read
+            case_dir = project_dir / ".auto-sleuth" / "cases" / case_name
+            if not case_dir.exists():
+                case_dir = project_dir / "auto-sleuth" / "cases" / case_name
 
-            if spec_dir.exists():
-                commit_msg_file = spec_dir / "suggested_commit_message.txt"
+            if case_dir.exists():
+                commit_msg_file = case_dir / "suggested_commit_message.txt"
                 commit_msg_file.write_text(commit_message, encoding="utf-8")
                 debug_success(
                     MODULE, f"Saved commit message suggestion to {commit_msg_file}"
                 )
             else:
-                debug_warning(MODULE, f"Spec directory not found: {spec_dir}")
+                debug_warning(MODULE, f"Case directory not found: {case_dir}")
         else:
             debug_warning(MODULE, "No commit message generated")
 
@@ -465,26 +465,26 @@ def _generate_and_save_commit_message(project_dir: Path, spec_name: str) -> None
         debug_warning(MODULE, f"Failed to generate commit message: {e}")
 
 
-def handle_review_command(project_dir: Path, spec_name: str) -> None:
+def handle_review_command(project_dir: Path, case_name: str) -> None:
     """
     Handle the --review command.
 
     Args:
         project_dir: Project root directory
-        spec_name: Name of the spec
+        case_name: Name of the case
     """
-    review_existing_build(project_dir, spec_name)
+    review_existing_build(project_dir, case_name)
 
 
-def handle_discard_command(project_dir: Path, spec_name: str) -> None:
+def handle_discard_command(project_dir: Path, case_name: str) -> None:
     """
     Handle the --discard command.
 
     Args:
         project_dir: Project root directory
-        spec_name: Name of the spec
+        case_name: Name of the case
     """
-    discard_existing_build(project_dir, spec_name)
+    discard_existing_build(project_dir, case_name)
 
 
 def handle_list_worktrees_command(project_dir: Path) -> None:
@@ -507,7 +507,7 @@ def handle_list_worktrees_command(project_dir: Path) -> None:
         print("  Worktrees are created when you run a build in isolated mode.")
     else:
         for wt in worktrees:
-            print(f"  {icon(Icons.FOLDER)} {wt.spec_name}")
+            print(f"  {icon(Icons.FOLDER)} {wt.case_name}")
             print(f"       Branch: {wt.branch}")
             print(f"       Path: {wt.path}")
             print(f"       Commits: {wt.commit_count}, Files: {wt.files_changed}")
@@ -515,12 +515,12 @@ def handle_list_worktrees_command(project_dir: Path) -> None:
 
         print("-" * 70)
         print()
-        print("  To merge:   python auto-claude/run.py --spec <name> --merge")
-        print("  To review:  python auto-claude/run.py --spec <name> --review")
-        print("  To discard: python auto-claude/run.py --spec <name> --discard")
+        print("  To merge:   python auto-sleuth/run.py --case <name> --merge")
+        print("  To review:  python auto-sleuth/run.py --case <name> --review")
+        print("  To discard: python auto-sleuth/run.py --case <name> --discard")
         print()
         print(
-            "  To cleanup all worktrees: python auto-claude/run.py --cleanup-worktrees"
+            "  To cleanup all worktrees: python auto-sleuth/run.py --cleanup-worktrees"
         )
     print()
 
@@ -537,7 +537,7 @@ def handle_cleanup_worktrees_command(project_dir: Path) -> None:
 
 
 def _check_git_merge_conflicts(
-    project_dir: Path, spec_name: str, base_branch: str | None = None
+    project_dir: Path, case_name: str, base_branch: str | None = None
 ) -> dict:
     """
     Check for git-level merge conflicts WITHOUT modifying the working directory.
@@ -547,7 +547,7 @@ def _check_git_merge_conflicts(
 
     Args:
         project_dir: Project root directory
-        spec_name: Name of the spec
+        case_name: Name of the case
         base_branch: Branch the task was created from (default: auto-detect)
 
     Returns:
@@ -556,19 +556,19 @@ def _check_git_merge_conflicts(
         - conflicting_files: list of file paths
         - needs_rebase: bool (if main has advanced)
         - base_branch: str
-        - spec_branch: str
+        - case_branch: str
     """
     import subprocess
 
     debug(MODULE, "Checking for git-level merge conflicts (non-destructive)...")
 
-    spec_branch = f"auto-claude/{spec_name}"
+    case_branch = f"auto-sleuth/{case_name}"
     result = {
         "has_conflicts": False,
         "conflicting_files": [],
         "needs_rebase": False,
         "base_branch": base_branch or "main",
-        "spec_branch": spec_branch,
+        "case_branch": case_branch,
         "commits_behind": 0,
     }
 
@@ -589,7 +589,7 @@ def _check_git_merge_conflicts(
 
         # Get the merge base commit
         merge_base_result = subprocess.run(
-            ["git", "merge-base", result["base_branch"], spec_branch],
+            ["git", "merge-base", result["base_branch"], case_branch],
             cwd=project_dir,
             capture_output=True,
             text=True,
@@ -626,7 +626,7 @@ def _check_git_merge_conflicts(
                 "--write-tree",
                 "--no-messages",
                 result["base_branch"],  # Use branch names, not commit hashes
-                spec_branch,
+                case_branch,
             ],
             cwd=project_dir,
             capture_output=True,
@@ -653,11 +653,11 @@ def _check_git_merge_conflicts(
                     )
                     if match:
                         file_path = match.group(1).strip()
-                        # Skip .auto-claude files - they should never be merged
+                        # Skip .auto-sleuth files - they should never be merged
                         if (
                             file_path
                             and file_path not in result["conflicting_files"]
-                            and not _is_auto_claude_file(file_path)
+                            and not _is_auto_sleuth_file(file_path)
                         ):
                             result["conflicting_files"].append(file_path)
 
@@ -676,24 +676,24 @@ def _check_git_merge_conflicts(
                     else set()
                 )
 
-                # Files changed in spec branch since merge-base
-                spec_files_result = subprocess.run(
-                    ["git", "diff", "--name-only", merge_base, spec_branch],
+                # Files changed in case branch since merge-base
+                case_files_result = subprocess.run(
+                    ["git", "diff", "--name-only", merge_base, case_branch],
                     cwd=project_dir,
                     capture_output=True,
                     text=True,
                 )
-                spec_files = (
-                    set(spec_files_result.stdout.strip().split("\n"))
-                    if spec_files_result.stdout.strip()
+                case_files = (
+                    set(case_files_result.stdout.strip().split("\n"))
+                    if case_files_result.stdout.strip()
                     else set()
                 )
 
                 # Files modified in both = potential conflicts
-                # Filter out .auto-claude files - they should never be merged
-                conflicting = main_files & spec_files
+                # Filter out .auto-sleuth files - they should never be merged
+                conflicting = main_files & case_files
                 result["conflicting_files"] = [
-                    f for f in conflicting if not _is_auto_claude_file(f)
+                    f for f in conflicting if not _is_auto_sleuth_file(f)
                 ]
                 debug(
                     MODULE, f"Found {len(conflicting)} files modified in both branches"
@@ -714,7 +714,7 @@ def _check_git_merge_conflicts(
 
 def handle_merge_preview_command(
     project_dir: Path,
-    spec_name: str,
+    case_name: str,
     base_branch: str | None = None,
 ) -> dict:
     """
@@ -730,7 +730,7 @@ def handle_merge_preview_command(
 
     Args:
         project_dir: Project root directory
-        spec_name: Name of the spec
+        case_name: Name of the case
         base_branch: Branch the task was created from (for comparison). If None, auto-detect.
 
     Returns:
@@ -741,12 +741,12 @@ def handle_merge_preview_command(
         MODULE,
         "handle_merge_preview_command() called",
         project_dir=str(project_dir),
-        spec_name=spec_name,
+        case_name=case_name,
     )
 
     from workspace import get_existing_build_worktree
 
-    worktree_path = get_existing_build_worktree(project_dir, spec_name)
+    worktree_path = get_existing_build_worktree(project_dir, case_name)
     debug(
         MODULE,
         "Worktree lookup result",
@@ -754,10 +754,10 @@ def handle_merge_preview_command(
     )
 
     if not worktree_path:
-        debug_error(MODULE, f"No existing build found for '{spec_name}'")
+        debug_error(MODULE, f"No existing build found for '{case_name}'")
         return {
             "success": False,
-            "error": f"No existing build found for '{spec_name}'",
+            "error": f"No existing build found for '{case_name}'",
             "files": [],
             "conflicts": [],
             "gitConflicts": None,
@@ -779,7 +779,7 @@ def handle_merge_preview_command(
         if not task_source_branch:
             # Try to detect from worktree's git history
             task_source_branch = _detect_worktree_base_branch(
-                project_dir, worktree_path, spec_name
+                project_dir, worktree_path, case_name
             )
         if not task_source_branch:
             # Fall back to auto-detecting main/master
@@ -793,7 +793,7 @@ def handle_merge_preview_command(
 
         # Check for git-level conflicts (diverged branches) using the task's source branch
         git_conflicts = _check_git_merge_conflicts(
-            project_dir, spec_name, base_branch=task_source_branch
+            project_dir, case_name, base_branch=task_source_branch
         )
 
         # Get actual changed files from git diff (this is the authoritative count)
@@ -818,7 +818,7 @@ def handle_merge_preview_command(
 
         # Check for parallel task conflicts by looking at existing evolution data
         parallel_conflicts = _detect_parallel_task_conflicts(
-            project_dir, spec_name, all_changed_files
+            project_dir, case_name, all_changed_files
         )
         debug(
             MODULE,
@@ -856,7 +856,7 @@ def handle_merge_preview_command(
                 {
                     "file": file_path,
                     "location": "file-level",
-                    "tasks": [spec_name, git_conflicts["base_branch"]],
+                    "tasks": [case_name, git_conflicts["base_branch"]],
                     "severity": "high",
                     "canAutoMerge": False,
                     "strategy": None,
@@ -892,9 +892,9 @@ def handle_merge_preview_command(
 
         if git_conflicts["needs_rebase"] and git_conflicts["commits_behind"] > 0:
             # Get the merge-base between the branches
-            spec_branch = git_conflicts["spec_branch"]
+            case_branch = git_conflicts["case_branch"]
             base_branch = git_conflicts["base_branch"]
-            merge_base = get_merge_base(project_dir, spec_branch, base_branch)
+            merge_base = get_merge_base(project_dir, case_branch, base_branch)
 
             if merge_base:
                 # Detect file renames between merge-base and current base branch
@@ -917,7 +917,7 @@ def handle_merge_preview_command(
                         if mapped_path != file_path:
                             # File was renamed - check if both versions exist
                             worktree_content = get_file_content_from_ref(
-                                project_dir, spec_branch, file_path
+                                project_dir, case_branch, file_path
                             )
                             target_content = get_file_content_from_ref(
                                 project_dir, base_branch, mapped_path
@@ -948,7 +948,7 @@ def handle_merge_preview_command(
                 "needsRebase": git_conflicts["needs_rebase"],
                 "commitsBehind": git_conflicts["commits_behind"],
                 "baseBranch": git_conflicts["base_branch"],
-                "specBranch": git_conflicts["spec_branch"],
+                "caseBranch": git_conflicts["case_branch"],
                 # Path-mapped files that need AI merge due to renames
                 "pathMappedAIMerges": path_mapped_ai_merges,
                 "totalRenames": len(path_mappings),
@@ -1005,7 +1005,7 @@ def handle_merge_preview_command(
 
 def handle_create_pr_command(
     project_dir: Path,
-    spec_name: str,
+    case_name: str,
     target_branch: str | None = None,
     title: str | None = None,
     draft: bool = False,
@@ -1015,9 +1015,9 @@ def handle_create_pr_command(
 
     Args:
         project_dir: Path to the project directory
-        spec_name: Name of the spec (e.g., "001-feature-name")
+        case_name: Name of the case (e.g., "001-feature-name")
         target_branch: Target branch for PR (defaults to base branch)
-        title: Custom PR title (defaults to spec name)
+        title: Custom PR title (defaults to case name)
         draft: Whether to create as draft PR
 
     Returns:
@@ -1031,14 +1031,14 @@ def handle_create_pr_command(
     print("=" * 70)
 
     # Check if worktree exists
-    worktree_path = get_existing_build_worktree(project_dir, spec_name)
+    worktree_path = get_existing_build_worktree(project_dir, case_name)
     if not worktree_path:
-        print(f"\n{icon(Icons.ERROR)} No build found for spec: {spec_name}")
+        print(f"\n{icon(Icons.ERROR)} No build found for case: {case_name}")
         print("\nA completed build worktree is required to create a PR.")
         print("Run your build first, then use --create-pr.")
         error_result: CreatePRResult = {
             "success": False,
-            "error": "No build found for this spec",
+            "error": "No build found for this case",
         }
         return error_result
 
@@ -1046,7 +1046,7 @@ def handle_create_pr_command(
     manager = WorktreeManager(project_dir, base_branch=target_branch)
 
     print(f"\n{icon(Icons.BRANCH)} Pushing branch and creating PR...")
-    print(f"   Spec: {spec_name}")
+    print(f"   Case: {case_name}")
     print(f"   Target: {target_branch or manager.base_branch}")
     if title:
         print(f"   Title: {title}")
@@ -1056,7 +1056,7 @@ def handle_create_pr_command(
     # Push and create PR with exception handling for clean JSON output
     try:
         raw_result = manager.push_and_create_pr(
-            spec_name=spec_name,
+            case_name=case_name,
             target_branch=target_branch,
             title=title,
             draft=draft,
@@ -1118,7 +1118,7 @@ def cleanup_old_worktrees_command(
     project_dir: Path, days: int = 30, dry_run: bool = False
 ) -> dict:
     """
-    Clean up old worktrees that haven't been modified in the specified number of days.
+    Clean up old worktrees that haven't been modified in the caseified number of days.
 
     Args:
         project_dir: Project root directory
@@ -1181,7 +1181,7 @@ def worktree_summary_command(project_dir: Path) -> dict:
 
         for info in worktrees:
             data = {
-                "spec_name": info.spec_name,
+                "case_name": info.case_name,
                 "days_since_last_commit": info.days_since_last_commit,
                 "commit_count": info.commit_count,
             }

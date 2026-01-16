@@ -6,7 +6,7 @@ Embedding Provider Migration Utility
 Migrates Graphiti memory data from one embedding provider to another by:
 1. Reading all episodes from the source database
 2. Re-embedding content with the new provider
-3. Storing in a provider-specific target database
+3. Storing in a provider-caseific target database
 
 This handles the dimension mismatch issue when switching between providers
 (e.g., OpenAI 1536D → Ollama embeddinggemma 768D).
@@ -32,7 +32,7 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
-# Add auto-claude to path
+# Add auto-sleuth to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from integrations.graphiti.config import GraphitiConfig
@@ -275,12 +275,12 @@ async def interactive_migration():
         print("Migration requires different providers. Exiting.")
         return
 
-    # Create source config with correct provider-specific database name
+    # Create source config with correct provider-caseific database name
     source_config = GraphitiConfig.from_env()
     source_config.embedder_provider = source_provider
     # Use the source provider's signature for the database name
-    source_config.database = source_config.get_provider_specific_database_name(
-        "auto_claude_memory"
+    source_config.database = source_config.get_provider_caseific_database_name(
+        "auto_sleuth_memory"
     )
 
     print(f"\nSource: {source_provider}")
@@ -331,8 +331,8 @@ async def automatic_migration(args):
         source_config = GraphitiConfig.from_env()
         source_config.embedder_provider = args.from_provider
         # Use source provider's signature for database name
-        source_config.database = source_config.get_provider_specific_database_name(
-            "auto_claude_memory"
+        source_config.database = source_config.get_provider_caseific_database_name(
+            "auto_sleuth_memory"
         )
     else:
         source_config = current_config
@@ -341,8 +341,8 @@ async def automatic_migration(args):
         target_config = GraphitiConfig.from_env()
         target_config.embedder_provider = args.to_provider
         # Use target provider's signature for database name
-        target_config.database = target_config.get_provider_specific_database_name(
-            "auto_claude_memory"
+        target_config.database = target_config.get_provider_caseific_database_name(
+            "auto_sleuth_memory"
         )
     else:
         target_config = current_config
@@ -352,7 +352,7 @@ async def automatic_migration(args):
         logger.error(
             f"Source and target providers are the same "
             f"({source_config.embedder_provider}). "
-            f"Specify different --from-provider and --to-provider values."
+            f"Caseify different --from-provider and --to-provider values."
         )
         return
 
@@ -398,7 +398,7 @@ def main():
 
     args = parser.parse_args()
 
-    # Use interactive mode if no providers specified
+    # Use interactive mode if no providers caseified
     if not args.from_provider and not args.to_provider:
         asyncio.run(interactive_migration())
     else:

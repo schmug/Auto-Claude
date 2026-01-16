@@ -7,11 +7,11 @@ Provides compact, real-time build status for display in Claude Code's status lin
 via ccstatusline's Custom Command widget.
 
 Usage:
-    # Get current status (auto-detect active spec)
+    # Get current status (auto-detect active case)
     python statusline.py
 
-    # Get status for specific spec
-    python statusline.py --spec 001-feature
+    # Check caseific case
+    python statusline.py --case 001-incident
 
     # Different output formats
     python statusline.py --format compact   # "▣ 3/12 │ ◆ Setup → │ 25%"
@@ -24,7 +24,7 @@ ccstatusline Configuration:
         "widgets": [
             {
                 "type": "custom_command",
-                "command": "python /path/to/auto-claude/statusline.py",
+                "command": "python /path/to/auto-sleuth/statusline.py",
                 "refresh": 5000
             }
         ]
@@ -36,7 +36,7 @@ import json
 import sys
 from pathlib import Path
 
-# Add auto-claude to path
+# Add auto-sleuth to path
 sys.path.insert(0, str(Path(__file__).parent))
 
 from ui import (
@@ -50,20 +50,20 @@ from ui import (
 
 
 def find_project_root() -> Path:
-    """Find the project root by looking for .auto-claude or .auto-claude-status."""
+    """Find the project root by looking for .auto-sleuth or .auto-sleuth-status."""
     cwd = Path.cwd()
 
-    # Check current directory - prioritize .auto-claude (installed instance)
-    if (cwd / ".auto-claude").exists():
+    # Check current directory - prioritize .auto-sleuth (installed instance)
+    if (cwd / ".auto-sleuth").exists():
         return cwd
-    if (cwd / ".auto-claude-status").exists():
+    if (cwd / ".auto-sleuth-status").exists():
         return cwd
 
     # Walk up to find project root
     for parent in cwd.parents:
-        if (parent / ".auto-claude").exists():
+        if (parent / ".auto-sleuth").exists():
             return parent
-        if (parent / ".auto-claude-status").exists():
+        if (parent / ".auto-sleuth-status").exists():
             return parent
 
     return cwd
@@ -111,7 +111,7 @@ def format_compact(status: BuildStatus) -> str:
         pct = int(100 * status.subtasks_completed / status.subtasks_total)
         parts.append(f"{pct}%")
 
-    # State prefix for special states
+    # State prefix for caseial states
     state_prefix = ""
     if status.state == BuildState.PAUSED:
         state_prefix = icon(Icons.PAUSE) + " "
@@ -130,7 +130,7 @@ def format_full(status: BuildStatus) -> str:
         return "No active build"
 
     lines = []
-    lines.append(f"Spec: {status.spec}")
+    lines.append(f"Case: {status.case}")
     lines.append(f"State: {status.state.value}")
 
     if status.subtasks_total > 0:
@@ -189,9 +189,9 @@ Examples:
     )
 
     parser.add_argument(
-        "--spec",
-        "-s",
-        help="Specific spec to check (default: auto-detect from status file)",
+        "--case",
+        dest="case",
+        help="Caseific case to check (default: auto-detect from status file)",
     )
 
     parser.add_argument(
@@ -210,9 +210,9 @@ Examples:
     manager = StatusManager(project_dir)
     status = manager.read()
 
-    # If spec filter provided, check if it matches
-    if args.spec and status.spec and args.spec not in status.spec:
-        # Spec doesn't match, treat as inactive
+    # If case filter provided, check if it matches
+    if args.case and status.case and args.case not in status.case:
+        # Case doesn't match, treat as inactive
         status = BuildStatus()
 
     # Format output

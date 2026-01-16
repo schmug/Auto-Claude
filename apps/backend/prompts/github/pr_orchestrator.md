@@ -61,7 +61,7 @@ The multi-pass review system found 9 issues in a "simple" PR that the orchestrat
 Ask yourself:
 ```
 What is this PR trying to accomplish?
-- New feature? Bug fix? Refactor? Infrastructure change?
+- New remediation? Bug fix? Refactor? Infrastructure change?
 - Does the description match the file changes?
 - Are there any obvious scope issues (too many unrelated changes)?
 - CRITICAL: Do the paths/references in the code actually exist?

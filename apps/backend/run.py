@@ -1,30 +1,30 @@
 #!/usr/bin/env python3
 """
-Auto Claude Framework
+Auto Sleuth Framework
 =====================
 
-A multi-session autonomous coding framework for building features and applications.
-Uses subtask-based implementation plans with phase dependencies.
+A multi-session autonomous DFIR framework for conducting investigations and incident response.
+Uses subtask-based investigation plans with phase dependencies.
 
 Key Features:
-- Safe workspace isolation (builds in separate workspace by default)
-- Parallel execution with Git worktrees
+- Safe evidence isolation (analyzes in separate workspace by default)
+- Parallel assessment with Git worktrees
 - Smart recovery from interruptions
-- Linear integration for project management
+- Linear integration for case management
 
 Usage:
-    python auto-claude/run.py --spec 001-initial-app
-    python auto-claude/run.py --spec 001
-    python auto-claude/run.py --list
+    python auto-sleuth/run.py --case 001-incident-name
+    python auto-sleuth/run.py --case 001
+    python auto-sleuth/run.py --list
 
-    # Workspace management
-    python auto-claude/run.py --spec 001 --merge     # Add completed build to project
-    python auto-claude/run.py --spec 001 --review    # See what was built
-    python auto-claude/run.py --spec 001 --discard   # Delete build (requires confirmation)
+    # Case management
+    python auto-sleuth/run.py --case 001 --merge     # Add completed findings to project
+    python auto-sleuth/run.py --case 001 --review    # See what was analyzed
+    python auto-sleuth/run.py --case 001 --discard   # Delete case (requires confirmation)
 
 Prerequisites:
     - CLAUDE_CODE_OAUTH_TOKEN environment variable set (run: claude setup-token)
-    - Spec created via: claude /spec
+    - Case created via: claude /case
     - Claude Code CLI installed
 """
 
@@ -33,7 +33,7 @@ import sys
 # Python version check - must be before any imports using 3.10+ syntax
 if sys.version_info < (3, 10):  # noqa: UP036
     sys.exit(
-        f"Error: Auto Claude requires Python 3.10 or higher.\n"
+        f"Error: Auto Sleuth requires Python 3.10 or higher.\n"
         f"You are running Python {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}\n"
         f"\n"
         f"Please upgrade Python: https://www.python.org/downloads/"

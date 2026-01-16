@@ -1,63 +1,64 @@
-# RECOVERY AWARENESS ADDITIONS FOR CODER.MD
+# RECOVERY AWARENESS ADDITIONS FOR EVIDENCE ANALYZER
 
-## Add to STEP 1 (Line 37):
+## Add to STEP 1 (After loading context):
 
 ```bash
-# 10. CHECK ATTEMPT HISTORY (Recovery Context)
+# 10. CHECK ANALYSIS ATTEMPT HISTORY (Recovery Context)
 echo -e "\n=== RECOVERY CONTEXT ==="
 if [ -f memory/attempt_history.json ]; then
-  echo "Attempt History (for retry awareness):"
+  echo "Analysis Attempt History (for retry awareness):"
   cat memory/attempt_history.json
 
-  # Show stuck subtasks if any
-  stuck_count=$(cat memory/attempt_history.json | jq '.stuck_subtasks | length' 2>/dev/null || echo 0)
+  # Show stuck tasks if any
+  stuck_count=$(cat memory/attempt_history.json | jq '.stuck_tasks | length' 2>/dev/null || echo 0)
   if [ "$stuck_count" -gt 0 ]; then
-    echo -e "\n⚠️  WARNING: Some subtasks are stuck and need different approaches!"
-    cat memory/attempt_history.json | jq '.stuck_subtasks'
+    echo -e "\n⚠️  WARNING: Some analysis tasks are stuck and need different approaches!"
+    cat memory/attempt_history.json | jq '.stuck_tasks'
   fi
 else
-  echo "No attempt history yet (all subtasks are first attempts)"
+  echo "No attempt history yet (all analysis tasks are first attempts)"
 fi
 echo "=== END RECOVERY CONTEXT ==="
 ```
 
 ## Add to STEP 5 (Before 5.1):
 
-### 5.0: Check Recovery History for This Subtask (CRITICAL - DO THIS FIRST)
+### 5.0: Check Recovery History for This Analysis Task (CRITICAL - DO THIS FIRST)
 
 ```bash
-# Check if this subtask was attempted before
-SUBTASK_ID="your-subtask-id"  # Replace with actual subtask ID from implementation_plan.json
+# Check if this analysis task was attempted before
+TASK_ID="your-task-id"  # Replace with actual task ID from investigation_plan.json
 
-echo "=== CHECKING ATTEMPT HISTORY FOR $SUBTASK_ID ==="
+echo "=== CHECKING ATTEMPT HISTORY FOR $TASK_ID ==="
 
 if [ -f memory/attempt_history.json ]; then
-  # Check if this subtask has attempts
-  subtask_data=$(cat memory/attempt_history.json | jq ".subtasks[\"$SUBTASK_ID\"]" 2>/dev/null)
+  # Check if this task has attempts
+  task_data=$(cat memory/attempt_history.json | jq ".tasks[\"$TASK_ID\"]" 2>/dev/null)
 
-  if [ "$subtask_data" != "null" ]; then
-    echo "⚠️⚠️⚠️ THIS SUBTASK HAS BEEN ATTEMPTED BEFORE! ⚠️⚠️⚠️"
+  if [ "$task_data" != "null" ]; then
+    echo "⚠️⚠️⚠️ THIS ANALYSIS TASK HAS BEEN ATTEMPTED BEFORE! ⚠️⚠️⚠️"
     echo ""
     echo "Previous attempts:"
-    cat memory/attempt_history.json | jq ".subtasks[\"$SUBTASK_ID\"].attempts[]"
+    cat memory/attempt_history.json | jq ".tasks[\"$TASK_ID\"].attempts[]"
     echo ""
-    echo "CRITICAL REQUIREMENT: You MUST try a DIFFERENT approach!"
+    echo "CRITICAL REQUIREMENT: You MUST try a DIFFERENT analysis approach!"
     echo "Review what was tried above and explicitly choose a different strategy."
     echo ""
 
     # Show count
-    attempt_count=$(cat memory/attempt_history.json | jq ".subtasks[\"$SUBTASK_ID\"].attempts | length" 2>/dev/null || echo 0)
+    attempt_count=$(cat memory/attempt_history.json | jq ".tasks[\"$TASK_ID\"].attempts | length" 2>/dev/null || echo 0)
     echo "This is attempt #$((attempt_count + 1))"
 
     if [ "$attempt_count" -ge 2 ]; then
       echo ""
       echo "⚠️  HIGH RISK: Multiple attempts already. Consider:"
-      echo "  - Using a completely different library or pattern"
-      echo "  - Simplifying the approach"
-      echo "  - Checking if requirements are feasible"
+      echo "  - Using a different forensic tool"
+      echo "  - Analyzing a different artifact type"
+      echo "  - Consulting DFIQ for alternative approaches"
+      echo "  - Checking if evidence has the required data"
     fi
   else
-    echo "✓ First attempt at this subtask - no recovery context needed"
+    echo "✓ First attempt at this analysis task - no recovery context needed"
   fi
 else
   echo "✓ No attempt history file - this is a fresh start"
@@ -68,64 +69,66 @@ echo ""
 ```
 
 **WHAT THIS MEANS:**
-- If you see previous attempts, you are RETRYING this subtask
+
+- If you see previous attempts, you are RETRYING this analysis task
 - Previous attempts FAILED for a reason
 - You MUST read what was tried and explicitly choose something different
-- Repeating the same approach will trigger circular fix detection
+- Repeating the same approach will trigger circular analysis detection
 
 ## Add to STEP 6 (After marking in_progress):
 
-### Record Your Approach (Recovery Tracking)
+### Record Your Analysis Approach (Recovery Tracking)
 
-**IMPORTANT: Before you write any code, document your approach.**
+**IMPORTANT: Before you run any analysis, document your approach.**
 
 ```python
-# Record your implementation approach for recovery tracking
+# Record your analysis approach for recovery tracking
 import json
 from pathlib import Path
 from datetime import datetime
 
-subtask_id = "your-subtask-id"  # Your current subtask ID
+task_id = "your-task-id"  # Your current analysis task ID
 approach_description = """
-Describe your approach here in 2-3 sentences:
-- What pattern/library are you using?
-- What files are you modifying?
-- What's your core strategy?
+Describe your analysis approach here in 2-3 sentences:
+- What forensic tool are you using?
+- What evidence files are you analyzing?
+- What artifacts/IOCs are you hunting?
 
-Example: "Using async/await pattern from auth.py. Will modify user_routes.py
-to add avatar upload endpoint using the same file handling pattern as
-document_upload.py. Will store in S3 using boto3 library."
+Example: "Using Volatility3 windows.netscan plugin to extract network connections
+from memory dump. Will search results for known IOC IPs from iocs/all_iocs.txt.
+Outputting to ./outputs/phase-1/netscan_results.json."
 """
 
-# This will be used to detect circular fixes
+# This will be used to detect circular analysis
 approach_file = Path("memory/current_approach.txt")
 approach_file.parent.mkdir(parents=True, exist_ok=True)
 
 with open(approach_file, "a") as f:
-    f.write(f"\n--- {subtask_id} at {datetime.now().isoformat()} ---\n")
+    f.write(f"\n--- {task_id} at {datetime.now().isoformat()} ---\n")
     f.write(approach_description.strip())
     f.write("\n")
 
-print(f"Approach recorded for {subtask_id}")
+print(f"Analysis approach recorded for {task_id}")
 ```
 
 **Why this matters:**
-- If your attempt fails, the recovery system will read this
-- It helps detect if next attempt tries the same thing (circular fix)
-- It creates a record of what was attempted for human review
+
+- If your analysis attempt fails, the recovery system will read this
+- It helps detect if next attempt tries the same tool/approach (circular analysis)
+- It creates a record of what was analyzed for chain of custody
 
 ## Add to STEP 7 (After verification section):
 
-### If Verification Fails - Recovery Process
+### If Analysis Verification Fails - Recovery Process
 
 ```python
-# If verification failed, record the attempt
+# If analysis verification failed, record the attempt
 import json
 from pathlib import Path
 from datetime import datetime
 
-subtask_id = "your-subtask-id"
-approach = "What you tried"  # From your approach.txt
+task_id = "your-task-id"
+approach = "What analysis you tried"  # From your approach.txt
 error_message = "What went wrong"  # The actual error
 
 # Load or create attempt history
@@ -134,44 +137,47 @@ if history_file.exists():
     with open(history_file) as f:
         history = json.load(f)
 else:
-    history = {"subtasks": {}, "stuck_subtasks": [], "metadata": {}}
+    history = {"tasks": {}, "stuck_tasks": [], "metadata": {}}
 
-# Initialize subtask if needed
-if subtask_id not in history["subtasks"]:
-    history["subtasks"][subtask_id] = {"attempts": [], "status": "pending"}
+# Initialize task if needed
+if task_id not in history["tasks"]:
+    history["tasks"][task_id] = {"attempts": [], "status": "pending"}
 
-# Get current session number from build-progress.txt
-session_num = 1  # You can extract from build-progress.txt
+# Get current session number from investigation-progress.txt
+session_num = 1  # You can extract from investigation-progress.txt
 
 # Record the failed attempt
 attempt = {
     "session": session_num,
     "timestamp": datetime.now().isoformat(),
     "approach": approach,
+    "tool_used": "volatility3",  # or chainsaw, zeek, etc.
     "success": False,
-    "error": error_message
+    "error": error_message,
+    "evidence_source": "path/to/evidence"
 }
 
-history["subtasks"][subtask_id]["attempts"].append(attempt)
-history["subtasks"][subtask_id]["status"] = "failed"
+history["tasks"][task_id]["attempts"].append(attempt)
+history["tasks"][task_id]["status"] = "failed"
 history["metadata"]["last_updated"] = datetime.now().isoformat()
 
 # Save
 with open(history_file, "w") as f:
     json.dump(history, f, indent=2)
 
-print(f"Failed attempt recorded for {subtask_id}")
+print(f"Failed attempt recorded for {task_id}")
 
 # Check if we should mark as stuck
-attempt_count = len(history["subtasks"][subtask_id]["attempts"])
+attempt_count = len(history["tasks"][task_id]["attempts"])
 if attempt_count >= 3:
     print(f"\n⚠️  WARNING: {attempt_count} attempts failed.")
     print("Consider marking as stuck if you can't find a different approach.")
+    print("Consult DFIQ for alternative approaches to this investigative question.")
 ```
 
 ## Add NEW STEP between 9 and 10:
 
-## STEP 9B: RECORD SUCCESSFUL ATTEMPT (If verification passed)
+## STEP 9B: RECORD SUCCESSFUL ANALYSIS (If verification passed)
 
 ```python
 # Record successful completion in attempt history
@@ -179,8 +185,9 @@ import json
 from pathlib import Path
 from datetime import datetime
 
-subtask_id = "your-subtask-id"
-approach = "What you tried"  # From your approach.txt
+task_id = "your-task-id"
+approach = "What analysis you performed"  # From your approach.txt
+findings_file = "./outputs/[phase]/findings.json"
 
 # Load attempt history
 history_file = Path("memory/attempt_history.json")
@@ -188,85 +195,70 @@ if history_file.exists():
     with open(history_file) as f:
         history = json.load(f)
 else:
-    history = {"subtasks": {}, "stuck_subtasks": [], "metadata": {}}
+    history = {"tasks": {}, "stuck_tasks": [], "metadata": {}}
 
-# Initialize subtask if needed
-if subtask_id not in history["subtasks"]:
-    history["subtasks"][subtask_id] = {"attempts": [], "status": "pending"}
+# Initialize task if needed
+if task_id not in history["tasks"]:
+    history["tasks"][task_id] = {"attempts": [], "status": "pending"}
 
 # Get session number
-session_num = 1  # Extract from build-progress.txt or session count
+session_num = 1  # Extract from investigation-progress.txt
 
 # Record successful attempt
 attempt = {
     "session": session_num,
     "timestamp": datetime.now().isoformat(),
     "approach": approach,
+    "tool_used": "volatility3",  # or chainsaw, zeek, etc.
     "success": True,
-    "error": None
+    "error": None,
+    "findings_file": findings_file
 }
 
-history["subtasks"][subtask_id]["attempts"].append(attempt)
-history["subtasks"][subtask_id]["status"] = "completed"
+history["tasks"][task_id]["attempts"].append(attempt)
+history["tasks"][task_id]["status"] = "completed"
 history["metadata"]["last_updated"] = datetime.now().isoformat()
 
 # Save
 with open(history_file, "w") as f:
     json.dump(history, f, indent=2)
 
-# Also record as good commit
-commit_hash = "$(git rev-parse HEAD)"  # Get current commit
-
-commits_file = Path("memory/build_commits.json")
-if commits_file.exists():
-    with open(commits_file) as f:
-        commits = json.load(f)
-else:
-    commits = {"commits": [], "last_good_commit": None, "metadata": {}}
-
-commits["commits"].append({
-    "hash": commit_hash,
-    "subtask_id": subtask_id,
-    "timestamp": datetime.now().isoformat()
-})
-commits["last_good_commit"] = commit_hash
-commits["metadata"]["last_updated"] = datetime.now().isoformat()
-
-with open(commits_file, "w") as f:
-    json.dump(commits, f, indent=2)
-
-print(f"✓ Success recorded for {subtask_id} at commit {commit_hash[:8]}")
+# Also record evidence integrity verification
+print(f"✓ Analysis success recorded for {task_id}")
+print(f"  Findings saved to: {findings_file}")
 ```
 
-## KEY RECOVERY PRINCIPLES TO ADD:
+## KEY RECOVERY PRINCIPLES:
 
-### The Recovery Loop
+### The Analysis Recovery Loop
 
 ```
-1. Start subtask
-2. Check attempt_history.json for this subtask
+1. Start analysis task
+2. Check attempt_history.json for this task
 3. If previous attempts exist:
-   a. READ what was tried
+   a. READ what tool/approach was tried
    b. READ what failed
-   c. Choose DIFFERENT approach
+   c. Consult DFIQ for alternative approaches
+   d. Choose DIFFERENT approach
 4. Record your approach
-5. Implement
-6. Verify
-7. If SUCCESS: Record attempt, record good commit, mark complete
+5. Perform analysis
+6. Validate findings
+7. If SUCCESS: Record attempt, update findings, mark complete
 8. If FAILURE: Record attempt with error, check if stuck (3+ attempts)
 ```
 
 ### When to Mark as Stuck
 
-A subtask should be marked as stuck if:
-- 3+ attempts with different approaches all failed
-- Circular fix detected (same approach tried multiple times)
-- Requirements appear infeasible
-- External blocker (missing dependency, etc.)
+An analysis task should be marked as stuck if:
+
+- 3+ attempts with different tools all failed
+- Circular analysis detected (same approach tried multiple times)
+- Evidence doesn't contain required data
+- Tool/evidence compatibility issues
 
 ```python
-# Mark subtask as stuck
-subtask_id = "your-subtask-id"
+# Mark analysis task as stuck
+task_id = "your-task-id"
 reason = "Why it's stuck"
 
 history_file = Path("memory/attempt_history.json")
@@ -274,17 +266,40 @@ with open(history_file) as f:
     history = json.load(f)
 
 stuck_entry = {
-    "subtask_id": subtask_id,
+    "task_id": task_id,
     "reason": reason,
     "escalated_at": datetime.now().isoformat(),
-    "attempt_count": len(history["subtasks"][subtask_id]["attempts"])
+    "attempt_count": len(history["tasks"][task_id]["attempts"]),
+    "recommended_action": "Consult DFIQ or escalate to senior analyst"
 }
 
-history["stuck_subtasks"].append(stuck_entry)
-history["subtasks"][subtask_id]["status"] = "stuck"
+history["stuck_tasks"].append(stuck_entry)
+history["tasks"][task_id]["status"] = "stuck"
 
 with open(history_file, "w") as f:
     json.dump(history, f, indent=2)
 
-# Also update implementation_plan.json status to "blocked"
+# Also update investigation_plan.json status to "blocked"
+```
+
+### DFIQ Integration for Recovery
+
+When stuck, consult DFIQ for alternative approaches:
+
+```python
+# Load DFIQ knowledge base
+from dfiq import DFIQ
+
+dfiq = DFIQ(yaml_data_path='./dfiq')
+
+# Find alternative approaches for your question
+question_id = "Q1001"  # e.g., "What files were downloaded using a web browser?"
+question = dfiq.components.get(question_id)
+
+if question:
+    print(f"Question: {question.name}")
+    print(f"Approaches available: {len(question.approaches)}")
+    for approach_id in question.approaches:
+        approach = dfiq.components.get(approach_id)
+        print(f"  - {approach.name}")
 ```

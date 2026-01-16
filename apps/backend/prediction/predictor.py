@@ -22,15 +22,15 @@ class BugPredictor:
     - ChecklistFormatter: Formats checklists as markdown
     """
 
-    def __init__(self, spec_dir: Path):
+    def __init__(self, case_dir: Path):
         """
         Initialize the bug predictor.
 
         Args:
-            spec_dir: Path to the spec directory (e.g., auto-claude/specs/001-feature/)
+            case_dir: Path to the case directory (e.g., auto-sleuth/cases/001-feature/)
         """
-        self.spec_dir = Path(spec_dir)
-        self.memory_dir = self.spec_dir / "memory"
+        self.case_dir = Path(case_dir)
+        self.memory_dir = self.case_dir / "memory"
 
         # Initialize components
         self.memory_loader = MemoryLoader(self.memory_dir)
@@ -43,7 +43,7 @@ class BugPredictor:
         Generate a complete pre-implementation checklist for a subtask.
 
         Args:
-            subtask: Subtask dictionary from implementation_plan.json
+            subtask: Subtask dictionary from investigation_plan.json
 
         Returns:
             PreImplementationChecklist ready for formatting

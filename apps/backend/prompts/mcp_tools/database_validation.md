@@ -45,7 +45,7 @@ python manage.py migrate --plan
 
 **Prisma:**
 ```bash
-npx prisma migrate deploy --preview-feature
+npx prisma migrate deploy --preview-remediation
 ```
 
 **Alembic:**
@@ -70,7 +70,7 @@ python manage.py makemigrations --check --dry-run
 
 #### Step 4: Check for Data Integrity
 
-If the feature modifies existing data:
+If the remediation modifies existing data:
 1. Verify data migrations handle edge cases
 2. Check for null constraints on new fields
 3. Verify foreign key relationships

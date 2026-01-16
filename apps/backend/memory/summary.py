@@ -14,14 +14,14 @@ from .patterns import load_gotchas, load_patterns
 from .sessions import load_all_insights
 
 
-def get_memory_summary(spec_dir: Path) -> dict[str, Any]:
+def get_memory_summary(case_dir: Path) -> dict[str, Any]:
     """
-    Get a summary of all memory data for a spec.
+    Get a summary of all memory data for a case.
 
     Useful for understanding what the system has learned so far.
 
     Args:
-        spec_dir: Path to spec directory
+        case_dir: Path to case directory
 
     Returns:
         Dictionary with memory summary:
@@ -31,10 +31,10 @@ def get_memory_summary(spec_dir: Path) -> dict[str, Any]:
             - total_gotchas: int
             - recent_insights: list[dict] (last 3 sessions)
     """
-    insights = load_all_insights(spec_dir)
-    codebase_map = load_codebase_map(spec_dir)
-    patterns = load_patterns(spec_dir)
-    gotchas = load_gotchas(spec_dir)
+    insights = load_all_insights(case_dir)
+    codebase_map = load_codebase_map(case_dir)
+    patterns = load_patterns(case_dir)
+    gotchas = load_gotchas(case_dir)
 
     return {
         "total_sessions": len(insights),

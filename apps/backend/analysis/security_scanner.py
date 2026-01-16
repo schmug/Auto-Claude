@@ -15,7 +15,7 @@ Usage:
     from analysis.security_scanner import SecurityScanner
 
     scanner = SecurityScanner()
-    results = scanner.scan(project_dir, spec_dir)
+    results = scanner.scan(project_dir, case_dir)
 
     if results.has_critical_issues:
         print("Security issues found - blocking QA approval")
@@ -111,7 +111,7 @@ class SecurityScanner:
     def scan(
         self,
         project_dir: Path,
-        spec_dir: Path | None = None,
+        case_dir: Path | None = None,
         changed_files: list[str] | None = None,
         run_secrets: bool = True,
         run_sast: bool = True,
@@ -122,7 +122,7 @@ class SecurityScanner:
 
         Args:
             project_dir: Path to the project root
-            spec_dir: Path to the spec directory (for storing results)
+            case_dir: Path to the case directory (for storing results)
             changed_files: Optional list of files to scan (if None, scans all)
             run_secrets: Whether to run secrets scanning
             run_sast: Whether to run SAST tools
@@ -157,9 +157,9 @@ class SecurityScanner:
             v.severity == "critical" for v in result.vulnerabilities
         )
 
-        # Save results if spec_dir provided
-        if spec_dir:
-            self._save_results(spec_dir, result)
+        # Save results if case_dir provided
+        if case_dir:
+            self._save_results(case_dir, result)
 
         return result
 
@@ -429,12 +429,12 @@ class SecurityScanner:
             return "*" * len(text)
         return text[:4] + "*" * (len(text) - 8) + text[-4:]
 
-    def _save_results(self, spec_dir: Path, result: SecurityScanResult) -> None:
-        """Save scan results to spec directory."""
-        spec_dir = Path(spec_dir)
-        spec_dir.mkdir(parents=True, exist_ok=True)
+    def _save_results(self, case_dir: Path, result: SecurityScanResult) -> None:
+        """Save scan results to case directory."""
+        case_dir = Path(case_dir)
+        case_dir.mkdir(parents=True, exist_ok=True)
 
-        output_file = spec_dir / "security_scan_results.json"
+        output_file = case_dir / "security_scan_results.json"
         output_data = self.to_dict(result)
 
         with open(output_file, "w", encoding="utf-8") as f:
@@ -485,7 +485,7 @@ class SecurityScanner:
 
 def scan_for_security_issues(
     project_dir: Path,
-    spec_dir: Path | None = None,
+    case_dir: Path | None = None,
     changed_files: list[str] | None = None,
 ) -> SecurityScanResult:
     """
@@ -493,14 +493,14 @@ def scan_for_security_issues(
 
     Args:
         project_dir: Path to project root
-        spec_dir: Optional spec directory to save results
+        case_dir: Optional case directory to save results
         changed_files: Optional list of files to scan
 
     Returns:
         SecurityScanResult with all findings
     """
     scanner = SecurityScanner()
-    return scanner.scan(project_dir, spec_dir, changed_files)
+    return scanner.scan(project_dir, case_dir, changed_files)
 
 
 def has_security_issues(project_dir: Path) -> bool:
@@ -553,7 +553,7 @@ def main() -> None:
 
     parser = argparse.ArgumentParser(description="Run security scans")
     parser.add_argument("project_dir", type=Path, help="Path to project root")
-    parser.add_argument("--spec-dir", type=Path, help="Path to spec directory")
+    parser.add_argument("--case-dir", type=Path, help="Path to case directory")
     parser.add_argument(
         "--secrets-only", action="store_true", help="Only scan for secrets"
     )
@@ -564,7 +564,7 @@ def main() -> None:
     scanner = SecurityScanner()
     result = scanner.scan(
         args.project_dir,
-        spec_dir=args.spec_dir,
+        case_dir=args.case_dir,
         run_sast=not args.secrets_only,
         run_dependency_audit=not args.secrets_only,
     )

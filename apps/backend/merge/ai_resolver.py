@@ -12,7 +12,7 @@ It uses minimal context to reduce token usage:
 3. Semantic change descriptions
 4. The baseline code for reference
 
-The AI is given a focused task: merge these specific changes.
+The AI is given a focused task: merge these caseific changes.
 No file exploration, no open-ended questions.
 
 This module now serves as a compatibility layer, importing from the

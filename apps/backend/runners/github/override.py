@@ -37,8 +37,8 @@ class OverrideType(str, Enum):
     UNDO_LAST = "undo_last"
     FORCE_RETRY = "force_retry"
     SKIP_REVIEW = "skip_review"
-    APPROVE_SPEC = "approve_spec"
-    REJECT_SPEC = "reject_spec"
+    APPROVE_SPEC = "approve_case"
+    REJECT_SPEC = "reject_case"
 
 
 class CommandType(str, Enum):
@@ -181,7 +181,7 @@ class OverrideManager:
     Manages user overrides and cancellations.
 
     Usage:
-        override_mgr = OverrideManager(github_dir=Path(".auto-claude/github"))
+        override_mgr = OverrideManager(github_dir=Path(".auto-sleuth/github"))
 
         # Start grace period when label is added
         grace = override_mgr.start_grace_period(
@@ -399,8 +399,8 @@ class OverrideManager:
 | `/undo-last` | Undo the most recent automation action |
 | `/force-retry` | Retry a failed operation |
 | `/skip-review` | Skip AI review for this PR |
-| `/approve` | Approve pending spec/action |
-| `/reject` | Reject pending spec/action |
+| `/approve` | Approve pending case/action |
+| `/reject` | Reject pending case/action |
 | `/not-spam` | Override spam classification |
 | `/not-duplicate` | Override duplicate classification |
 | `/status` | Show current automation status |

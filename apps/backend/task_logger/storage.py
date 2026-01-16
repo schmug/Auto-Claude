@@ -17,15 +17,15 @@ class LogStorage:
 
     LOG_FILE = "task_logs.json"
 
-    def __init__(self, spec_dir: Path):
+    def __init__(self, case_dir: Path):
         """
         Initialize log storage.
 
         Args:
-            spec_dir: Path to the spec directory
+            case_dir: Path to the case directory
         """
-        self.spec_dir = Path(spec_dir)
-        self.log_file = self.spec_dir / self.LOG_FILE
+        self.case_dir = Path(case_dir)
+        self.log_file = self.case_dir / self.LOG_FILE
         self._data: dict = self._load_or_create()
 
     def _load_or_create(self) -> dict:
@@ -38,7 +38,7 @@ class LogStorage:
                 pass
 
         return {
-            "spec_id": self.spec_dir.name,
+            "case_id": self.case_dir.name,
             "created_at": self._timestamp(),
             "updated_at": self._timestamp(),
             "phases": {
@@ -70,11 +70,11 @@ class LogStorage:
         """Save logs to file atomically to prevent corruption from concurrent reads."""
         self._data["updated_at"] = self._timestamp()
         try:
-            self.spec_dir.mkdir(parents=True, exist_ok=True)
+            self.case_dir.mkdir(parents=True, exist_ok=True)
             # Write to temp file first, then atomic rename to prevent corruption
             # when the UI reads mid-write
             fd, tmp_path = tempfile.mkstemp(
-                dir=self.spec_dir, prefix=".task_logs_", suffix=".tmp"
+                dir=self.case_dir, prefix=".task_logs_", suffix=".tmp"
             )
             try:
                 with os.fdopen(fd, "w", encoding="utf-8") as f:
@@ -95,7 +95,7 @@ class LogStorage:
 
     def add_entry(self, entry: LogEntry) -> None:
         """
-        Add an entry to the specified phase.
+        Add an entry to the caseified phase.
 
         Args:
             entry: The log entry to add
@@ -146,30 +146,30 @@ class LogStorage:
         return self._data
 
     def get_phase_data(self, phase: str) -> dict:
-        """Get data for a specific phase."""
+        """Get data for a caseific phase."""
         return self._data["phases"].get(phase, {})
 
-    def update_spec_id(self, new_spec_id: str) -> None:
+    def update_case_id(self, new_case_id: str) -> None:
         """
-        Update the spec ID in the data.
+        Update the case ID in the data.
 
         Args:
-            new_spec_id: New spec ID
+            new_case_id: New case ID
         """
-        self._data["spec_id"] = new_spec_id
+        self._data["case_id"] = new_case_id
 
 
-def load_task_logs(spec_dir: Path) -> dict | None:
+def load_task_logs(case_dir: Path) -> dict | None:
     """
-    Load task logs from a spec directory.
+    Load task logs from a case directory.
 
     Args:
-        spec_dir: Path to the spec directory
+        case_dir: Path to the case directory
 
     Returns:
         Logs dictionary or None if not found
     """
-    log_file = spec_dir / LogStorage.LOG_FILE
+    log_file = case_dir / LogStorage.LOG_FILE
     if not log_file.exists():
         return None
 
@@ -180,17 +180,17 @@ def load_task_logs(spec_dir: Path) -> dict | None:
         return None
 
 
-def get_active_phase(spec_dir: Path) -> str | None:
+def get_active_phase(case_dir: Path) -> str | None:
     """
-    Get the currently active phase for a spec.
+    Get the currently active phase for a case.
 
     Args:
-        spec_dir: Path to the spec directory
+        case_dir: Path to the case directory
 
     Returns:
         Phase name or None if no active phase
     """
-    logs = load_task_logs(spec_dir)
+    logs = load_task_logs(case_dir)
     if not logs:
         return None
 

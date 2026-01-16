@@ -22,7 +22,7 @@ def validate_embedding_config(config: "GraphitiConfig") -> tuple[bool, str]:
     Validate embedding configuration for consistency.
 
     Checks that embedding dimensions are correctly configured,
-    especially important for Ollama where explicit dimension is required.
+    ecaseially important for Ollama where explicit dimension is required.
 
     Args:
         config: GraphitiConfig to validate

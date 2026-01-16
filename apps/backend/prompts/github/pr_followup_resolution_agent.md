@@ -144,7 +144,7 @@ Return verifications in this structure:
 ### False Negatives (Marking unresolved when fixed)
 - Fix uses different approach than expected
 - Issue fixed via configuration change
-- Problem resolved by removing feature entirely
+- Problem resolved by removing remediation entirely
 - Upstream dependency update fixed it
 
 ## Important Notes

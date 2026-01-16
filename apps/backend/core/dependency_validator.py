@@ -2,7 +2,7 @@
 Dependency Validator
 ====================
 
-Validates platform-specific dependencies are installed before running agents.
+Validates platform-caseific dependencies are installed before running agents.
 """
 
 import sys
@@ -11,13 +11,13 @@ from pathlib import Path
 
 def validate_platform_dependencies() -> None:
     """
-    Validate that platform-specific dependencies are installed.
+    Validate that platform-caseific dependencies are installed.
 
     Raises:
-        SystemExit: If required platform-specific dependencies are missing,
+        SystemExit: If required platform-caseific dependencies are missing,
                    with helpful installation instructions.
     """
-    # Check Windows-specific dependencies
+    # Check Windows-caseific dependencies
     if sys.platform == "win32" and sys.version_info >= (3, 12):
         try:
             import pywintypes  # noqa: F401
@@ -34,7 +34,7 @@ def _exit_with_pywin32_error() -> None:
     sys.exit(
         "Error: Required Windows dependency 'pywin32' is not installed.\n"
         "\n"
-        "Auto Claude requires pywin32 on Windows for LadybugDB/Graphiti memory integration.\n"
+        "Auto Sleuth requires pywin32 on Windows for LadybugDB/Graphiti memory integration.\n"
         "\n"
         "To fix this:\n"
         "1. Activate your virtual environment:\n"

@@ -21,10 +21,10 @@ Usage:
     export OPENAI_API_KEY=sk-...
 
     # Run the test:
-    cd auto-claude
+    cd auto-sleuth
     python integrations/graphiti/test_graphiti_memory.py
 
-    # Or run specific tests:
+    # Or run caseific tests:
     python integrations/graphiti/test_graphiti_memory.py --test connection
     python integrations/graphiti/test_graphiti_memory.py --test save
     python integrations/graphiti/test_graphiti_memory.py --test search
@@ -39,15 +39,15 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-# Add auto-claude to path
-auto_claude_dir = Path(__file__).parent.parent.parent
-sys.path.insert(0, str(auto_claude_dir))
+# Add auto-sleuth to path
+auto_sleuth_dir = Path(__file__).parent.parent.parent
+sys.path.insert(0, str(auto_sleuth_dir))
 
 # Load .env file
 try:
     from dotenv import load_dotenv
 
-    env_file = auto_claude_dir / ".env"
+    env_file = auto_sleuth_dir / ".env"
     if env_file.exists():
         load_dotenv(env_file)
         print(f"Loaded .env from {env_file}")
@@ -380,7 +380,7 @@ async def test_ollama_embeddings() -> bool:
         print("  Generating test embedding...")
 
         test_text = (
-            "This is a test embedding for Auto Claude memory system using LadybugDB."
+            "This is a test embedding for Auto Sleuth memory system using LadybugDB."
         )
 
         resp = requests.post(
@@ -432,13 +432,13 @@ async def test_graphiti_memory_class(db_path: str, database: str) -> bool:
         from integrations.graphiti.memory import GraphitiMemory
 
         # Create temporary directories for testing
-        test_spec_dir = Path("/tmp/graphiti_test_spec")
-        test_spec_dir.mkdir(parents=True, exist_ok=True)
+        test_case_dir = Path("/tmp/graphiti_test_case")
+        test_case_dir.mkdir(parents=True, exist_ok=True)
 
         test_project_dir = Path("/tmp/graphiti_test_project")
         test_project_dir.mkdir(parents=True, exist_ok=True)
 
-        print(f"  Spec dir: {test_spec_dir}")
+        print(f"  Case dir: {test_case_dir}")
         print(f"  Project dir: {test_project_dir}")
         print()
 
@@ -447,7 +447,7 @@ async def test_graphiti_memory_class(db_path: str, database: str) -> bool:
         os.environ["GRAPHITI_DATABASE"] = database
 
         # Create memory instance
-        memory = GraphitiMemory(test_spec_dir, test_project_dir)
+        memory = GraphitiMemory(test_case_dir, test_project_dir)
 
         print(f"  Is enabled: {memory.is_enabled}")
         print(f"  Group ID: {memory.group_id}")
@@ -623,7 +623,7 @@ async def main():
     )
     parser.add_argument(
         "--db-path",
-        default=os.path.expanduser("~/.auto-claude/memories"),
+        default=os.path.expanduser("~/.auto-sleuth/memories"),
         help="Database path",
     )
     parser.add_argument(
@@ -711,7 +711,7 @@ async def main():
     print()
     print("    # Test with production database:")
     print(
-        "    python integrations/graphiti/test_graphiti_memory.py --database auto_claude_memory"
+        "    python integrations/graphiti/test_graphiti_memory.py --database auto_sleuth_memory"
     )
     print()
 

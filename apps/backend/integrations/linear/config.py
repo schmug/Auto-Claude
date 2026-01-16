@@ -42,7 +42,7 @@ LABELS = {
     "phase": "phase",  # Phase label prefix (e.g., "phase-1")
     "service": "service",  # Service label prefix (e.g., "service-backend")
     "stuck": "stuck",  # Mark stuck subtasks
-    "auto_build": "auto-claude",  # All auto-claude issues
+    "auto_build": "auto-sleuth",  # All auto-sleuth issues
     "needs_review": "needs-review",
 }
 
@@ -83,7 +83,7 @@ class LinearConfig:
 
 @dataclass
 class LinearProjectState:
-    """State of a Linear project for an auto-claude spec."""
+    """State of a Linear project for an auto-sleuth case."""
 
     initialized: bool = False
     team_id: str | None = None
@@ -123,16 +123,16 @@ class LinearProjectState:
             issue_mapping=data.get("issue_mapping", {}),
         )
 
-    def save(self, spec_dir: Path) -> None:
-        """Save state to the spec directory."""
-        marker_file = spec_dir / LINEAR_PROJECT_MARKER
+    def save(self, case_dir: Path) -> None:
+        """Save state to the case directory."""
+        marker_file = case_dir / LINEAR_PROJECT_MARKER
         with open(marker_file, "w") as f:
             json.dump(self.to_dict(), f, indent=2)
 
     @classmethod
-    def load(cls, spec_dir: Path) -> Optional["LinearProjectState"]:
-        """Load state from the spec directory."""
-        marker_file = spec_dir / LINEAR_PROJECT_MARKER
+    def load(cls, case_dir: Path) -> Optional["LinearProjectState"]:
+        """Load state from the case directory."""
+        marker_file = case_dir / LINEAR_PROJECT_MARKER
         if not marker_file.exists():
             return None
 
@@ -148,7 +148,7 @@ def get_linear_status(subtask_status: str) -> str:
     Map subtask status to Linear status.
 
     Args:
-        subtask_status: Status from implementation_plan.json
+        subtask_status: Status from investigation_plan.json
 
     Returns:
         Corresponding Linear status string
@@ -193,7 +193,7 @@ def format_subtask_description(subtask: dict, phase: dict = None) -> str:
     Format a subtask as a Linear issue description.
 
     Args:
-        subtask: Subtask dict from implementation_plan.json
+        subtask: Subtask dict from investigation_plan.json
         phase: Optional phase dict for context
 
     Returns:

@@ -54,7 +54,7 @@ GENERIC_PATTERNS = [
     (r'["\'][A-Za-z0-9+/]{64,}={0,2}["\']', "Potential base64-encoded secret"),
 ]
 
-# Service-specific patterns (known formats)
+# Service-caseific patterns (known formats)
 SERVICE_PATTERNS = [
     # OpenAI / Anthropic style keys
     (r"sk-[a-zA-Z0-9]{20,}", "OpenAI/Anthropic-style API key"),
@@ -508,7 +508,7 @@ def main() -> int:
         "--all-files", "-a", action="store_true", help="Scan all tracked files"
     )
     parser.add_argument(
-        "--path", "-p", type=str, help="Scan a specific file or directory"
+        "--path", "-p", type=str, help="Scan a caseific file or directory"
     )
     parser.add_argument("--json", action="store_true", help="Output results as JSON")
     parser.add_argument(

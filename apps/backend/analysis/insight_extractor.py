@@ -176,7 +176,7 @@ def get_commit_messages(
 
 
 def gather_extraction_inputs(
-    spec_dir: Path,
+    case_dir: Path,
     project_dir: Path,
     subtask_id: str,
     session_num: int,
@@ -189,7 +189,7 @@ def gather_extraction_inputs(
     Gather all inputs needed for insight extraction.
 
     Args:
-        spec_dir: Spec directory
+        case_dir: Case directory
         project_dir: Project root
         subtask_id: The subtask that was worked on
         session_num: Session number
@@ -202,7 +202,7 @@ def gather_extraction_inputs(
         Dict with all inputs for the extractor
     """
     # Get subtask description from implementation plan
-    subtask_description = _get_subtask_description(spec_dir, subtask_id)
+    subtask_description = _get_subtask_description(case_dir, subtask_id)
 
     # Get git diff
     diff = get_session_diff(project_dir, commit_before, commit_after)
@@ -228,9 +228,9 @@ def gather_extraction_inputs(
     }
 
 
-def _get_subtask_description(spec_dir: Path, subtask_id: str) -> str:
+def _get_subtask_description(case_dir: Path, subtask_id: str) -> str:
     """Get subtask description from implementation plan."""
-    plan_file = spec_dir / "implementation_plan.json"
+    plan_file = case_dir / "investigation_plan.json"
     if not plan_file.exists():
         return f"Subtask: {subtask_id}"
 
@@ -362,7 +362,7 @@ async def run_insight_extraction(
     model = get_extraction_model()
     prompt = _build_extraction_prompt(inputs)
 
-    # Use current directory if project_dir not specified
+    # Use current directory if project_dir not caseified
     cwd = str(project_dir.resolve()) if project_dir else os.getcwd()
 
     try:
@@ -504,7 +504,7 @@ def parse_insights(response_text: str) -> dict | None:
 
 
 async def extract_session_insights(
-    spec_dir: Path,
+    case_dir: Path,
     project_dir: Path,
     subtask_id: str,
     session_num: int,
@@ -520,7 +520,7 @@ async def extract_session_insights(
     Falls back to generic insights if extraction fails.
 
     Args:
-        spec_dir: Spec directory
+        case_dir: Case directory
         project_dir: Project root
         subtask_id: Subtask that was worked on
         session_num: Session number
@@ -545,7 +545,7 @@ async def extract_session_insights(
     try:
         # Gather inputs
         inputs = gather_extraction_inputs(
-            spec_dir=spec_dir,
+            case_dir=case_dir,
             project_dir=project_dir,
             subtask_id=subtask_id,
             session_num=session_num,
@@ -609,7 +609,7 @@ if __name__ == "__main__":
     import asyncio
 
     parser = argparse.ArgumentParser(description="Test insight extraction")
-    parser.add_argument("--spec-dir", type=Path, required=True, help="Spec directory")
+    parser.add_argument("--case-dir", type=Path, required=True, help="Case directory")
     parser.add_argument(
         "--project-dir", type=Path, required=True, help="Project directory"
     )
@@ -627,7 +627,7 @@ if __name__ == "__main__":
 
     async def main():
         insights = await extract_session_insights(
-            spec_dir=args.spec_dir,
+            case_dir=args.case_dir,
             project_dir=args.project_dir,
             subtask_id=args.subtask_id,
             session_num=1,

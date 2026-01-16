@@ -2,7 +2,7 @@
 Subtask Management Tools
 ========================
 
-Tools for managing subtask status in implementation_plan.json.
+Tools for managing subtask status in investigation_plan.json.
 """
 
 import json
@@ -19,12 +19,12 @@ except ImportError:
     tool = None
 
 
-def create_subtask_tools(spec_dir: Path, project_dir: Path) -> list:
+def create_subtask_tools(case_dir: Path, project_dir: Path) -> list:
     """
     Create subtask management tools.
 
     Args:
-        spec_dir: Path to the spec directory
+        case_dir: Path to the case directory
         project_dir: Path to the project root
 
     Returns:
@@ -40,7 +40,7 @@ def create_subtask_tools(spec_dir: Path, project_dir: Path) -> list:
     # -------------------------------------------------------------------------
     @tool(
         "update_subtask_status",
-        "Update the status of a subtask in implementation_plan.json. Use this when completing or starting a subtask.",
+        "Update the status of a subtask in investigation_plan.json. Use this when completing or starting a subtask.",
         {"subtask_id": str, "status": str, "notes": str},
     )
     async def update_subtask_status(args: dict[str, Any]) -> dict[str, Any]:
@@ -60,13 +60,13 @@ def create_subtask_tools(spec_dir: Path, project_dir: Path) -> list:
                 ]
             }
 
-        plan_file = spec_dir / "implementation_plan.json"
+        plan_file = case_dir / "investigation_plan.json"
         if not plan_file.exists():
             return {
                 "content": [
                     {
                         "type": "text",
-                        "text": "Error: implementation_plan.json not found",
+                        "text": "Error: investigation_plan.json not found",
                     }
                 ]
             }
@@ -119,7 +119,7 @@ def create_subtask_tools(spec_dir: Path, project_dir: Path) -> list:
                 "content": [
                     {
                         "type": "text",
-                        "text": f"Error: Invalid JSON in implementation_plan.json: {e}",
+                        "text": f"Error: Invalid JSON in investigation_plan.json: {e}",
                     }
                 ]
             }

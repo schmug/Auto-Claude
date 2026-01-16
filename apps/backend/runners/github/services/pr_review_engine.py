@@ -228,7 +228,7 @@ class PRReviewEngine:
 
         client = create_client(
             project_dir=project_root,
-            spec_dir=self.github_dir,
+            case_dir=self.github_dir,
             model=self.config.model,
             agent_type="pr_reviewer",  # Read-only - no bash, no edits
         )
@@ -491,7 +491,7 @@ class PRReviewEngine:
 
         client = create_client(
             project_dir=project_root,
-            spec_dir=self.github_dir,
+            case_dir=self.github_dir,
             model=self.config.model,
             agent_type="pr_reviewer",  # Read-only - no bash, no edits
         )
@@ -549,7 +549,7 @@ class PRReviewEngine:
 
         client = create_client(
             project_dir=project_root,
-            spec_dir=self.github_dir,
+            case_dir=self.github_dir,
             model=self.config.model,
             agent_type="pr_reviewer",  # Read-only - no bash, no edits
         )

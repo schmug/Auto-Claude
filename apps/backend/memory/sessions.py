@@ -23,13 +23,13 @@ logger = logging.getLogger(__name__)
 
 
 def save_session_insights(
-    spec_dir: Path, session_num: int, insights: dict[str, Any]
+    case_dir: Path, session_num: int, insights: dict[str, Any]
 ) -> None:
     """
     Save insights from a completed session.
 
     Args:
-        spec_dir: Path to spec directory
+        case_dir: Path to case directory
         session_num: Session number (1-indexed)
         insights: Dictionary containing session learnings with keys:
             - subtasks_completed: list[str] - Subtask IDs completed
@@ -56,7 +56,7 @@ def save_session_insights(
             "recommendations_for_next_session": ["Focus on integration tests next"]
         }
     """
-    insights_dir = get_session_insights_dir(spec_dir)
+    insights_dir = get_session_insights_dir(case_dir)
     session_file = insights_dir / f"session_{session_num:03d}.json"
 
     # Build complete insight structure
@@ -82,24 +82,24 @@ def save_session_insights(
     # Also save to Graphiti if enabled (non-blocking, errors logged but not raised)
     if is_graphiti_memory_enabled():
         try:
-            run_async(save_to_graphiti_async(spec_dir, session_num, session_data))
+            run_async(save_to_graphiti_async(case_dir, session_num, session_data))
             logger.info(f"Session {session_num} insights also saved to Graphiti")
         except Exception as e:
             # Don't fail the save if Graphiti fails - file-based is the primary storage
             logger.warning(f"Graphiti save failed (file-based save succeeded): {e}")
 
 
-def load_all_insights(spec_dir: Path) -> list[dict[str, Any]]:
+def load_all_insights(case_dir: Path) -> list[dict[str, Any]]:
     """
     Load all session insights, ordered by session number.
 
     Args:
-        spec_dir: Path to spec directory
+        case_dir: Path to case directory
 
     Returns:
         List of insight dictionaries, oldest to newest
     """
-    insights_dir = get_session_insights_dir(spec_dir)
+    insights_dir = get_session_insights_dir(case_dir)
 
     if not insights_dir.exists():
         return []

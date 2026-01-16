@@ -207,7 +207,7 @@ class PhaseExecutor:
         print_key_value("Tech Stack", ", ".join(context["tech_stack"][:5]) or "Unknown")
         print_key_value("Planned Features", str(len(context["planned_features"])))
         print_key_value(
-            "Target Audience", context["target_audience"] or "Not specified"
+            "Target Audience", context["target_audience"] or "Not caseified"
         )
         if graph_hints:
             total_hints = sum(len(h) for h in graph_hints.values())
@@ -226,7 +226,7 @@ class PhaseExecutor:
     async def execute_ideation_type(
         self, ideation_type: str, max_retries: int = 3
     ) -> IdeationPhaseResult:
-        """Run ideation for a specific type.
+        """Run ideation for a caseific type.
 
         Args:
             ideation_type: Type of ideation to run

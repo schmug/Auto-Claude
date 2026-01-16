@@ -24,5 +24,5 @@ RETRY_DELAY_SECONDS = 1
 class GroupIdMode:
     """Group ID modes for Graphiti memory scoping."""
 
-    SPEC = "spec"  # Each spec gets its own namespace
-    PROJECT = "project"  # All specs share project-wide context
+    SPEC = "case"  # Each case gets its own namespace
+    PROJECT = "project"  # All cases share project-wide context

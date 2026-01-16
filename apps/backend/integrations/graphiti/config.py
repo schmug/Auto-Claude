@@ -18,8 +18,8 @@ Environment Variables:
     GRAPHITI_EMBEDDER_PROVIDER: openai|voyage|azure_openai|ollama|google (default: openai)
 
     # Database
-    GRAPHITI_DATABASE: Graph database name (default: auto_claude_memory)
-    GRAPHITI_DB_PATH: Database storage path (default: ~/.auto-claude/memories)
+    GRAPHITI_DATABASE: Graph database name (default: auto_sleuth_memory)
+    GRAPHITI_DB_PATH: Database storage path (default: ~/.auto-sleuth/memories)
 
     # OpenAI
     OPENAI_API_KEY: Required for OpenAI provider
@@ -64,8 +64,8 @@ from pathlib import Path
 from typing import Optional
 
 # Default configuration values
-DEFAULT_DATABASE = "auto_claude_memory"
-DEFAULT_DB_PATH = "~/.auto-claude/memories"
+DEFAULT_DATABASE = "auto_sleuth_memory"
+DEFAULT_DB_PATH = "~/.auto-sleuth/memories"
 DEFAULT_OLLAMA_BASE_URL = "http://localhost:11434"
 
 # Graphiti state marker file (stores connection info and status)
@@ -416,7 +416,7 @@ class GraphitiConfig:
         """
         Get a unique signature for the current embedding provider configuration.
 
-        Used to generate provider-specific database names to prevent mixing
+        Used to generate provider-caseific database names to prevent mixing
         incompatible embeddings.
 
         Returns:
@@ -432,15 +432,15 @@ class GraphitiConfig:
         else:
             return f"{provider}_{dim}"
 
-    def get_provider_specific_database_name(self, base_name: str = None) -> str:
+    def get_provider_caseific_database_name(self, base_name: str = None) -> str:
         """
-        Get a provider-specific database name to prevent embedding dimension mismatches.
+        Get a provider-caseific database name to prevent embedding dimension mismatches.
 
         Args:
             base_name: Base database name (default: from config)
 
         Returns:
-            Database name with provider signature (e.g., "auto_claude_memory_ollama_768")
+            Database name with provider signature (e.g., "auto_sleuth_memory_ollama_768")
         """
         if base_name is None:
             base_name = self.database
@@ -464,7 +464,7 @@ class GraphitiConfig:
 
 @dataclass
 class GraphitiState:
-    """State of Graphiti integration for an auto-claude spec."""
+    """State of Graphiti integration for an auto-sleuth case."""
 
     initialized: bool = False
     database: str | None = None
@@ -504,16 +504,16 @@ class GraphitiState:
             embedder_provider=data.get("embedder_provider"),
         )
 
-    def save(self, spec_dir: Path) -> None:
-        """Save state to the spec directory."""
-        marker_file = spec_dir / GRAPHITI_STATE_MARKER
+    def save(self, case_dir: Path) -> None:
+        """Save state to the case directory."""
+        marker_file = case_dir / GRAPHITI_STATE_MARKER
         with open(marker_file, "w") as f:
             json.dump(self.to_dict(), f, indent=2)
 
     @classmethod
-    def load(cls, spec_dir: Path) -> Optional["GraphitiState"]:
-        """Load state from the spec directory."""
-        marker_file = spec_dir / GRAPHITI_STATE_MARKER
+    def load(cls, case_dir: Path) -> Optional["GraphitiState"]:
+        """Load state from the case directory."""
+        marker_file = case_dir / GRAPHITI_STATE_MARKER
         if not marker_file.exists():
             return None
 
@@ -566,7 +566,7 @@ class GraphitiState:
             "old_provider": self.embedder_provider,
             "new_provider": config.embedder_provider,
             "old_database": self.database,
-            "new_database": config.get_provider_specific_database_name(),
+            "new_database": config.get_provider_caseific_database_name(),
             "episode_count": self.episode_count,
             "requires_migration": True,
         }

@@ -3,7 +3,7 @@ Smart Project Analyzer for Dynamic Security Profiles
 =====================================================
 
 FACADE MODULE: This module re-exports all functionality from the
-auto-claude/project/ package for backward compatibility.
+auto-sleuth/project/ package for backward compatibility.
 
 The implementation has been refactored into focused modules:
 - project/command_registry.py - Command registries
@@ -19,7 +19,7 @@ This file maintains the original API so existing imports continue to work.
 This system:
 1. Detects languages, frameworks, databases, and infrastructure
 2. Parses package.json scripts, Makefile targets, pyproject.toml scripts
-3. Builds a tailored security profile for the specific project
+3. Builds a tailored security profile for the caseific project
 4. Caches the profile for subsequent runs
 5. Can re-analyze when project structure changes
 
@@ -68,7 +68,7 @@ __all__ = [
     # Base command sets
     "BASE_COMMANDS",
     "VALIDATED_COMMANDS",
-    # Technology-specific command sets
+    # Technology-caseific command sets
     "LANGUAGE_COMMANDS",
     "PACKAGE_MANAGER_COMMANDS",
     "FRAMEWORK_COMMANDS",

@@ -15,12 +15,12 @@ Usage:
     from prediction import BugPredictor, generate_subtask_checklist
 
     # Full API
-    predictor = BugPredictor(spec_dir)
+    predictor = BugPredictor(case_dir)
     checklist = predictor.generate_checklist(subtask)
     markdown = predictor.format_checklist_markdown(checklist)
 
     # Convenience function
-    markdown = generate_subtask_checklist(spec_dir, subtask)
+    markdown = generate_subtask_checklist(case_dir, subtask)
 """
 
 from pathlib import Path
@@ -37,17 +37,17 @@ __all__ = [
 ]
 
 
-def generate_subtask_checklist(spec_dir: Path, subtask: dict) -> str:
+def generate_subtask_checklist(case_dir: Path, subtask: dict) -> str:
     """
     Convenience function to generate and format a checklist for a subtask.
 
     Args:
-        spec_dir: Path to spec directory
+        case_dir: Path to case directory
         subtask: Subtask dictionary
 
     Returns:
         Markdown-formatted checklist
     """
-    predictor = BugPredictor(spec_dir)
+    predictor = BugPredictor(case_dir)
     checklist = predictor.generate_checklist(subtask)
     return predictor.format_checklist_markdown(checklist)

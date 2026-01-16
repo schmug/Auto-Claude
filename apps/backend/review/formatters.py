@@ -2,7 +2,7 @@
 Display Formatters
 ==================
 
-Provides formatted display functions for spec summaries, implementation plans,
+Provides formatted display functions for case summaries, implementation plans,
 and review status information.
 """
 
@@ -34,9 +34,9 @@ from .diff_analyzer import (
 from .state import ReviewState, get_review_status_summary
 
 
-def display_spec_summary(spec_dir: Path) -> None:
+def display_case_summary(case_dir: Path) -> None:
     """
-    Display key sections of spec.md for human review.
+    Display key sections of case.md for human review.
 
     Extracts and displays:
     - Overview
@@ -47,18 +47,18 @@ def display_spec_summary(spec_dir: Path) -> None:
     Uses formatted boxes for readability.
 
     Args:
-        spec_dir: Path to the spec directory
+        case_dir: Path to the case directory
     """
-    spec_file = Path(spec_dir) / "spec.md"
+    case_file = Path(case_dir) / "case.md"
 
-    if not spec_file.exists():
-        print_status("spec.md not found", "error")
+    if not case_file.exists():
+        print_status("case.md not found", "error")
         return
 
     try:
-        content = spec_file.read_text(encoding="utf-8")
+        content = case_file.read_text(encoding="utf-8")
     except (OSError, UnicodeDecodeError) as e:
-        print_status(f"Could not read spec.md: {e}", "error")
+        print_status(f"Could not read case.md: {e}", "error")
         return
 
     # Extract the title from first H1
@@ -139,9 +139,9 @@ def display_spec_summary(spec_dir: Path) -> None:
     print(box(summary_lines, width=80, style="heavy"))
 
 
-def display_plan_summary(spec_dir: Path) -> None:
+def display_plan_summary(case_dir: Path) -> None:
     """
-    Display summary of implementation_plan.json for human review.
+    Display summary of investigation_plan.json for human review.
 
     Shows:
     - Phase count and names
@@ -150,25 +150,25 @@ def display_plan_summary(spec_dir: Path) -> None:
     - Services involved
 
     Args:
-        spec_dir: Path to the spec directory
+        case_dir: Path to the case directory
     """
-    plan_file = Path(spec_dir) / "implementation_plan.json"
+    plan_file = Path(case_dir) / "investigation_plan.json"
 
     if not plan_file.exists():
-        print_status("implementation_plan.json not found", "error")
+        print_status("investigation_plan.json not found", "error")
         return
 
     try:
         with open(plan_file) as f:
             plan = json.load(f)
     except (OSError, json.JSONDecodeError) as e:
-        print_status(f"Could not read implementation_plan.json: {e}", "error")
+        print_status(f"Could not read investigation_plan.json: {e}", "error")
         return
 
     # Build summary content
     summary_lines = []
 
-    feature_name = plan.get("feature", "Implementation Plan")
+    feature_name = plan.get("feature", "Investigation Plan")
     summary_lines.append(bold(f"{icon(Icons.GEAR)} {feature_name}"))
     summary_lines.append("")
 
@@ -264,17 +264,17 @@ def display_plan_summary(spec_dir: Path) -> None:
     print(box(summary_lines, width=80, style="light"))
 
 
-def display_review_status(spec_dir: Path) -> None:
+def display_review_status(case_dir: Path) -> None:
     """
     Display the current review/approval status.
 
-    Shows whether spec is approved, by whom, and if changes have been detected.
+    Shows whether case is approved, by whom, and if changes have been detected.
 
     Args:
-        spec_dir: Path to the spec directory
+        case_dir: Path to the case directory
     """
-    status = get_review_status_summary(spec_dir)
-    state = ReviewState.load(spec_dir)
+    status = get_review_status_summary(case_dir)
+    state = ReviewState.load(case_dir)
 
     content = []
 
@@ -294,12 +294,12 @@ def display_review_status(spec_dir: Path) -> None:
         else:
             content.append(warning(f"{icon(Icons.WARNING)} APPROVAL STALE"))
             content.append("")
-            content.append("The spec has been modified since approval.")
+            content.append("The case has been modified since approval.")
             content.append("Re-approval is required before building.")
     else:
         content.append(info(f"{icon(Icons.INFO)} NOT YET APPROVED"))
         content.append("")
-        content.append("This spec requires human review before building.")
+        content.append("This case requires human review before building.")
 
     # Show review history
     if status["review_count"] > 0:

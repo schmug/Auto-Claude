@@ -1,8 +1,8 @@
 """
-Utility Functions for Agent System
-===================================
+Utility Functions for Agent System - Auto-Sleuth DFIR
+======================================================
 
-Helper functions for git operations, plan management, and file syncing.
+Helper functions for git operations, investigation plan management, and file syncing.
 """
 
 import json
@@ -42,9 +42,9 @@ def get_commit_count(project_dir: Path) -> int:
     return 0
 
 
-def load_implementation_plan(spec_dir: Path) -> dict | None:
-    """Load the implementation plan JSON."""
-    plan_file = spec_dir / "implementation_plan.json"
+def load_investigation_plan(case_dir: Path) -> dict | None:
+    """Load the investigation plan JSON."""
+    plan_file = case_dir / "investigation_plan.json"
     if not plan_file.exists():
         return None
     try:
@@ -72,62 +72,92 @@ def find_phase_for_subtask(plan: dict, subtask_id: str) -> dict | None:
     return None
 
 
-def sync_spec_to_source(spec_dir: Path, source_spec_dir: Path | None) -> bool:
+def find_step_in_plan(plan: dict, step_id: str) -> dict | None:
+    """Find an investigation step by ID in the plan."""
+    for phase in plan.get("phases", []):
+        for step in phase.get("steps", []):
+            if step.get("id") == step_id:
+                return step
+    return None
+
+
+def find_phase_for_step(plan: dict, step_id: str) -> dict | None:
+    """Find the phase containing a step."""
+    for phase in plan.get("phases", []):
+        for step in phase.get("steps", []):
+            if step.get("id") == step_id:
+                return phase
+    return None
+
+
+# DFIR aliases
+
+def find_analysis_task_in_plan(plan: dict, task_id: str) -> dict | None:
+    """Alias for find_subtask_in_plan for DFIR context."""
+    return find_subtask_in_plan(plan, task_id)
+
+
+def find_phase_for_analysis_task(plan: dict, task_id: str) -> dict | None:
+    """Alias for find_phase_for_subtask for DFIR context."""
+    return find_phase_for_subtask(plan, task_id)
+
+
+def sync_case_to_source(case_dir: Path, source_case_dir: Path | None) -> bool:
     """
-    Sync ALL spec files from worktree back to source spec directory.
+    Sync ALL case files from worktree back to source case directory.
 
     When running in isolated mode (worktrees), the agent creates and updates
-    many files inside the worktree's spec directory. This function syncs ALL
-    of them back to the main project's spec directory.
+    many files inside the worktree's case directory. This function syncs ALL
+    of them back to the main project's case directory.
 
-    IMPORTANT: Since .auto-claude/ is gitignored, this sync happens to the
+    IMPORTANT: Since .auto-sleuth/ is gitignored, this sync happens to the
     local filesystem regardless of what branch the user is on. The worktree
-    may be on a different branch (e.g., auto-claude/093-task), but the sync
-    target is always the main project's .auto-claude/specs/ directory.
+    may be on a different branch (e.g., auto-sleuth/093-task), but the sync
+    target is always the main project's .auto-sleuth/cases/ directory.
 
-    Files synced (all files in spec directory):
-    - implementation_plan.json - Task status and subtask completion
+    Files synced (all files in case directory):
+    - investigation_plan.json - Task status and subtask completion
     - build-progress.txt - Session-by-session progress notes
     - task_logs.json - Execution logs
     - review_state.json - QA review state
-    - critique_report.json - Spec critique findings
+    - critique_report.json - Case critique findings
     - suggested_commit_message.txt - Commit suggestions
     - REGRESSION_TEST_REPORT.md - Test regression report
-    - spec.md, context.json, etc. - Original spec files (for completeness)
+    - case.md, context.json, etc. - Original case files (for completeness)
     - memory/ directory - Codebase map, patterns, gotchas, session insights
 
     Args:
-        spec_dir: Current spec directory (inside worktree)
-        source_spec_dir: Original spec directory in main project (outside worktree)
+        case_dir: Current case directory (inside worktree)
+        source_case_dir: Original case directory in main project (outside worktree)
 
     Returns:
         True if sync was performed, False if not needed or failed
     """
-    # Skip if no source specified or same path (not in worktree mode)
-    if not source_spec_dir:
+    # Skip if no source caseified or same path (not in worktree mode)
+    if not source_case_dir:
         return False
 
     # Resolve paths and check if they're different
-    spec_dir_resolved = spec_dir.resolve()
-    source_spec_dir_resolved = source_spec_dir.resolve()
+    case_dir_resolved = case_dir.resolve()
+    source_case_dir_resolved = source_case_dir.resolve()
 
-    if spec_dir_resolved == source_spec_dir_resolved:
+    if case_dir_resolved == source_case_dir_resolved:
         return False  # Same directory, no sync needed
 
     synced_any = False
 
     # Ensure source directory exists
-    source_spec_dir.mkdir(parents=True, exist_ok=True)
+    source_case_dir.mkdir(parents=True, exist_ok=True)
 
     try:
-        # Sync all files and directories from worktree spec to source spec
-        for item in spec_dir.iterdir():
+        # Sync all files and directories from worktree case to source case
+        for item in case_dir.iterdir():
             # Skip symlinks to prevent path traversal attacks
             if item.is_symlink():
                 logger.warning(f"Skipping symlink during sync: {item.name}")
                 continue
 
-            source_item = source_spec_dir / item.name
+            source_item = source_case_dir / item.name
 
             if item.is_file():
                 # Copy file (preserves timestamps)
@@ -141,7 +171,7 @@ def sync_spec_to_source(spec_dir: Path, source_spec_dir: Path | None) -> bool:
                 synced_any = True
 
     except Exception as e:
-        logger.warning(f"Failed to sync spec directory to source: {e}")
+        logger.warning(f"Failed to sync case directory to source: {e}")
 
     return synced_any
 
@@ -176,6 +206,7 @@ def _sync_directory(source_dir: Path, target_dir: Path) -> None:
 
 
 # Keep the old name as an alias for backward compatibility
-def sync_plan_to_source(spec_dir: Path, source_spec_dir: Path | None) -> bool:
-    """Alias for sync_spec_to_source for backward compatibility."""
-    return sync_spec_to_source(spec_dir, source_spec_dir)
+
+def sync_plan_to_source(case_dir: Path, source_case_dir: Path | None) -> bool:
+    """Alias for sync_case_to_source for backward compatibility."""
+    return sync_case_to_source(case_dir, source_case_dir)

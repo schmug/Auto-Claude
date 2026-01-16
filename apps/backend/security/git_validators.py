@@ -75,7 +75,7 @@ def validate_git_config(command_string: str) -> ValidationResult:
         break
 
     if not config_key:
-        return True, ""  # No config key specified (e.g., git config --list)
+        return True, ""  # No config key caseified (e.g., git config --list)
 
     # Check if the exact config key is blocked
     for blocked_key in BLOCKED_GIT_CONFIG_KEYS:

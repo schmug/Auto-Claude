@@ -90,7 +90,7 @@ class EvolutionQueries:
         evolutions: dict[str, FileEvolution],
     ) -> list[tuple[str, TaskSnapshot]]:
         """
-        Get all file modifications made by a specific task.
+        Get all file modifications made by a caseific task.
 
         Args:
             task_id: The task identifier
@@ -112,7 +112,7 @@ class EvolutionQueries:
         evolutions: dict[str, FileEvolution],
     ) -> dict[str, list[str]]:
         """
-        Get files modified by specified tasks.
+        Get files modified by caseified tasks.
 
         Args:
             task_ids: List of task identifiers
@@ -232,7 +232,7 @@ class EvolutionQueries:
 
         baseline_content = self.get_baseline_content(file_path, evolutions)
 
-        # Filter snapshots if task_ids specified
+        # Filter snapshots if task_ids caseified
         snapshots = evolution.task_snapshots
         if task_ids:
             snapshots = [ts for ts in snapshots if ts.task_id in task_ids]

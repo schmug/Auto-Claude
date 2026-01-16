@@ -44,7 +44,7 @@ from qa import (
     is_qa_approved,
     is_qa_rejected,
     # Criteria & status
-    load_implementation_plan,
+    load_investigation_plan,
     load_qa_fixer_prompt,
     # Agent sessions
     print_qa_status,
@@ -53,7 +53,7 @@ from qa import (
     run_qa_fixer_session,
     # Main loop
     run_qa_validation_loop,
-    save_implementation_plan,
+    save_investigation_plan,
     should_run_fixes,
     should_run_qa,
 )
@@ -67,8 +67,8 @@ __all__ = [
     # Main loop
     "run_qa_validation_loop",
     # Criteria & status
-    "load_implementation_plan",
-    "save_implementation_plan",
+    "load_investigation_plan",
+    "save_investigation_plan",
     "get_qa_signoff_status",
     "is_qa_approved",
     "is_qa_rejected",

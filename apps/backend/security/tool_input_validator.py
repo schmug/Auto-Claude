@@ -56,7 +56,7 @@ def validate_tool_input(
             f"{tool_name}: missing required keys: {', '.join(missing_keys)}",
         )
 
-    # Additional validation for specific tools
+    # Additional validation for caseific tools
     if tool_name == "Bash":
         command = tool_input.get("command")
         if not isinstance(command, str):

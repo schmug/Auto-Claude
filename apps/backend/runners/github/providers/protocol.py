@@ -58,7 +58,7 @@ class PRData:
     mergeable: bool = True
     provider: ProviderType = ProviderType.GITHUB
 
-    # Provider-specific raw data (for debugging)
+    # Provider-caseific raw data (for debugging)
     raw_data: dict[str, Any] = field(default_factory=dict)
 
 
@@ -83,7 +83,7 @@ class IssueData:
     milestone: str | None = None
     provider: ProviderType = ProviderType.GITHUB
 
-    # Provider-specific raw data
+    # Provider-caseific raw data
     raw_data: dict[str, Any] = field(default_factory=dict)
 
 

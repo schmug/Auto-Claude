@@ -7,7 +7,7 @@ Instead of relying on agents to remember Linear updates in long prompts,
 the Python orchestrator triggers small, focused agents at key transitions.
 
 Design Principles:
-- ONE task per spec (not one issue per subtask)
+- ONE task per case (not one issue per subtask)
 - Python orchestrator controls when updates happen
 - Small prompts that can't lose context
 - Graceful degradation if Linear unavailable
@@ -17,7 +17,7 @@ Status Flow:
     |         |              |
     |         |              +-- QA approved, awaiting human merge
     |         +-- Planner/Coder working
-    +-- Task created from spec
+    +-- Task created from case
 """
 
 import json
@@ -51,7 +51,7 @@ LINEAR_TOOLS = [
 
 @dataclass
 class LinearTaskState:
-    """State of a Linear task for an auto-claude spec."""
+    """State of a Linear task for an auto-sleuth case."""
 
     task_id: str | None = None
     task_title: str | None = None
@@ -78,16 +78,16 @@ class LinearTaskState:
             created_at=data.get("created_at"),
         )
 
-    def save(self, spec_dir: Path) -> None:
-        """Save state to the spec directory."""
-        state_file = spec_dir / LINEAR_TASK_FILE
+    def save(self, case_dir: Path) -> None:
+        """Save state to the case directory."""
+        state_file = case_dir / LINEAR_TASK_FILE
         with open(state_file, "w") as f:
             json.dump(self.to_dict(), f, indent=2)
 
     @classmethod
-    def load(cls, spec_dir: Path) -> Optional["LinearTaskState"]:
-        """Load state from the spec directory."""
-        state_file = spec_dir / LINEAR_TASK_FILE
+    def load(cls, case_dir: Path) -> Optional["LinearTaskState"]:
+        """Load state from the case directory."""
+        state_file = case_dir / LINEAR_TASK_FILE
         if not state_file.exists():
             return None
 
@@ -180,17 +180,17 @@ async def _run_linear_agent(prompt: str) -> str | None:
 
 
 async def create_linear_task(
-    spec_dir: Path,
+    case_dir: Path,
     title: str,
     description: str | None = None,
 ) -> LinearTaskState | None:
     """
-    Create a new Linear task for a spec.
+    Create a new Linear task for a case.
 
-    Called by spec_runner.py after requirements gathering.
+    Called by case_runner.py after requirements gathering.
 
     Args:
-        spec_dir: Spec directory to save state
+        case_dir: Case directory to save state
         title: Task title (the task name from user)
         description: Optional task description
 
@@ -201,7 +201,7 @@ async def create_linear_task(
         return None
 
     # Check if task already exists
-    existing = LinearTaskState.load(spec_dir)
+    existing = LinearTaskState.load(case_dir)
     if existing and existing.task_id:
         print(f"Linear task already exists: {existing.task_id}")
         return existing
@@ -251,21 +251,21 @@ TEAM_ID: [the team ID]
         status=STATUS_TODO,
         created_at=datetime.now().isoformat(),
     )
-    state.save(spec_dir)
+    state.save(case_dir)
 
     print(f"Created Linear task: {task_id}")
     return state
 
 
 async def update_linear_status(
-    spec_dir: Path,
+    case_dir: Path,
     new_status: str,
 ) -> bool:
     """
     Update the Linear task status.
 
     Args:
-        spec_dir: Spec directory with .linear_task.json
+        case_dir: Case directory with .linear_task.json
         new_status: New status (STATUS_TODO, STATUS_IN_PROGRESS, STATUS_IN_REVIEW, STATUS_DONE)
 
     Returns:
@@ -274,9 +274,9 @@ async def update_linear_status(
     if not is_linear_enabled():
         return False
 
-    state = LinearTaskState.load(spec_dir)
+    state = LinearTaskState.load(case_dir)
     if not state or not state.task_id:
-        print("No Linear task found for this spec")
+        print("No Linear task found for this case")
         return False
 
     # Don't update if already at this status
@@ -296,7 +296,7 @@ Confirm when done.
     response = await _run_linear_agent(prompt)
     if response:
         state.status = new_status
-        state.save(spec_dir)
+        state.save(case_dir)
         print(f"Updated Linear task {state.task_id} to: {new_status}")
         return True
 
@@ -304,14 +304,14 @@ Confirm when done.
 
 
 async def add_linear_comment(
-    spec_dir: Path,
+    case_dir: Path,
     comment: str,
 ) -> bool:
     """
     Add a comment to the Linear task.
 
     Args:
-        spec_dir: Spec directory with .linear_task.json
+        case_dir: Case directory with .linear_task.json
         comment: Comment text to add
 
     Returns:
@@ -320,9 +320,9 @@ async def add_linear_comment(
     if not is_linear_enabled():
         return False
 
-    state = LinearTaskState.load(spec_dir)
+    state = LinearTaskState.load(case_dir)
     if not state or not state.task_id:
-        print("No Linear task found for this spec")
+        print("No Linear task found for this case")
         return False
 
     # Escape any quotes in the comment
@@ -345,22 +345,22 @@ Confirm when done.
     return False
 
 
-# === Convenience functions for specific transitions ===
+# === Convenience functions for caseific transitions ===
 
 
-async def linear_task_started(spec_dir: Path) -> bool:
+async def linear_task_started(case_dir: Path) -> bool:
     """
     Mark task as started (In Progress).
     Called when planner session begins.
     """
-    success = await update_linear_status(spec_dir, STATUS_IN_PROGRESS)
+    success = await update_linear_status(case_dir, STATUS_IN_PROGRESS)
     if success:
-        await add_linear_comment(spec_dir, "Build started - planning phase initiated")
+        await add_linear_comment(case_dir, "Build started - planning phase initiated")
     return success
 
 
 async def linear_subtask_completed(
-    spec_dir: Path,
+    case_dir: Path,
     subtask_id: str,
     completed_count: int,
     total_count: int,
@@ -370,11 +370,11 @@ async def linear_subtask_completed(
     Called after each successful coder session.
     """
     comment = f"Completed {subtask_id} ({completed_count}/{total_count} subtasks done)"
-    return await add_linear_comment(spec_dir, comment)
+    return await add_linear_comment(case_dir, comment)
 
 
 async def linear_subtask_failed(
-    spec_dir: Path,
+    case_dir: Path,
     subtask_id: str,
     attempt: int,
     error_summary: str,
@@ -384,40 +384,40 @@ async def linear_subtask_failed(
     Called after failed coder session.
     """
     comment = f"Subtask {subtask_id} failed (attempt {attempt}): {error_summary[:200]}"
-    return await add_linear_comment(spec_dir, comment)
+    return await add_linear_comment(case_dir, comment)
 
 
-async def linear_build_complete(spec_dir: Path) -> bool:
+async def linear_build_complete(case_dir: Path) -> bool:
     """
     Record build completion, moving to QA.
     Called when all subtasks are completed.
     """
     comment = "All subtasks completed - moving to QA validation"
-    return await add_linear_comment(spec_dir, comment)
+    return await add_linear_comment(case_dir, comment)
 
 
-async def linear_qa_started(spec_dir: Path) -> bool:
+async def linear_qa_started(case_dir: Path) -> bool:
     """
     Mark task as In Review for QA phase.
     Called when QA validation loop starts.
     """
-    success = await update_linear_status(spec_dir, STATUS_IN_REVIEW)
+    success = await update_linear_status(case_dir, STATUS_IN_REVIEW)
     if success:
-        await add_linear_comment(spec_dir, "QA validation started")
+        await add_linear_comment(case_dir, "QA validation started")
     return success
 
 
-async def linear_qa_approved(spec_dir: Path) -> bool:
+async def linear_qa_approved(case_dir: Path) -> bool:
     """
     Record QA approval (stays In Review for human).
     Called when QA approves the build.
     """
     comment = "QA approved - awaiting human review for merge"
-    return await add_linear_comment(spec_dir, comment)
+    return await add_linear_comment(case_dir, comment)
 
 
 async def linear_qa_rejected(
-    spec_dir: Path,
+    case_dir: Path,
     issues_count: int,
     iteration: int,
 ) -> bool:
@@ -426,20 +426,20 @@ async def linear_qa_rejected(
     Called when QA rejects the build.
     """
     comment = f"QA iteration {iteration}: Found {issues_count} issues - applying fixes"
-    return await add_linear_comment(spec_dir, comment)
+    return await add_linear_comment(case_dir, comment)
 
 
-async def linear_qa_max_iterations(spec_dir: Path, iterations: int) -> bool:
+async def linear_qa_max_iterations(case_dir: Path, iterations: int) -> bool:
     """
     Record QA max iterations reached.
     Called when QA loop exhausts retries.
     """
     comment = f"QA reached max iterations ({iterations}) - needs human intervention"
-    return await add_linear_comment(spec_dir, comment)
+    return await add_linear_comment(case_dir, comment)
 
 
 async def linear_task_stuck(
-    spec_dir: Path,
+    case_dir: Path,
     subtask_id: str,
     attempt_count: int,
 ) -> bool:
@@ -448,4 +448,4 @@ async def linear_task_stuck(
     Called when subtask exceeds retry limit.
     """
     comment = f"Subtask {subtask_id} is STUCK after {attempt_count} attempts - needs human review"
-    return await add_linear_comment(spec_dir, comment)
+    return await add_linear_comment(case_dir, comment)

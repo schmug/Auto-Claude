@@ -248,8 +248,8 @@ class CIDiscovery:
             if not data:
                 return result
 
-            # Parse jobs (top-level keys that aren't special keywords)
-            special_keys = {
+            # Parse jobs (top-level keys that aren't caseial keywords)
+            caseial_keys = {
                 "stages",
                 "variables",
                 "image",
@@ -263,7 +263,7 @@ class CIDiscovery:
             }
 
             for key, value in data.items():
-                if key.startswith(".") or key in special_keys:
+                if key.startswith(".") or key in caseial_keys:
                     continue
 
                 if not isinstance(value, dict):

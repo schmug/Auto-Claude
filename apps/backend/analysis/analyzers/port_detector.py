@@ -284,7 +284,7 @@ class PortDetector(BaseAnalyzer):
 
         scripts = pkg.get("scripts", {})
 
-        # Look for port specifications in scripts
+        # Look for port caseifications in scripts
         # e.g., "dev": "next dev -p 3001"
         # e.g., "start": "node server.js --port 8050"
         patterns = [

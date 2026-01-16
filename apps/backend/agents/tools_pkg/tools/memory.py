@@ -6,7 +6,7 @@ Tools for recording and retrieving session memory, including discoveries,
 gotchas, and patterns.
 
 Dual-storage approach:
-- File-based: Always available, works offline, spec-specific
+- File-based: Always available, works offline, case-caseific
 - LadybugDB: When Graphiti is enabled, also saves to graph database for
   cross-session retrieval and Memory UI display
 """
@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 
 
 async def _save_to_graphiti_async(
-    spec_dir: Path,
+    case_dir: Path,
     project_dir: Path,
     save_type: str,
     data: dict,
@@ -39,7 +39,7 @@ async def _save_to_graphiti_async(
     Save data to Graphiti/LadybugDB (async implementation).
 
     Args:
-        spec_dir: Spec directory for GraphitiMemory initialization
+        case_dir: Case directory for GraphitiMemory initialization
         project_dir: Project root directory
         save_type: Type of save - 'discovery', 'gotcha', or 'pattern'
         data: Data to save
@@ -56,7 +56,7 @@ async def _save_to_graphiti_async(
 
         from integrations.graphiti.queries_pkg.graphiti import GraphitiMemory
 
-        memory = GraphitiMemory(spec_dir, project_dir)
+        memory = GraphitiMemory(case_dir, project_dir)
         try:
             if save_type == "discovery":
                 # Save as codebase discovery
@@ -88,7 +88,7 @@ async def _save_to_graphiti_async(
 
 
 def _save_to_graphiti_sync(
-    spec_dir: Path,
+    case_dir: Path,
     project_dir: Path,
     save_type: str,
     data: dict,
@@ -100,7 +100,7 @@ def _save_to_graphiti_sync(
     use _save_to_graphiti_async() directly to ensure proper resource cleanup.
 
     Args:
-        spec_dir: Spec directory for GraphitiMemory initialization
+        case_dir: Case directory for GraphitiMemory initialization
         project_dir: Project root directory
         save_type: Type of save - 'discovery', 'gotcha', or 'pattern'
         data: Data to save
@@ -122,19 +122,19 @@ def _save_to_graphiti_sync(
         except RuntimeError:
             # No running loop - safe to create one
             return asyncio.run(
-                _save_to_graphiti_async(spec_dir, project_dir, save_type, data)
+                _save_to_graphiti_async(case_dir, project_dir, save_type, data)
             )
     except Exception as e:
         logger.warning(f"Failed to save to Graphiti: {e}")
         return False
 
 
-def create_memory_tools(spec_dir: Path, project_dir: Path) -> list:
+def create_memory_tools(case_dir: Path, project_dir: Path) -> list:
     """
     Create session memory tools.
 
     Args:
-        spec_dir: Path to the spec directory
+        case_dir: Path to the case directory
         project_dir: Path to the project root
 
     Returns:
@@ -159,7 +159,7 @@ def create_memory_tools(spec_dir: Path, project_dir: Path) -> list:
         description = args["description"]
         category = args.get("category", "general")
 
-        memory_dir = spec_dir / "memory"
+        memory_dir = case_dir / "memory"
         memory_dir.mkdir(exist_ok=True)
 
         codebase_map_file = memory_dir / "codebase_map.json"
@@ -190,7 +190,7 @@ def create_memory_tools(spec_dir: Path, project_dir: Path) -> list:
 
             # SECONDARY: Also save to Graphiti/LadybugDB (for Memory UI)
             saved_to_graphiti = await _save_to_graphiti_async(
-                spec_dir,
+                case_dir,
                 project_dir,
                 "discovery",
                 {
@@ -229,7 +229,7 @@ def create_memory_tools(spec_dir: Path, project_dir: Path) -> list:
         gotcha = args["gotcha"]
         context = args.get("context", "")
 
-        memory_dir = spec_dir / "memory"
+        memory_dir = case_dir / "memory"
         memory_dir.mkdir(exist_ok=True)
 
         gotchas_file = memory_dir / "gotchas.md"
@@ -253,7 +253,7 @@ def create_memory_tools(spec_dir: Path, project_dir: Path) -> list:
 
             # SECONDARY: Also save to Graphiti/LadybugDB (for Memory UI)
             saved_to_graphiti = await _save_to_graphiti_async(
-                spec_dir,
+                case_dir,
                 project_dir,
                 "gotcha",
                 {"gotcha": gotcha, "context": context},
@@ -283,7 +283,7 @@ def create_memory_tools(spec_dir: Path, project_dir: Path) -> list:
     )
     async def get_session_context(args: dict[str, Any]) -> dict[str, Any]:
         """Get accumulated session context."""
-        memory_dir = spec_dir / "memory"
+        memory_dir = case_dir / "memory"
 
         if not memory_dir.exists():
             return {

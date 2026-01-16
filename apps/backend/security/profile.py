@@ -22,7 +22,7 @@ from .constants import ALLOWLIST_FILENAME, PROFILE_FILENAME
 # Cache the security profile to avoid re-analyzing on every command
 _cached_profile: SecurityProfile | None = None
 _cached_project_dir: Path | None = None
-_cached_spec_dir: Path | None = None  # Track spec directory for cache key
+_cached_case_dir: Path | None = None  # Track case directory for cache key
 _cached_profile_mtime: float | None = None  # Track file modification time
 _cached_allowlist_mtime: float | None = None  # Track allowlist modification time
 
@@ -56,7 +56,7 @@ def _get_allowlist_mtime(project_dir: Path) -> float | None:
 
 
 def get_security_profile(
-    project_dir: Path, spec_dir: Path | None = None
+    project_dir: Path, case_dir: Path | None = None
 ) -> SecurityProfile:
     """
     Get the security profile for a project, using cache when possible.
@@ -69,25 +69,25 @@ def get_security_profile(
 
     Args:
         project_dir: Project root directory
-        spec_dir: Optional spec directory
+        case_dir: Optional case directory
 
     Returns:
         SecurityProfile for the project
     """
     global _cached_profile
     global _cached_project_dir
-    global _cached_spec_dir
+    global _cached_case_dir
     global _cached_profile_mtime
     global _cached_allowlist_mtime
 
     project_dir = Path(project_dir).resolve()
-    resolved_spec_dir = Path(spec_dir).resolve() if spec_dir else None
+    resolved_case_dir = Path(case_dir).resolve() if case_dir else None
 
-    # Check if cache is valid (both project_dir and spec_dir must match)
+    # Check if cache is valid (both project_dir and case_dir must match)
     if (
         _cached_profile is not None
         and _cached_project_dir == project_dir
-        and _cached_spec_dir == resolved_spec_dir
+        and _cached_case_dir == resolved_case_dir
     ):
         # Check if files have been created or modified since caching
         current_profile_mtime = _get_profile_mtime(project_dir)
@@ -105,9 +105,9 @@ def get_security_profile(
         # or when user adds/updates the allowlist)
 
     # Analyze and cache
-    _cached_profile = get_or_create_profile(project_dir, spec_dir)
+    _cached_profile = get_or_create_profile(project_dir, case_dir)
     _cached_project_dir = project_dir
-    _cached_spec_dir = resolved_spec_dir
+    _cached_case_dir = resolved_case_dir
     _cached_profile_mtime = _get_profile_mtime(project_dir)
     _cached_allowlist_mtime = _get_allowlist_mtime(project_dir)
 
@@ -118,11 +118,11 @@ def reset_profile_cache() -> None:
     """Reset the cached profile (useful for testing or re-analysis)."""
     global _cached_profile
     global _cached_project_dir
-    global _cached_spec_dir
+    global _cached_case_dir
     global _cached_profile_mtime
     global _cached_allowlist_mtime
     _cached_profile = None
     _cached_project_dir = None
-    _cached_spec_dir = None
+    _cached_case_dir = None
     _cached_profile_mtime = None
     _cached_allowlist_mtime = None

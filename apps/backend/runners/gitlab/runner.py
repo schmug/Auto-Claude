@@ -8,7 +8,7 @@ CLI interface for GitLab automation features:
 - Follow-up Review: Review changes since last review
 
 Usage:
-    # Review a specific MR
+    # Review a caseific MR
     python runner.py review-mr 123
 
     # Follow-up review after new commits
@@ -80,8 +80,8 @@ def get_config(args) -> GitLabRunnerConfig:
                     break
 
     if not project:
-        # Try to detect from .auto-claude/gitlab/config.json
-        config_path = Path(args.project_dir) / ".auto-claude" / "gitlab" / "config.json"
+        # Try to detect from .auto-sleuth/gitlab/config.json
+        config_path = Path(args.project_dir) / ".auto-sleuth" / "gitlab" / "config.json"
         if config_path.exists():
             try:
                 with open(config_path) as f:

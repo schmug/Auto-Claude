@@ -12,13 +12,13 @@ Features:
 - Storage usage metrics
 
 Usage:
-    cleaner = DataCleaner(state_dir=Path(".auto-claude/github"))
+    cleaner = DataCleaner(state_dir=Path(".auto-sleuth/github"))
 
     # Run automatic cleanup
     result = await cleaner.run_cleanup()
     print(f"Cleaned {result.deleted_count} records")
 
-    # Purge specific issue/PR data
+    # Purge caseific issue/PR data
     await cleaner.purge_issue(123)
 
     # Get storage metrics
@@ -151,7 +151,7 @@ class DataCleaner:
     Manages data retention and cleanup.
 
     Usage:
-        cleaner = DataCleaner(state_dir=Path(".auto-claude/github"))
+        cleaner = DataCleaner(state_dir=Path(".auto-sleuth/github"))
 
         # Check what would be cleaned
         result = await cleaner.run_cleanup(dry_run=True)
@@ -159,7 +159,7 @@ class DataCleaner:
         # Actually clean
         result = await cleaner.run_cleanup()
 
-        # Purge specific data (GDPR)
+        # Purge caseific data (GDPR)
         await cleaner.purge_issue(123)
     """
 
@@ -420,7 +420,7 @@ class DataCleaner:
         repo: str | None = None,
     ) -> CleanupResult:
         """
-        Purge all data for a specific issue (GDPR-compliant).
+        Purge all data for a caseific issue (GDPR-compliant).
 
         Args:
             issue_number: Issue number to purge
@@ -445,7 +445,7 @@ class DataCleaner:
         repo: str | None = None,
     ) -> CleanupResult:
         """
-        Purge all data for a specific PR (GDPR-compliant).
+        Purge all data for a caseific PR (GDPR-compliant).
 
         Args:
             pr_number: PR number to purge
@@ -466,7 +466,7 @@ class DataCleaner:
 
     async def purge_repo(self, repo: str) -> CleanupResult:
         """
-        Purge all data for a specific repository.
+        Purge all data for a caseific repository.
 
         Args:
             repo: Repository in owner/repo format

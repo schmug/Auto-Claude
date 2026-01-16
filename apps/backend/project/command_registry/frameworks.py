@@ -3,7 +3,7 @@ Framework Commands Module
 =========================
 
 Commands for web frameworks, testing frameworks, build tools,
-and other framework-specific tooling across all ecosystems.
+and other framework-caseific tooling across all ecosystems.
 """
 
 
@@ -122,7 +122,7 @@ FRAMEWORK_COMMANDS: dict[str, set[str]] = {
     "rails": {"rails", "rake", "spring"},
     "sinatra": {"sinatra", "rackup"},
     "hanami": {"hanami"},
-    "rspec": {"rspec"},
+    "rcase": {"rcase"},
     "minitest": {"rake"},
     "rubocop": {"rubocop"},
     # PHP frameworks

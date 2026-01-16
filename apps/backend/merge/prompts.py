@@ -144,7 +144,7 @@ No other tasks are pending for this file.
 
     for task in context.other_pending_tasks:
         task_id = task.get("task_id", "unknown")
-        intent = task.get("intent", "No intent specified")
+        intent = task.get("intent", "No intent caseified")
         branch_point = task.get("branch_point", "unknown")[:12]
         commits_behind = task.get("commits_behind", 0)
 
@@ -183,7 +183,7 @@ def build_simple_merge_prompt(
     main_content: str,
     worktree_content: str,
     base_content: str | None,
-    spec_name: str,
+    case_name: str,
     language: str,
     task_intent: dict | None = None,
 ) -> str:
@@ -195,12 +195,12 @@ def build_simple_merge_prompt(
     intent_section = ""
     if task_intent:
         intent_section = f"""
-=== FEATURE BRANCH INTENT ({spec_name}) ===
-Task: {task_intent.get("title", spec_name)}
+=== FEATURE BRANCH INTENT ({case_name}) ===
+Task: {task_intent.get("title", case_name)}
 Description: {task_intent.get("description", "No description")}
 """
-        if task_intent.get("spec_summary"):
-            intent_section += f"Summary: {task_intent['spec_summary']}\n"
+        if task_intent.get("case_summary"):
+            intent_section += f"Summary: {task_intent['case_summary']}\n"
 
     base_section = (
         base_content if base_content else "(File did not exist in common ancestor)"
@@ -210,7 +210,7 @@ Description: {task_intent.get("description", "No description")}
 
 FILE: {file_path}
 
-The file was modified in both the main branch and in the "{spec_name}" feature branch.
+The file was modified in both the main branch and in the "{case_name}" feature branch.
 Your task is to produce a merged version that incorporates ALL changes from both branches.
 {intent_section}
 === COMMON ANCESTOR (base) ===
@@ -219,7 +219,7 @@ Your task is to produce a merged version that incorporates ALL changes from both
 === MAIN BRANCH VERSION ===
 {main_content}
 
-=== FEATURE BRANCH VERSION ({spec_name}) ===
+=== FEATURE BRANCH VERSION ({case_name}) ===
 {worktree_content}
 
 MERGE RULES:
@@ -241,12 +241,12 @@ merged code here
 def build_conflict_only_prompt(
     file_path: str,
     conflicts: list[dict],
-    spec_name: str,
+    case_name: str,
     language: str,
     task_intent: dict | None = None,
 ) -> str:
     """
-    Build a focused prompt that only asks AI to resolve specific conflict regions.
+    Build a focused prompt that only asks AI to resolve caseific conflict regions.
 
     This is MUCH more efficient than sending entire files - the AI only needs
     to resolve the actual conflicting lines, not regenerate thousands of lines.
@@ -259,9 +259,9 @@ def build_conflict_only_prompt(
             - worktree_lines: Lines from feature branch (the >>>>>>> section)
             - context_before: Few lines before the conflict for context
             - context_after: Few lines after the conflict for context
-        spec_name: Name of the feature branch/spec
+        case_name: Name of the feature branch/case
         language: Programming language
-        task_intent: Optional dict with title, description, spec_summary
+        task_intent: Optional dict with title, description, case_summary
 
     Returns:
         Focused prompt asking AI to resolve only the conflict regions
@@ -269,7 +269,7 @@ def build_conflict_only_prompt(
     intent_section = ""
     if task_intent:
         intent_section = f"""
-FEATURE INTENT: {task_intent.get("title", spec_name)}
+FEATURE INTENT: {task_intent.get("title", case_name)}
 {task_intent.get("description", "")}
 """
 
@@ -289,7 +289,7 @@ MAIN BRANCH VERSION:
 {main_lines}
 ```
 
-FEATURE BRANCH VERSION ({spec_name}):
+FEATURE BRANCH VERSION ({case_name}):
 ```{language}
 {worktree_lines}
 ```

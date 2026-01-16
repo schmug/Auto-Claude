@@ -3,7 +3,7 @@ Graphiti Memory Integration V2 - Backward Compatibility Facade
 ================================================================
 
 This module maintains backward compatibility by re-exporting the modular
-memory system from the auto-claude/graphiti/ package.
+memory system from the auto-sleuth/graphiti/ package.
 
 The refactored code is now organized as:
 - graphiti/graphiti.py - Main GraphitiMemory class
@@ -48,24 +48,24 @@ from .queries_pkg.schema import (
 
 # Convenience function for getting a memory manager
 def get_graphiti_memory(
-    spec_dir: Path,
+    case_dir: Path,
     project_dir: Path,
     group_id_mode: str = GroupIdMode.SPEC,
 ) -> GraphitiMemory:
     """
-    Get a GraphitiMemory instance for the given spec.
+    Get a GraphitiMemory instance for the given case.
 
     This is the main entry point for other modules.
 
     Args:
-        spec_dir: Spec directory
+        case_dir: Case directory
         project_dir: Project root directory
-        group_id_mode: "spec" for isolated memory, "project" for shared
+        group_id_mode: "case" for isolated memory, "project" for shared
 
     Returns:
         GraphitiMemory instance
     """
-    return GraphitiMemory(spec_dir, project_dir, group_id_mode)
+    return GraphitiMemory(case_dir, project_dir, group_id_mode)
 
 
 async def test_graphiti_connection() -> tuple[bool, str]:

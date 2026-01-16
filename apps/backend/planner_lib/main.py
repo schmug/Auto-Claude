@@ -1,63 +1,63 @@
 #!/usr/bin/env python3
 """
-Implementation Planner
+Investigation Planner
 ======================
 
-Generates implementation plans from specs by analyzing the task and codebase.
+Generates implementation plans from cases by analyzing the task and codebase.
 This replaces the initializer's test-generation with subtask-based planning.
 
 The planner:
-1. Reads the spec.md to understand what needs to be built
+1. Reads the case.md to understand what needs to be built
 2. Reads project_index.json to understand the codebase structure
 3. Reads context.json to know which files are relevant
 4. Determines the workflow type (feature, refactor, investigation, etc.)
 5. Generates phases and subtasks with proper dependencies
-6. Outputs implementation_plan.json
+6. Outputs investigation_plan.json
 
 Usage:
-    python auto-claude/planner.py --spec-dir auto-claude/specs/001-feature/
+    python auto-sleuth/planner.py --case-dir auto-sleuth/cases/001-feature/
 """
 
 import json
 from pathlib import Path
 
-from implementation_plan import ImplementationPlan
+from investigation_plan import InvestigationPlan
 from planner_lib.context import ContextLoader
 from planner_lib.generators import get_plan_generator
 
 
-class ImplementationPlanner:
-    """Generates implementation plans from specs."""
+class InvestigationPlanner:
+    """Generates implementation plans from cases."""
 
-    def __init__(self, spec_dir: Path):
-        self.spec_dir = spec_dir
-        self.context_loader = ContextLoader(spec_dir)
+    def __init__(self, case_dir: Path):
+        self.case_dir = case_dir
+        self.context_loader = ContextLoader(case_dir)
         self.context = None
 
     def load_context(self):
-        """Load all context files from spec directory."""
+        """Load all context files from case directory."""
         self.context = self.context_loader.load_context()
         return self.context
 
-    def generate_plan(self) -> ImplementationPlan:
+    def generate_plan(self) -> InvestigationPlan:
         """Generate the appropriate plan based on workflow type."""
         if not self.context:
             self.load_context()
 
-        generator = get_plan_generator(self.context, self.spec_dir)
+        generator = get_plan_generator(self.context, self.case_dir)
         return generator.generate()
 
-    def save_plan(self, plan: ImplementationPlan) -> Path:
-        """Save plan to spec directory."""
-        output_path = self.spec_dir / "implementation_plan.json"
+    def save_plan(self, plan: InvestigationPlan) -> Path:
+        """Save plan to case directory."""
+        output_path = self.case_dir / "investigation_plan.json"
         plan.save(output_path)
-        print(f"Implementation plan saved to: {output_path}")
+        print(f"Investigation plan saved to: {output_path}")
         return output_path
 
 
-def generate_implementation_plan(spec_dir: Path) -> ImplementationPlan:
+def generate_investigation_plan(case_dir: Path) -> InvestigationPlan:
     """Main entry point for generating an implementation plan."""
-    planner = ImplementationPlanner(spec_dir)
+    planner = InvestigationPlanner(case_dir)
     planner.load_context()
     plan = planner.generate_plan()
     planner.save_plan(plan)
@@ -69,19 +69,19 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(
-        description="Generate implementation plan from spec"
+        description="Generate implementation plan from case"
     )
     parser.add_argument(
-        "--spec-dir",
+        "--case-dir",
         type=Path,
         required=True,
-        help="Directory containing spec.md, project_index.json, context.json",
+        help="Directory containing case.md, project_index.json, context.json",
     )
     parser.add_argument(
         "--output",
         type=Path,
         default=None,
-        help="Output path for implementation_plan.json (default: spec-dir/implementation_plan.json)",
+        help="Output path for investigation_plan.json (default: case-dir/investigation_plan.json)",
     )
     parser.add_argument(
         "--dry-run",
@@ -91,7 +91,7 @@ def main():
 
     args = parser.parse_args()
 
-    planner = ImplementationPlanner(args.spec_dir)
+    planner = InvestigationPlanner(args.case_dir)
     planner.load_context()
     plan = planner.generate_plan()
 
@@ -100,7 +100,7 @@ def main():
         print("\n---\n")
         print(plan.get_status_summary())
     else:
-        output_path = args.output or (args.spec_dir / "implementation_plan.json")
+        output_path = args.output or (args.case_dir / "investigation_plan.json")
         plan.save(output_path)
         print(f"Plan saved to: {output_path}")
         print("\n" + plan.get_status_summary())

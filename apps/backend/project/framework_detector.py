@@ -218,8 +218,8 @@ class FrameworkDetector:
                 self.frameworks.append("rails")
             if "sinatra" in content_lower:
                 self.frameworks.append("sinatra")
-            if "rspec" in content_lower:
-                self.frameworks.append("rspec")
+            if "rcase" in content_lower:
+                self.frameworks.append("rcase")
             if "rubocop" in content_lower:
                 self.frameworks.append("rubocop")
 
@@ -242,9 +242,9 @@ class FrameworkDetector:
             self.frameworks.append("phpunit")
 
     def detect_dart_frameworks(self) -> None:
-        """Detect Dart/Flutter frameworks from pubspec.yaml."""
-        # Read pubspec.yaml as text since we don't have a YAML parser
-        content = self.parser.read_text("pubspec.yaml")
+        """Detect Dart/Flutter frameworks from pubcase.yaml."""
+        # Read pubcase.yaml as text since we don't have a YAML parser
+        content = self.parser.read_text("pubcase.yaml")
         if not content:
             return
 

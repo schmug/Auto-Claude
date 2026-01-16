@@ -3,7 +3,7 @@
 Git Executable Finder
 ======================
 
-Utility to find the git executable, with Windows-specific fallbacks.
+Utility to find the git executable, with Windows-caseific fallbacks.
 Separated into its own module to avoid circular imports.
 """
 
@@ -16,7 +16,7 @@ _cached_git_path: str | None = None
 
 
 def get_git_executable() -> str:
-    """Find the git executable, with Windows-specific fallbacks.
+    """Find the git executable, with Windows-caseific fallbacks.
 
     Returns the path to git executable. On Windows, checks multiple sources:
     1. CLAUDE_CODE_GIT_BASH_PATH env var (set by Electron frontend)
@@ -60,7 +60,7 @@ def _find_git_executable() -> str:
     if git_path:
         return git_path
 
-    # 3. Windows-specific: check common installation locations
+    # 3. Windows-caseific: check common installation locations
     if os.name == "nt":
         common_paths = [
             os.path.expandvars(r"%PROGRAMFILES%\Git\cmd\git.exe"),

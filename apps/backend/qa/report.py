@@ -13,7 +13,7 @@ from difflib import SequenceMatcher
 from pathlib import Path
 from typing import Any
 
-from .criteria import load_implementation_plan, save_implementation_plan
+from .criteria import load_investigation_plan, save_investigation_plan
 
 # Configuration
 RECURRING_ISSUE_THRESHOLD = 3  # Escalate if same issue appears this many times
@@ -25,21 +25,21 @@ ISSUE_SIMILARITY_THRESHOLD = 0.8  # Consider issues "same" if similarity >= this
 # =============================================================================
 
 
-def get_iteration_history(spec_dir: Path) -> list[dict[str, Any]]:
+def get_iteration_history(case_dir: Path) -> list[dict[str, Any]]:
     """
-    Get the full iteration history from implementation_plan.json.
+    Get the full iteration history from investigation_plan.json.
 
     Returns:
         List of iteration records with issues, timestamps, and outcomes.
     """
-    plan = load_implementation_plan(spec_dir)
+    plan = load_investigation_plan(case_dir)
     if not plan:
         return []
     return plan.get("qa_iteration_history", [])
 
 
 def record_iteration(
-    spec_dir: Path,
+    case_dir: Path,
     iteration: int,
     status: str,
     issues: list[dict[str, Any]],
@@ -49,7 +49,7 @@ def record_iteration(
     Record a QA iteration to the history.
 
     Args:
-        spec_dir: Spec directory
+        case_dir: Case directory
         iteration: Iteration number
         status: "approved", "rejected", or "error"
         issues: List of issues found (empty if approved)
@@ -58,7 +58,7 @@ def record_iteration(
     Returns:
         True if recorded successfully
     """
-    plan = load_implementation_plan(spec_dir)
+    plan = load_investigation_plan(case_dir)
     if not plan:
         plan = {}
 
@@ -92,7 +92,7 @@ def record_iteration(
             issue_types[issue_type] += 1
     plan["qa_stats"]["issues_by_type"] = dict(issue_types)
 
-    return save_implementation_plan(spec_dir, plan)
+    return save_investigation_plan(case_dir, plan)
 
 
 # =============================================================================
@@ -246,7 +246,7 @@ def get_recurring_issue_summary(
 
 
 async def escalate_to_human(
-    spec_dir: Path,
+    case_dir: Path,
     recurring_issues: list[dict[str, Any]],
     iteration: int,
 ) -> None:
@@ -254,16 +254,16 @@ async def escalate_to_human(
     Create human escalation file for recurring issues.
 
     Args:
-        spec_dir: Spec directory
+        case_dir: Case directory
         recurring_issues: Issues that have recurred
         iteration: Current iteration number
     """
     from .loop import MAX_QA_ITERATIONS
 
-    history = get_iteration_history(spec_dir)
+    history = get_iteration_history(case_dir)
     summary = get_recurring_issue_summary(history)
 
-    escalation_file = spec_dir / "QA_ESCALATION.md"
+    escalation_file = case_dir / "QA_ESCALATION.md"
 
     content = f"""# QA Escalation - Human Intervention Required
 
@@ -310,48 +310,48 @@ These issues have appeared {RECURRING_ISSUE_THRESHOLD}+ times without being reso
 
 1. Review the recurring issues manually
 2. Check if the issue stems from:
-   - Unclear specification
+   - Unclear caseification
    - Complex edge case
    - Infrastructure/environment problem
    - Test framework limitations
-3. Update the spec or acceptance criteria if needed
-4. Run QA manually after making changes: `python run.py --spec {spec} --qa`
+3. Update the case or acceptance criteria if needed
+4. Run QA manually after making changes: `python run.py --case {case} --qa`
 
 ## Related Files
 
 - `QA_FIX_REQUEST.md` - Latest fix request
 - `qa_report.md` - Latest QA report
-- `implementation_plan.json` - Full iteration history
+- `investigation_plan.json` - Full iteration history
 """
 
     escalation_file.write_text(content)
     print(f"\n📝 Escalation file created: {escalation_file}")
 
 
-def create_manual_test_plan(spec_dir: Path, spec_name: str) -> Path:
+def create_manual_test_plan(case_dir: Path, case_name: str) -> Path:
     """
     Create a manual test plan when automated testing isn't possible.
 
     Args:
-        spec_dir: Spec directory
-        spec_name: Name of the spec
+        case_dir: Case directory
+        case_name: Name of the case
 
     Returns:
         Path to created manual test plan
     """
-    manual_plan_file = spec_dir / "MANUAL_TEST_PLAN.md"
+    manual_plan_file = case_dir / "MANUAL_TEST_PLAN.md"
 
-    # Read spec if available for context
-    spec_file = spec_dir / "spec.md"
-    spec_content = ""
-    if spec_file.exists():
-        spec_content = spec_file.read_text()
+    # Read case if available for context
+    case_file = case_dir / "case.md"
+    case_content = ""
+    if case_file.exists():
+        case_content = case_file.read_text()
 
-    # Extract acceptance criteria from spec if present
+    # Extract acceptance criteria from case if present
     acceptance_criteria = []
-    if "## Acceptance Criteria" in spec_content:
+    if "## Acceptance Criteria" in case_content:
         in_criteria = False
-        for line in spec_content.split("\n"):
+        for line in case_content.split("\n"):
             if "## Acceptance Criteria" in line:
                 in_criteria = True
                 continue
@@ -360,7 +360,7 @@ def create_manual_test_plan(spec_dir: Path, spec_name: str) -> Path:
             if in_criteria and line.strip().startswith("- "):
                 acceptance_criteria.append(line.strip()[2:])
 
-    content = f"""# Manual Test Plan - {spec_name}
+    content = f"""# Manual Test Plan - {case_name}
 
 **Generated**: {datetime.now(timezone.utc).isoformat()}
 **Reason**: No automated test framework detected
@@ -448,14 +448,14 @@ _Add any observations or issues found during testing_
 # =============================================================================
 
 
-def check_test_discovery(spec_dir: Path) -> dict[str, Any] | None:
+def check_test_discovery(case_dir: Path) -> dict[str, Any] | None:
     """
     Check if test discovery has been run and what frameworks were found.
 
     Returns:
         Test discovery result or None if not run
     """
-    discovery_file = spec_dir / "test_discovery.json"
+    discovery_file = case_dir / "test_discovery.json"
     if not discovery_file.exists():
         return None
 
@@ -466,7 +466,7 @@ def check_test_discovery(spec_dir: Path) -> dict[str, Any] | None:
         return None
 
 
-def is_no_test_project(spec_dir: Path, project_dir: Path) -> bool:
+def is_no_test_project(case_dir: Path, project_dir: Path) -> bool:
     """
     Determine if this is a project with no test infrastructure.
 
@@ -476,7 +476,7 @@ def is_no_test_project(spec_dir: Path, project_dir: Path) -> bool:
         True if no test frameworks detected
     """
     # Check cached discovery first
-    discovery = check_test_discovery(spec_dir)
+    discovery = check_test_discovery(case_dir)
     if discovery:
         frameworks = discovery.get("frameworks", [])
         return len(frameworks) == 0
@@ -493,11 +493,11 @@ def is_no_test_project(spec_dir: Path, project_dir: Path) -> bool:
         "karma.conf.js",
         "cypress.config.js",
         "playwright.config.ts",
-        ".rspec",
-        "spec/spec_helper.rb",
+        ".rcase",
+        "case/case_helper.rb",
     ]
 
-    test_dirs = ["tests", "test", "__tests__", "spec"]
+    test_dirs = ["tests", "test", "__tests__", "case"]
 
     # Check for test config files
     for indicator in test_indicators:
@@ -513,8 +513,8 @@ def is_no_test_project(spec_dir: Path, project_dir: Path) -> bool:
                 if f.is_file() and (
                     f.name.startswith("test_")
                     or f.name.endswith("_test.py")
-                    or f.name.endswith(".spec.js")
-                    or f.name.endswith(".spec.ts")
+                    or f.name.endswith(".case.js")
+                    or f.name.endswith(".case.ts")
                     or f.name.endswith(".test.js")
                     or f.name.endswith(".test.ts")
                 ):

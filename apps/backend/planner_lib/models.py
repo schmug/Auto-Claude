@@ -4,14 +4,14 @@ Data models for the implementation planner.
 
 from dataclasses import dataclass
 
-from implementation_plan import WorkflowType
+from investigation_plan import WorkflowType
 
 
 @dataclass
 class PlannerContext:
     """Context gathered for planning."""
 
-    spec_content: str
+    case_content: str
     project_index: dict
     task_context: dict
     services_involved: list[str]

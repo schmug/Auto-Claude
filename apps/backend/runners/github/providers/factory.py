@@ -49,7 +49,7 @@ def get_provider(
     Args:
         provider_type: The provider type (github, gitlab, etc.)
         repo: Repository in owner/repo format
-        **kwargs: Additional provider-specific arguments
+        **kwargs: Additional provider-caseific arguments
 
     Returns:
         GitProvider instance

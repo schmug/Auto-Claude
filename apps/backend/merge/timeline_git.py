@@ -5,7 +5,7 @@ Timeline Git Operations
 Git helper utilities for the File Timeline system.
 
 This module handles all Git interactions including:
-- Getting file content at specific commits
+- Getting file content at caseific commits
 - Querying commit information and metadata
 - Determining changed files in commits
 - Working with worktrees
@@ -71,7 +71,7 @@ class TimelineGitHelper:
         self, file_path: str, commit_hash: str
     ) -> str | None:
         """
-        Get file content at a specific commit.
+        Get file content at a caseific commit.
 
         Args:
             file_path: Path to the file (relative to project root)
@@ -178,23 +178,23 @@ class TimelineGitHelper:
         Get file content from a task's worktree.
 
         Args:
-            task_id: Task identifier (will be converted to spec name)
+            task_id: Task identifier (will be converted to case name)
             file_path: Path to the file (relative to project root)
 
         Returns:
             File content as string, or empty string if file doesn't exist
         """
-        # Extract spec name from task_id (remove 'task-' prefix if present)
-        spec_name = (
+        # Extract case name from task_id (remove 'task-' prefix if present)
+        case_name = (
             task_id.replace("task-", "") if task_id.startswith("task-") else task_id
         )
 
         worktree_path = (
             self.project_path
-            / ".auto-claude"
+            / ".auto-sleuth"
             / "worktrees"
             / "tasks"
-            / spec_name
+            / case_name
             / file_path
         )
         if worktree_path.exists():

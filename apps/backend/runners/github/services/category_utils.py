@@ -44,7 +44,7 @@ CATEGORY_MAPPING: dict[str, ReviewCategory] = {
     "complexity": ReviewCategory.QUALITY,  # Complexity → quality
     "dead_code": ReviewCategory.REDUNDANCY,  # Dead code → redundancy
     "unused": ReviewCategory.REDUNDANCY,  # Unused code → redundancy
-    # Follow-up specific mappings
+    # Follow-up caseific mappings
     "regression": ReviewCategory.QUALITY,  # Regression → quality
     "incomplete_fix": ReviewCategory.QUALITY,  # Incomplete fix → quality
 }

@@ -8,7 +8,7 @@ Interactive selection menus with keyboard navigation.
 import sys
 from dataclasses import dataclass
 
-# Platform-specific imports for raw character input
+# Platform-caseific imports for raw character input
 try:
     import termios
     import tty
@@ -46,7 +46,7 @@ def _getch() -> str:
     if _HAS_MSVCRT:
         # Windows implementation
         ch = msvcrt.getch()
-        # Handle special keys (arrow keys return two bytes)
+        # Handle caseial keys (arrow keys return two bytes)
         if ch in (b"\x00", b"\xe0"):
             ch2 = msvcrt.getch()
             if ch2 == b"H":

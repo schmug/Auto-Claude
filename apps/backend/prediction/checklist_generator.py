@@ -20,7 +20,7 @@ class ChecklistGenerator:
         Generate a complete pre-implementation checklist for a subtask.
 
         Args:
-            subtask: Subtask dictionary from implementation_plan.json
+            subtask: Subtask dictionary from investigation_plan.json
             predicted_issues: List of PredictedIssue objects
             known_patterns: List of known successful patterns
             known_gotchas: List of known gotchas/mistakes

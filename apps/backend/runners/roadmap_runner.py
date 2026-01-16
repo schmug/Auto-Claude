@@ -8,16 +8,16 @@ Analyzes project structure, understands target audience, and generates
 a strategic feature roadmap.
 
 Usage:
-    python auto-claude/roadmap_runner.py --project /path/to/project
-    python auto-claude/roadmap_runner.py --project /path/to/project --refresh
-    python auto-claude/roadmap_runner.py --project /path/to/project --output roadmap.json
+    python auto-sleuth/roadmap_runner.py --project /path/to/project
+    python auto-sleuth/roadmap_runner.py --project /path/to/project --refresh
+    python auto-sleuth/roadmap_runner.py --project /path/to/project --output roadmap.json
 """
 
 import asyncio
 import sys
 from pathlib import Path
 
-# Add auto-claude to path
+# Add auto-sleuth to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # Load .env file with centralized error handling
@@ -52,7 +52,7 @@ def main():
     parser.add_argument(
         "--output",
         type=Path,
-        help="Output directory for roadmap files (default: project/auto-claude/roadmap)",
+        help="Output directory for roadmap files (default: project/auto-sleuth/roadmap)",
     )
     parser.add_argument(
         "--model",

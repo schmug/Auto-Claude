@@ -103,7 +103,7 @@ class FileLockTimeout(FileLockError):
 
 class FileLock:
     """
-    Cross-process file lock using platform-specific locking (fcntl.flock on Unix,
+    Cross-process file lock using platform-caseific locking (fcntl.flock on Unix,
     msvcrt.locking on Windows).
 
     Supports both sync and async context managers for flexible usage.

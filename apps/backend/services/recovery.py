@@ -52,17 +52,17 @@ class RecoveryManager:
     - Escalate stuck subtasks for human intervention
     """
 
-    def __init__(self, spec_dir: Path, project_dir: Path):
+    def __init__(self, case_dir: Path, project_dir: Path):
         """
         Initialize recovery manager.
 
         Args:
-            spec_dir: Spec directory containing memory/
+            case_dir: Case directory containing memory/
             project_dir: Root project directory for git operations
         """
-        self.spec_dir = spec_dir
+        self.case_dir = case_dir
         self.project_dir = project_dir
-        self.memory_dir = spec_dir / "memory"
+        self.memory_dir = case_dir / "memory"
         self.attempt_history_file = self.memory_dir / "attempt_history.json"
         self.build_commits_file = self.memory_dir / "build_commits.json"
 
@@ -415,7 +415,7 @@ class RecoveryManager:
 
     def rollback_to_commit(self, commit_hash: str) -> bool:
         """
-        Rollback to a specific commit.
+        Rollback to a caseific commit.
 
         Args:
             commit_hash: Git commit hash to rollback to
@@ -479,7 +479,7 @@ class RecoveryManager:
 
     def get_subtask_history(self, subtask_id: str) -> dict:
         """
-        Get the attempt history for a specific subtask.
+        Get the attempt history for a caseific subtask.
 
         Args:
             subtask_id: ID of the subtask
@@ -561,13 +561,13 @@ class RecoveryManager:
 
 
 def check_and_recover(
-    spec_dir: Path, project_dir: Path, subtask_id: str, error: str | None = None
+    case_dir: Path, project_dir: Path, subtask_id: str, error: str | None = None
 ) -> RecoveryAction | None:
     """
     Check if recovery is needed and return appropriate action.
 
     Args:
-        spec_dir: Spec directory
+        case_dir: Case directory
         project_dir: Project directory
         subtask_id: Current subtask ID
         error: Error message if any
@@ -578,25 +578,25 @@ def check_and_recover(
     if not error:
         return None
 
-    manager = RecoveryManager(spec_dir, project_dir)
+    manager = RecoveryManager(case_dir, project_dir)
     failure_type = manager.classify_failure(error, subtask_id)
 
     return manager.determine_recovery_action(failure_type, subtask_id)
 
 
-def get_recovery_context(spec_dir: Path, project_dir: Path, subtask_id: str) -> dict:
+def get_recovery_context(case_dir: Path, project_dir: Path, subtask_id: str) -> dict:
     """
     Get recovery context for a subtask (for prompt generation).
 
     Args:
-        spec_dir: Spec directory
+        case_dir: Case directory
         project_dir: Project directory
         subtask_id: Subtask ID
 
     Returns:
         Dict with recovery hints and history
     """
-    manager = RecoveryManager(spec_dir, project_dir)
+    manager = RecoveryManager(case_dir, project_dir)
 
     return {
         "attempt_count": manager.get_attempt_count(subtask_id),

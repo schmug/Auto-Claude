@@ -82,7 +82,7 @@ async def bash_security_hook(
         cwd = os.getcwd()
 
     # Get or create security profile
-    # Note: In actual use, spec_dir would be passed through context
+    # Note: In actual use, case_dir would be passed through context
     try:
         profile = get_security_profile(Path(cwd))
     except Exception as e:

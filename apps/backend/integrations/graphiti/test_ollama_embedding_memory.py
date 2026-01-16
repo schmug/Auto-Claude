@@ -38,7 +38,7 @@ Usage:
     cd apps/backend
     python integrations/graphiti/test_ollama_embedding_memory.py
 
-    # Run specific tests:
+    # Run caseific tests:
     python integrations/graphiti/test_ollama_embedding_memory.py --test embeddings
     python integrations/graphiti/test_ollama_embedding_memory.py --test create
     python integrations/graphiti/test_ollama_embedding_memory.py --test retrieve
@@ -54,15 +54,15 @@ import tempfile
 from datetime import datetime
 from pathlib import Path
 
-# Add auto-claude to path
-auto_claude_dir = Path(__file__).parent.parent.parent
-sys.path.insert(0, str(auto_claude_dir))
+# Add auto-sleuth to path
+auto_sleuth_dir = Path(__file__).parent.parent.parent
+sys.path.insert(0, str(auto_sleuth_dir))
 
 # Load .env file
 try:
     from dotenv import load_dotenv
 
-    env_file = auto_claude_dir / ".env"
+    env_file = auto_sleuth_dir / ".env"
     if env_file.exists():
         load_dotenv(env_file)
         print(f"Loaded .env from {env_file}")
@@ -277,17 +277,17 @@ async def test_memory_creation(test_db_path: Path) -> tuple[Path, Path, bool]:
     Test creating memories using GraphitiMemory with Ollama embeddings.
 
     Returns:
-        Tuple of (spec_dir, project_dir, success)
+        Tuple of (case_dir, project_dir, success)
     """
     print_header("Test 2: Memory Creation with Ollama Embeddings")
 
     # Create test directories
-    spec_dir = test_db_path / "test_spec"
+    case_dir = test_db_path / "test_case"
     project_dir = test_db_path / "test_project"
-    spec_dir.mkdir(parents=True, exist_ok=True)
+    case_dir.mkdir(parents=True, exist_ok=True)
     project_dir.mkdir(parents=True, exist_ok=True)
 
-    print(f"  Spec dir: {spec_dir}")
+    print(f"  Case dir: {case_dir}")
     print(f"  Project dir: {project_dir}")
     print(f"  Database path: {test_db_path}")
     print()
@@ -300,12 +300,12 @@ async def test_memory_creation(test_db_path: Path) -> tuple[Path, Path, bool]:
         from integrations.graphiti.memory import GraphitiMemory
     except ImportError as e:
         print_result("Import GraphitiMemory", f"Failed: {e}", False)
-        return spec_dir, project_dir, False
+        return case_dir, project_dir, False
 
     # Step 1: Initialize GraphitiMemory
     print_step(1, "Initializing GraphitiMemory")
 
-    memory = GraphitiMemory(spec_dir, project_dir)
+    memory = GraphitiMemory(case_dir, project_dir)
     print(f"  Is enabled: {memory.is_enabled}")
     print(f"  Group ID: {memory.group_id}")
 
@@ -315,12 +315,12 @@ async def test_memory_creation(test_db_path: Path) -> tuple[Path, Path, bool]:
             "Not enabled - check GRAPHITI_ENABLED=true",
             False,
         )
-        return spec_dir, project_dir, False
+        return case_dir, project_dir, False
 
     init_result = await memory.initialize()
     if not init_result:
         print_result("Initialize", "Failed to initialize", False)
-        return spec_dir, project_dir, False
+        return case_dir, project_dir, False
 
     print_result("Initialize", "SUCCESS", True)
 
@@ -413,7 +413,7 @@ async def test_memory_creation(test_db_path: Path) -> tuple[Path, Path, bool]:
 
     print()
     print_result("Memory Creation", "All memories saved successfully", True)
-    return spec_dir, project_dir, True
+    return case_dir, project_dir, True
 
 
 # ============================================================================
@@ -421,7 +421,7 @@ async def test_memory_creation(test_db_path: Path) -> tuple[Path, Path, bool]:
 # ============================================================================
 
 
-async def test_memory_retrieval(spec_dir: Path, project_dir: Path) -> bool:
+async def test_memory_retrieval(case_dir: Path, project_dir: Path) -> bool:
     """
     Test retrieving memories using semantic search with Ollama embeddings.
 
@@ -438,7 +438,7 @@ async def test_memory_retrieval(spec_dir: Path, project_dir: Path) -> bool:
     # Step 1: Initialize memory (reconnect)
     print_step(1, "Reconnecting to GraphitiMemory")
 
-    memory = GraphitiMemory(spec_dir, project_dir)
+    memory = GraphitiMemory(case_dir, project_dir)
     init_result = await memory.initialize()
 
     if not init_result:
@@ -546,9 +546,9 @@ async def test_full_cycle(test_db_path: Path) -> bool:
     print_header("Test 4: Full Create-Store-Retrieve Cycle")
 
     # Create fresh test directories
-    spec_dir = test_db_path / "cycle_test_spec"
+    case_dir = test_db_path / "cycle_test_case"
     project_dir = test_db_path / "cycle_test_project"
-    spec_dir.mkdir(parents=True, exist_ok=True)
+    case_dir.mkdir(parents=True, exist_ok=True)
     project_dir.mkdir(parents=True, exist_ok=True)
 
     # Override database path for testing
@@ -577,7 +577,7 @@ async def test_full_cycle(test_db_path: Path) -> bool:
     # Step 2: Store the content
     print_step(2, "Storing content in memory system")
 
-    memory = GraphitiMemory(spec_dir, project_dir)
+    memory = GraphitiMemory(case_dir, project_dir)
     init_result = await memory.initialize()
 
     if not init_result:
@@ -790,27 +790,27 @@ async def main():
         if test in ["all", "embeddings"]:
             results["embeddings"] = await test_ollama_embeddings()
 
-        spec_dir = None
+        case_dir = None
         project_dir = None
 
         if test in ["all", "create"]:
-            spec_dir, project_dir, results["create"] = await test_memory_creation(
+            case_dir, project_dir, results["create"] = await test_memory_creation(
                 test_db_path
             )
 
         if test in ["all", "retrieve"]:
-            if spec_dir and project_dir:
-                results["retrieve"] = await test_memory_retrieval(spec_dir, project_dir)
+            if case_dir and project_dir:
+                results["retrieve"] = await test_memory_retrieval(case_dir, project_dir)
             else:
                 print_info(
-                    "Skipping retrieve test - no spec/project dir from create test"
+                    "Skipping retrieve test - no case/project dir from create test"
                 )
 
         if test in ["all", "full-cycle"]:
             results["full-cycle"] = await test_full_cycle(test_db_path)
 
     finally:
-        # Cleanup unless --keep-db specified
+        # Cleanup unless --keep-db caseified
         if not args.keep_db and test_db_path.exists():
             print()
             print_info(f"Cleaning up test database: {test_db_path}")
@@ -845,7 +845,7 @@ async def main():
     print("    # Run all tests:")
     print("    python integrations/graphiti/test_ollama_embedding_memory.py")
     print()
-    print("    # Run specific test:")
+    print("    # Run caseific test:")
     print(
         "    python integrations/graphiti/test_ollama_embedding_memory.py --test embeddings"
     )
@@ -853,7 +853,7 @@ async def main():
         "    python integrations/graphiti/test_ollama_embedding_memory.py --test full-cycle"
     )
     print()
-    print("    # Keep database for inspection:")
+    print("    # Keep database for incasetion:")
     print("    python integrations/graphiti/test_ollama_embedding_memory.py --keep-db")
     print()
 

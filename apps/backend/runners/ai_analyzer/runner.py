@@ -29,7 +29,7 @@ class AIAnalyzerRunner:
         """
         self.project_dir = project_dir
         self.project_index = project_index
-        self.cache_manager = CacheManager(project_dir / ".auto-claude" / "ai_cache")
+        self.cache_manager = CacheManager(project_dir / ".auto-sleuth" / "ai_cache")
         self.cost_estimator = CostEstimator(project_dir, project_index)
         self.result_parser = ResultParser()
         self.summary_printer = SummaryPrinter()
@@ -118,7 +118,7 @@ class AIAnalyzerRunner:
         self, analyzers_to_run: list[str], insights: dict[str, Any]
     ) -> None:
         """
-        Run all specified analyzers.
+        Run all caseified analyzers.
 
         Args:
             analyzers_to_run: List of analyzer names to run
@@ -142,7 +142,7 @@ class AIAnalyzerRunner:
 
     async def _run_single_analyzer(self, analyzer_name: str) -> dict[str, Any]:
         """
-        Run a specific AI analyzer.
+        Run a caseific AI analyzer.
 
         Args:
             analyzer_name: Name of the analyzer to run

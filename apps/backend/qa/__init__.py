@@ -28,9 +28,9 @@ from .criteria import (
     is_fixes_applied,
     is_qa_approved,
     is_qa_rejected,
-    load_implementation_plan,
+    load_investigation_plan,
     print_qa_status,
-    save_implementation_plan,
+    save_investigation_plan,
     should_run_fixes,
     should_run_qa,
 )
@@ -71,8 +71,8 @@ __all__ = [
     # Main loop
     "run_qa_validation_loop",
     # Criteria & status
-    "load_implementation_plan",
-    "save_implementation_plan",
+    "load_investigation_plan",
+    "save_investigation_plan",
     "get_qa_signoff_status",
     "is_qa_approved",
     "is_qa_rejected",

@@ -3,7 +3,7 @@ Progress Tracking Utilities
 ===========================
 
 Functions for tracking and displaying progress of the autonomous coding agent.
-Uses subtask-based implementation plans (implementation_plan.json).
+Uses subtask-based implementation plans (investigation_plan.json).
 
 Enhanced with colored output, icons, and better visual formatting.
 """
@@ -26,17 +26,17 @@ from ui import (
 )
 
 
-def count_subtasks(spec_dir: Path) -> tuple[int, int]:
+def count_subtasks(case_dir: Path) -> tuple[int, int]:
     """
-    Count completed and total subtasks in implementation_plan.json.
+    Count completed and total subtasks in investigation_plan.json.
 
     Args:
-        spec_dir: Directory containing implementation_plan.json
+        case_dir: Directory containing investigation_plan.json
 
     Returns:
         (completed_count, total_count)
     """
-    plan_file = spec_dir / "implementation_plan.json"
+    plan_file = case_dir / "investigation_plan.json"
 
     if not plan_file.exists():
         return 0, 0
@@ -59,14 +59,14 @@ def count_subtasks(spec_dir: Path) -> tuple[int, int]:
         return 0, 0
 
 
-def count_subtasks_detailed(spec_dir: Path) -> dict:
+def count_subtasks_detailed(case_dir: Path) -> dict:
     """
     Count subtasks by status.
 
     Returns:
         Dict with completed, in_progress, pending, failed counts
     """
-    plan_file = spec_dir / "implementation_plan.json"
+    plan_file = case_dir / "investigation_plan.json"
 
     result = {
         "completed": 0,
@@ -97,31 +97,31 @@ def count_subtasks_detailed(spec_dir: Path) -> dict:
         return result
 
 
-def is_build_complete(spec_dir: Path) -> bool:
+def is_build_complete(case_dir: Path) -> bool:
     """
     Check if all subtasks are completed.
 
     Args:
-        spec_dir: Directory containing implementation_plan.json
+        case_dir: Directory containing investigation_plan.json
 
     Returns:
         True if all subtasks complete, False otherwise
     """
-    completed, total = count_subtasks(spec_dir)
+    completed, total = count_subtasks(case_dir)
     return total > 0 and completed == total
 
 
-def get_progress_percentage(spec_dir: Path) -> float:
+def get_progress_percentage(case_dir: Path) -> float:
     """
     Get the progress as a percentage.
 
     Args:
-        spec_dir: Directory containing implementation_plan.json
+        case_dir: Directory containing investigation_plan.json
 
     Returns:
         Percentage of subtasks completed (0-100)
     """
-    completed, total = count_subtasks(spec_dir)
+    completed, total = count_subtasks(case_dir)
     if total == 0:
         return 0.0
     return (completed / total) * 100
@@ -163,9 +163,9 @@ def print_session_header(
     print()
 
 
-def print_progress_summary(spec_dir: Path, show_next: bool = True) -> None:
+def print_progress_summary(case_dir: Path, show_next: bool = True) -> None:
     """Print a summary of current progress with enhanced formatting."""
-    completed, total = count_subtasks(spec_dir)
+    completed, total = count_subtasks(case_dir)
 
     if total > 0:
         print()
@@ -181,7 +181,7 @@ def print_progress_summary(spec_dir: Path, show_next: bool = True) -> None:
 
         # Phase summary
         try:
-            with open(spec_dir / "implementation_plan.json") as f:
+            with open(case_dir / "investigation_plan.json") as f:
                 plan = json.load(f)
 
             print("\nPhases:")
@@ -218,7 +218,7 @@ def print_progress_summary(spec_dir: Path, show_next: bool = True) -> None:
 
             # Show next subtask if requested
             if show_next and completed < total:
-                next_subtask = get_next_subtask(spec_dir)
+                next_subtask = get_next_subtask(case_dir)
                 if next_subtask:
                     print()
                     next_id = next_subtask.get("id", "unknown")
@@ -236,7 +236,7 @@ def print_progress_summary(spec_dir: Path, show_next: bool = True) -> None:
         print_status("No implementation subtasks yet - planner needs to run", "pending")
 
 
-def print_build_complete_banner(spec_dir: Path) -> None:
+def print_build_complete_banner(case_dir: Path) -> None:
     """Print a completion banner."""
     content = [
         success(f"{icon(Icons.SUCCESS)} BUILD COMPLETE!"),
@@ -244,7 +244,7 @@ def print_build_complete_banner(spec_dir: Path) -> None:
         "All subtasks have been implemented successfully.",
         "",
         muted("Next steps:"),
-        f"  1. Review the {highlight('auto-claude/*')} branch",
+        f"  1. Review the {highlight('auto-sleuth/*')} branch",
         "  2. Run manual tests",
         "  3. Create a PR and merge to main",
     ]
@@ -255,12 +255,12 @@ def print_build_complete_banner(spec_dir: Path) -> None:
 
 
 def print_paused_banner(
-    spec_dir: Path,
-    spec_name: str,
+    case_dir: Path,
+    case_name: str,
     has_worktree: bool = False,
 ) -> None:
     """Print a paused banner with resume instructions."""
-    completed, total = count_subtasks(spec_dir)
+    completed, total = count_subtasks(case_dir)
 
     content = [
         warning(f"{icon(Icons.PAUSE)} BUILD PAUSED"),
@@ -276,17 +276,17 @@ def print_paused_banner(
     print(box(content, width=70, style="heavy"))
 
 
-def get_plan_summary(spec_dir: Path) -> dict:
+def get_plan_summary(case_dir: Path) -> dict:
     """
     Get a detailed summary of implementation plan status.
 
     Args:
-        spec_dir: Directory containing implementation_plan.json
+        case_dir: Directory containing investigation_plan.json
 
     Returns:
         Dictionary with plan statistics
     """
-    plan_file = spec_dir / "implementation_plan.json"
+    plan_file = case_dir / "investigation_plan.json"
 
     if not plan_file.exists():
         return {
@@ -367,9 +367,9 @@ def get_plan_summary(spec_dir: Path) -> dict:
         }
 
 
-def get_current_phase(spec_dir: Path) -> dict | None:
+def get_current_phase(case_dir: Path) -> dict | None:
     """Get the current phase being worked on."""
-    plan_file = spec_dir / "implementation_plan.json"
+    plan_file = case_dir / "investigation_plan.json"
 
     if not plan_file.exists():
         return None
@@ -399,17 +399,17 @@ def get_current_phase(spec_dir: Path) -> dict | None:
         return None
 
 
-def get_next_subtask(spec_dir: Path) -> dict | None:
+def get_next_subtask(case_dir: Path) -> dict | None:
     """
-    Find the next subtask to work on, respecting phase dependencies.
+    Find the next subtask to work on, recaseting phase dependencies.
 
     Args:
-        spec_dir: Directory containing implementation_plan.json
+        case_dir: Directory containing investigation_plan.json
 
     Returns:
         The next subtask dict to work on, or None if all complete
     """
-    plan_file = spec_dir / "implementation_plan.json"
+    plan_file = case_dir / "investigation_plan.json"
 
     if not plan_file.exists():
         return None

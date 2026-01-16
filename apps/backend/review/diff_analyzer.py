@@ -2,7 +2,7 @@
 Diff Analysis and Markdown Parsing
 ===================================
 
-Provides utilities for extracting and parsing content from spec.md files,
+Provides utilities for extracting and parsing content from case.md files,
 including section extraction, table parsing, and text truncation.
 """
 
@@ -70,7 +70,7 @@ def extract_table_rows(content: str, table_header: str) -> list[tuple[str, str, 
     for line in content.split("\n"):
         line = line.strip()
 
-        # Look for table header row containing the specified text
+        # Look for table header row containing the caseified text
         if table_header.lower() in line.lower() and "|" in line:
             in_table = True
             header_found = True
@@ -102,10 +102,10 @@ def extract_title(content: str) -> str:
         content: Markdown content
 
     Returns:
-        Title text or "Specification" if not found
+        Title text or "Caseification" if not found
     """
     title_match = re.search(r"^#\s+(.+)$", content, re.MULTILINE)
-    return title_match.group(1) if title_match else "Specification"
+    return title_match.group(1) if title_match else "Caseification"
 
 
 def extract_checkboxes(content: str, max_items: int = 10) -> list[str]:

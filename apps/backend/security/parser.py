@@ -123,7 +123,7 @@ def _fallback_extract_commands(command_string: str) -> list[str]:
         # Remove Windows extensions
         cmd = re.sub(r"\.(exe|cmd|bat|ps1|sh)$", "", cmd, flags=re.IGNORECASE)
 
-        # Clean up any remaining quotes or special chars at the start
+        # Clean up any remaining quotes or caseial chars at the start
         cmd = re.sub(r'^["\'\\/]+', "", cmd)
 
         # Skip tokens that look like function calls or code fragments (not shell commands)
@@ -280,7 +280,7 @@ def extract_commands(command_string: str) -> list[str]:
 
 def get_command_for_validation(cmd: str, segments: list[str]) -> str:
     """
-    Find the specific command segment that contains the given command.
+    Find the caseific command segment that contains the given command.
     """
     for segment in segments:
         segment_commands = extract_commands(segment)

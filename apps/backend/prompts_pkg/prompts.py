@@ -58,17 +58,17 @@ def _validate_branch_name(branch: str | None) -> str | None:
     return branch
 
 
-def get_base_branch_from_metadata(spec_dir: Path) -> str | None:
+def get_base_branch_from_metadata(case_dir: Path) -> str | None:
     """
     Read baseBranch from task_metadata.json if it exists.
 
     Args:
-        spec_dir: Directory containing the spec files
+        case_dir: Directory containing the case files
 
     Returns:
         The baseBranch from metadata, or None if not found or invalid
     """
-    metadata_path = spec_dir / "task_metadata.json"
+    metadata_path = case_dir / "task_metadata.json"
     if metadata_path.exists():
         try:
             with open(metadata_path, encoding="utf-8") as f:
@@ -85,7 +85,7 @@ def get_base_branch_from_metadata(spec_dir: Path) -> str | None:
 _get_base_branch_from_metadata = get_base_branch_from_metadata
 
 
-def _detect_base_branch(spec_dir: Path, project_dir: Path) -> str:
+def _detect_base_branch(case_dir: Path, project_dir: Path) -> str:
     """
     Detect the base branch for a project/task.
 
@@ -96,14 +96,14 @@ def _detect_base_branch(spec_dir: Path, project_dir: Path) -> str:
     4. Fall back to "main"
 
     Args:
-        spec_dir: Directory containing the spec files
+        case_dir: Directory containing the case files
         project_dir: Project root directory
 
     Returns:
         The detected base branch name
     """
-    # 1. Check task_metadata.json for task-specific baseBranch
-    metadata_branch = _get_base_branch_from_metadata(spec_dir)
+    # 1. Check task_metadata.json for task-caseific baseBranch
+    metadata_branch = _get_base_branch_from_metadata(case_dir)
     if metadata_branch:
         return metadata_branch
 
@@ -154,95 +154,95 @@ def _detect_base_branch(spec_dir: Path, project_dir: Path) -> str:
 PROMPTS_DIR = Path(__file__).parent.parent / "prompts"
 
 
-def get_planner_prompt(spec_dir: Path) -> str:
+def get_planner_prompt(case_dir: Path) -> str:
     """
-    Load the planner agent prompt with spec path injected.
-    The planner creates subtask-based implementation plans.
+    Load the investigation planner agent prompt with case path injected.
+    The planner creates subtask-based investigation plans.
 
     Args:
-        spec_dir: Directory containing the spec.md file
+        case_dir: Directory containing the case.md file
 
     Returns:
-        The planner prompt content with spec path
+        The planner prompt content with case path
     """
     prompt_file = PROMPTS_DIR / "planner.md"
 
     if not prompt_file.exists():
         raise FileNotFoundError(
             f"Planner prompt not found at {prompt_file}\n"
-            "Make sure the auto-claude/prompts/planner.md file exists."
+            "Make sure the auto-sleuth/prompts/planner.md file exists."
         )
 
     prompt = prompt_file.read_text()
 
-    # Inject spec directory information at the beginning
-    spec_context = f"""## SPEC LOCATION
+    # Inject case directory information at the beginning
+    case_context = f"""## CASE LOCATION
 
-Your spec file is located at: `{spec_dir}/spec.md`
+Your case file is located at: `{case_dir}/case.md`
 
 🚨 CRITICAL FILE CREATION INSTRUCTIONS 🚨
 
-You MUST use the Write tool to create these files in the spec directory:
-- `{spec_dir}/implementation_plan.json` - Subtask-based implementation plan (USE WRITE TOOL!)
-- `{spec_dir}/build-progress.txt` - Progress notes (USE WRITE TOOL!)
-- `{spec_dir}/init.sh` - Environment setup script (USE WRITE TOOL!)
+You MUST use the Write tool to create these files in the case directory:
+- `{case_dir}/investigation_plan.json` - Subtask-based investigation plan (USE WRITE TOOL!)
+- `{case_dir}/investigation-progress.txt` - Progress notes (USE WRITE TOOL!)
+- `{case_dir}/init.sh` - Environment setup script (USE WRITE TOOL!)
 
 DO NOT just describe what these files should contain. You MUST actually call the Write tool
 with the file path and complete content to create them.
 
-The project root is the parent of auto-claude/. Implement code in the project root, not in the spec directory.
+The project root is the parent of auto-sleuth/. All analysis and artifacts go in the project root, not in the case directory.
 
 ---
 
 """
-    return spec_context + prompt
+    return case_context + prompt
 
 
-def get_coding_prompt(spec_dir: Path) -> str:
+def get_coding_prompt(case_dir: Path) -> str:
     """
-    Load the coding agent prompt with spec path injected.
+    Load the evidence analyzer agent prompt with case path injected.
 
     Args:
-        spec_dir: Directory containing the spec.md and implementation_plan.json
+        case_dir: Directory containing the case.md and investigation_plan.json
 
     Returns:
-        The coding agent prompt content with spec path
+        The evidence analyzer agent prompt content with case path
     """
     prompt_file = PROMPTS_DIR / "coder.md"
 
     if not prompt_file.exists():
         raise FileNotFoundError(
             f"Coding prompt not found at {prompt_file}\n"
-            "Make sure the auto-claude/prompts/coder.md file exists."
+            "Make sure the auto-sleuth/prompts/coder.md file exists."
         )
 
     prompt = prompt_file.read_text()
 
-    spec_context = f"""## SPEC LOCATION
+    case_context = f"""## CASE LOCATION
 
-Your spec and progress files are located at:
-- Spec: `{spec_dir}/spec.md`
-- Implementation plan: `{spec_dir}/implementation_plan.json`
-- Progress notes: `{spec_dir}/build-progress.txt`
-- Recovery context: `{spec_dir}/memory/attempt_history.json`
+Your case and progress files are located at:
+- Case: `{case_dir}/case.md`
+- Investigation plan: `{case_dir}/investigation_plan.json`
+- Progress notes: `{case_dir}/investigation-progress.txt`
+- Recovery context: `{case_dir}/memory/attempt_history.json`
 
-The project root is the parent of auto-claude/. All code goes in the project root, not in the spec directory.
+The project root is the parent of auto-sleuth/. All analysis and artifacts go in the project root, not in the case directory.
 
 ---
 
 """
 
     # Check for recovery context (stuck subtasks, retry hints)
-    recovery_context = _get_recovery_context(spec_dir)
+    recovery_context = _get_recovery_context(case_dir)
     if recovery_context:
-        spec_context += recovery_context
+        case_context += recovery_context
 
     # Check for human input file
-    human_input_file = spec_dir / "HUMAN_INPUT.md"
+    human_input_file = case_dir / "HUMAN_INPUT.md"
     if human_input_file.exists():
         human_input = human_input_file.read_text().strip()
         if human_input:
-            spec_context += f"""## HUMAN INPUT (READ THIS FIRST!)
+            case_context += f"""## HUMAN INPUT (READ THIS FIRST!)
 
 The human has left you instructions. READ AND FOLLOW THESE CAREFULLY:
 
@@ -254,22 +254,22 @@ After addressing this input, you may delete or clear the HUMAN_INPUT.md file.
 
 """
 
-    return spec_context + prompt
+    return case_context + prompt
 
 
-def _get_recovery_context(spec_dir: Path) -> str:
+def _get_recovery_context(case_dir: Path) -> str:
     """
     Get recovery context if there are failed attempts or stuck subtasks.
 
     Args:
-        spec_dir: Spec directory containing memory/
+        case_dir: Case directory containing memory/
 
     Returns:
         Recovery context string or empty string
     """
     import json
 
-    attempt_history_file = spec_dir / "memory" / "attempt_history.json"
+    attempt_history_file = case_dir / "memory" / "attempt_history.json"
 
     if not attempt_history_file.exists():
         return ""
@@ -307,7 +307,7 @@ Stuck subtasks:
             context = """## ⚠️ RECOVERY CONTEXT - RETRY AWARENESS
 
 Some subtasks have been attempted before. When working on these:
-1. READ memory/attempt_history.json for the specific subtask
+1. READ memory/attempt_history.json for the caseific subtask
 2. See what approaches were tried
 3. Use a DIFFERENT approach
 
@@ -325,13 +325,13 @@ Subtasks with previous attempts:
         return ""
 
 
-def get_followup_planner_prompt(spec_dir: Path) -> str:
+def get_followup_planner_prompt(case_dir: Path) -> str:
     """
-    Load the follow-up planner agent prompt with spec path and key files injected.
-    The follow-up planner adds new subtasks to an existing completed implementation plan.
+    Load the follow-up investigation planner agent prompt with case path and key files injected.
+    The follow-up planner adds new subtasks to an existing completed investigation plan.
 
     Args:
-        spec_dir: Directory containing the completed spec and implementation_plan.json
+        case_dir: Directory containing the completed case and investigation_plan.json
 
     Returns:
         The follow-up planner prompt content with paths injected
@@ -341,54 +341,54 @@ def get_followup_planner_prompt(spec_dir: Path) -> str:
     if not prompt_file.exists():
         raise FileNotFoundError(
             f"Follow-up planner prompt not found at {prompt_file}\n"
-            "Make sure the auto-claude/prompts/followup_planner.md file exists."
+            "Make sure the auto-sleuth/prompts/followup_planner.md file exists."
         )
 
     prompt = prompt_file.read_text()
 
-    # Inject spec directory information at the beginning
-    spec_context = f"""## SPEC LOCATION (FOLLOW-UP MODE)
+    # Inject case directory information at the beginning
+    case_context = f"""## CASE LOCATION (FOLLOW-UP MODE)
 
-You are adding follow-up work to a **completed** spec.
+You are adding follow-up work to a **completed** case.
 
-**Key files in this spec directory:**
-- Spec: `{spec_dir}/spec.md`
-- Follow-up request: `{spec_dir}/FOLLOWUP_REQUEST.md` (READ THIS FIRST!)
-- Implementation plan: `{spec_dir}/implementation_plan.json` (APPEND to this, don't replace)
-- Progress notes: `{spec_dir}/build-progress.txt`
-- Context: `{spec_dir}/context.json`
-- Memory: `{spec_dir}/memory/`
+**Key files in this case directory:**
+- Case: `{case_dir}/case.md`
+- Follow-up request: `{case_dir}/FOLLOWUP_REQUEST.md` (READ THIS FIRST!)
+- Investigation plan: `{case_dir}/investigation_plan.json` (APPEND to this, don't replace)
+- Progress notes: `{case_dir}/investigation-progress.txt`
+- Context: `{case_dir}/context.json`
+- Memory: `{case_dir}/memory/`
 
 **Important paths:**
-- Spec directory: `{spec_dir}`
-- Project root: Parent of auto-claude/ (where code should be implemented)
+- Case directory: `{case_dir}`
+- Project root: Parent of auto-sleuth/ (where analysis and artifacts should be implemented)
 
 **Your task:**
-1. Read `{spec_dir}/FOLLOWUP_REQUEST.md` to understand what to add
-2. Read `{spec_dir}/implementation_plan.json` to see existing phases/subtasks
+1. Read `{case_dir}/FOLLOWUP_REQUEST.md` to understand what to add
+2. Read `{case_dir}/investigation_plan.json` to see existing phases/subtasks
 3. ADD new phase(s) with pending subtasks to the existing plan
 4. PRESERVE all existing subtasks and their statuses
 
 ---
 
 """
-    return spec_context + prompt
+    return case_context + prompt
 
 
-def is_first_run(spec_dir: Path) -> bool:
+def is_first_run(case_dir: Path) -> bool:
     """
-    Check if this is the first run (no valid implementation plan with subtasks exists yet).
+    Check if this is the first run (no valid investigation plan with subtasks exists yet).
 
-    The spec runner may create a skeleton implementation_plan.json with empty phases.
+    The case runner may create a skeleton investigation_plan.json with empty phases.
     This function checks for actual phases with subtasks, not just file existence.
 
     Args:
-        spec_dir: Directory containing spec files
+        case_dir: Directory containing case files
 
     Returns:
-        True if implementation_plan.json doesn't exist or has no subtasks
+        True if investigation_plan.json doesn't exist or has no subtasks
     """
-    plan_file = spec_dir / "implementation_plan.json"
+    plan_file = case_dir / "investigation_plan.json"
 
     if not plan_file.exists():
         return True
@@ -429,28 +429,25 @@ def _load_prompt_file(filename: str) -> str:
     return prompt_file.read_text()
 
 
-def get_qa_reviewer_prompt(spec_dir: Path, project_dir: Path) -> str:
+def get_qa_reviewer_prompt(case_dir: Path, project_dir: Path) -> str:
     """
-    Load the QA reviewer prompt with project-specific MCP tools dynamically injected.
+    Load the evidence validation agent prompt with project-caseific MCP tools dynamically injected.
 
     This function:
-    1. Loads the base QA reviewer prompt
-    2. Detects project capabilities from project_index.json
-    3. Injects only relevant MCP tool documentation (Electron, Puppeteer, DB, API)
+    1. Loads the base evidence validation prompt
+    2. Detects investigation capabilities from project_index.json
+    3. Injects only relevant MCP tool documentation
     4. Detects and injects the correct base branch for git comparisons
 
-    This saves context window by excluding irrelevant tool docs.
-    For example, a CLI Python project won't get Electron validation docs.
-
     Args:
-        spec_dir: Directory containing the spec files
+        case_dir: Directory containing the case files
         project_dir: Root directory of the project
 
     Returns:
-        The QA reviewer prompt with project-specific tools injected
+        The evidence validation agent prompt with project-caseific tools injected
     """
     # Detect the base branch for this task (from task_metadata.json or auto-detect)
-    base_branch = _detect_base_branch(spec_dir, project_dir)
+    base_branch = _detect_base_branch(case_dir, project_dir)
 
     # Load base QA reviewer prompt
     base_prompt = _load_prompt_file("qa_reviewer.md")
@@ -475,15 +472,15 @@ def get_qa_reviewer_prompt(spec_dir: Path, project_dir: Path) -> str:
             # Skip missing files gracefully
             pass
 
-    # Inject spec context at the beginning
-    spec_context = f"""## SPEC LOCATION
+    # Inject case context at the beginning
+    case_context = f"""## CASE LOCATION
 
-Your spec and progress files are located at:
-- Spec: `{spec_dir}/spec.md`
-- Implementation plan: `{spec_dir}/implementation_plan.json`
-- Progress notes: `{spec_dir}/build-progress.txt`
-- QA report output: `{spec_dir}/qa_report.md`
-- Fix request output: `{spec_dir}/QA_FIX_REQUEST.md`
+Your case and progress files are located at:
+- Case: `{case_dir}/case.md`
+- Investigation plan: `{case_dir}/investigation_plan.json`
+- Progress notes: `{case_dir}/investigation-progress.txt`
+- Evidence validation report output: `{case_dir}/qa_report.md`
+- Fix request output: `{case_dir}/QA_FIX_REQUEST.md`
 
 The project root is: `{project_dir}`
 
@@ -496,7 +493,7 @@ When checking for unrelated changes, use three-dot diff syntax:
 git diff {base_branch}...HEAD --name-status
 ```
 
-This shows only changes made in the spec branch since it diverged from `{base_branch}`.
+This shows only changes made in the case branch since it diverged from `{base_branch}`.
 
 ---
 
@@ -507,21 +504,21 @@ This shows only changes made in the spec branch since it diverged from `{base_br
     # Add capability summary for transparency
     active_caps = [k for k, v in capabilities.items() if v]
     if active_caps:
-        spec_context += (
+        case_context += (
             "Based on project analysis, the following capabilities were detected:\n"
         )
         for cap in active_caps:
             cap_name = (
                 cap.replace("is_", "").replace("has_", "").replace("_", " ").title()
             )
-            spec_context += f"- {cap_name}\n"
-        spec_context += "\nRelevant validation tools have been included below.\n\n"
+            case_context += f"- {cap_name}\n"
+        case_context += "\nRelevant validation tools have been included below.\n\n"
     else:
-        spec_context += (
-            "No special project capabilities detected. Using standard validation.\n\n"
+        case_context += (
+            "No caseial project capabilities detected. Using standard validation.\n\n"
         )
 
-    spec_context += "---\n\n"
+    case_context += "---\n\n"
 
     # Find injection point in base prompt (after PHASE 4, before PHASE 5)
     injection_marker = (
@@ -543,33 +540,33 @@ This shows only changes made in the spec branch since it diverged from `{base_br
         base_prompt += "\n\n---\n\n## PROJECT-SPECIFIC VALIDATION TOOLS\n\n"
         base_prompt += "\n\n---\n\n".join(mcp_sections)
 
-    return spec_context + base_prompt
+    return case_context + base_prompt
 
 
-def get_qa_fixer_prompt(spec_dir: Path, project_dir: Path) -> str:
+def get_qa_fixer_prompt(case_dir: Path, project_dir: Path) -> str:
     """
-    Load the QA fixer prompt with spec paths injected.
+    Load the investigation corrector agent prompt with case paths injected.
 
     Args:
-        spec_dir: Directory containing the spec files
+        case_dir: Directory containing the case files
         project_dir: Root directory of the project
 
     Returns:
-        The QA fixer prompt content with paths injected
+        The investigation corrector agent prompt content with paths injected
     """
     base_prompt = _load_prompt_file("qa_fixer.md")
 
-    spec_context = f"""## SPEC LOCATION
+    case_context = f"""## CASE LOCATION
 
-Your spec and progress files are located at:
-- Spec: `{spec_dir}/spec.md`
-- Implementation plan: `{spec_dir}/implementation_plan.json`
-- QA fix request: `{spec_dir}/QA_FIX_REQUEST.md` (READ THIS FIRST!)
-- QA report: `{spec_dir}/qa_report.md`
+Your case and progress files are located at:
+- Case: `{case_dir}/case.md`
+- Investigation plan: `{case_dir}/investigation_plan.json`
+- Validation fix request: `{case_dir}/QA_FIX_REQUEST.md` (READ THIS FIRST!)
+- Validation report: `{case_dir}/qa_report.md`
 
 The project root is: `{project_dir}`
 
 ---
 
 """
-    return spec_context + base_prompt
+    return case_context + base_prompt

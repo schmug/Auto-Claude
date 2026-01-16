@@ -12,10 +12,10 @@ from pathlib import Path
 
 # Load the module directly without going through the package
 _module_path = Path(__file__).parent / "analysis" / "insight_extractor.py"
-_spec = importlib.util.spec_from_file_location("_insight_extractor_impl", _module_path)
-_module = importlib.util.module_from_spec(_spec)
+_case = importlib.util.case_from_file_location("_insight_extractor_impl", _module_path)
+_module = importlib.util.module_from_case(_case)
 sys.modules["_insight_extractor_impl"] = _module
-_spec.loader.exec_module(_module)
+_case.loader.exec_module(_module)
 
 # Re-export all public functions
 extract_session_insights = _module.extract_session_insights

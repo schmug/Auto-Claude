@@ -20,7 +20,7 @@ from .service_matcher import ServiceMatcher
 
 
 class ContextBuilder:
-    """Builds task-specific context by searching the codebase."""
+    """Builds task-caseific context by searching the codebase."""
 
     def __init__(self, project_dir: Path, project_index: dict | None = None):
         self.project_dir = project_dir.resolve()
@@ -34,8 +34,8 @@ class ContextBuilder:
         self.pattern_discoverer = PatternDiscoverer(self.project_dir)
 
     def _load_project_index(self) -> dict:
-        """Load project index from file or create new one (.auto-claude is the installed instance)."""
-        index_file = self.project_dir / ".auto-claude" / "project_index.json"
+        """Load project index from file (.auto-sleuth is the installed instance)."""
+        index_file = self.project_dir / ".auto-sleuth" / "project_index.json"
         if index_file.exists():
             with open(index_file) as f:
                 return json.load(f)
@@ -53,7 +53,7 @@ class ContextBuilder:
         include_graph_hints: bool = True,
     ) -> TaskContext:
         """
-        Build context for a specific task.
+        Build context for a caseific task.
 
         Args:
             task: Description of the task
@@ -64,7 +64,7 @@ class ContextBuilder:
         Returns:
             TaskContext with relevant files and patterns
         """
-        # Auto-detect services if not specified
+        # Auto-detect services if not caseified
         if not services:
             services = self.service_matcher.suggest_services(task)
 
@@ -145,7 +145,7 @@ class ContextBuilder:
         include_graph_hints: bool = True,
     ) -> TaskContext:
         """
-        Build context for a specific task (async version).
+        Build context for a caseific task (async version).
 
         This version is preferred when called from async code as it can
         properly await the graph hints retrieval.
@@ -159,7 +159,7 @@ class ContextBuilder:
         Returns:
             TaskContext with relevant files and patterns
         """
-        # Auto-detect services if not specified
+        # Auto-detect services if not caseified
         if not services:
             services = self.service_matcher.suggest_services(task)
 

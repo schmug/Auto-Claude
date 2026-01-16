@@ -2,7 +2,7 @@
 CLI Utilities
 ==============
 
-Shared utility functions for the Auto Claude CLI.
+Shared utility functions for the Auto Sleuth CLI.
 """
 
 import os
@@ -59,7 +59,7 @@ load_dotenv = import_dotenv()
 from graphiti_config import get_graphiti_status
 from linear_integration import LinearManager
 from linear_updater import is_linear_enabled
-from spec.pipeline import get_specs_dir
+from case.pipeline import get_cases_dir
 from ui import (
     Icons,
     bold,
@@ -77,15 +77,15 @@ def setup_environment() -> Path:
     Set up the environment and return the script directory.
 
     Returns:
-        Path to the auto-claude directory
+        Path to the auto-sleuth directory
     """
-    # Add auto-claude directory to path for imports
+    # Add auto-sleuth directory to path for imports
     script_dir = Path(__file__).parent.parent.resolve()
     sys.path.insert(0, str(script_dir))
 
-    # Load .env file - check both auto-claude/ and dev/auto-claude/ locations
+    # Load .env file - check both auto-sleuth/ and dev/auto-sleuth/ locations
     env_file = script_dir / ".env"
-    dev_env_file = script_dir.parent / "dev" / "auto-claude" / ".env"
+    dev_env_file = script_dir.parent / "dev" / "auto-sleuth" / ".env"
     if env_file.exists():
         load_dotenv(env_file)
     elif dev_env_file.exists():
@@ -94,68 +94,68 @@ def setup_environment() -> Path:
     return script_dir
 
 
-def find_spec(project_dir: Path, spec_identifier: str) -> Path | None:
+def find_case(project_dir: Path, case_identifier: str) -> Path | None:
     """
-    Find a spec by number or full name.
+    Find a case by number or full name.
 
     Args:
         project_dir: Project root directory
-        spec_identifier: Either "001" or "001-feature-name"
+        case_identifier: Either "001" or "001-feature-name"
 
     Returns:
-        Path to spec folder, or None if not found
+        Path to case folder, or None if not found
     """
-    specs_dir = get_specs_dir(project_dir)
+    cases_dir = get_cases_dir(project_dir)
 
-    if specs_dir.exists():
+    if cases_dir.exists():
         # Try exact match first
-        exact_path = specs_dir / spec_identifier
-        if exact_path.exists() and (exact_path / "spec.md").exists():
+        exact_path = cases_dir / case_identifier
+        if exact_path.exists() and ((exact_path / "case.md").exists() or (exact_path / "case.md").exists()):
             return exact_path
 
         # Try matching by number prefix
-        for spec_folder in specs_dir.iterdir():
-            if spec_folder.is_dir() and spec_folder.name.startswith(
-                spec_identifier + "-"
+        for case_folder in cases_dir.iterdir():
+            if case_folder.is_dir() and case_folder.name.startswith(
+                case_identifier + "-"
             ):
-                if (spec_folder / "spec.md").exists():
-                    return spec_folder
+                if (case_folder / "case.md").exists() or (case_folder / "case.md").exists():
+                    return case_folder
 
-    # Check worktree specs (for merge-preview, merge, review, discard operations)
-    worktree_base = project_dir / ".auto-claude" / "worktrees" / "tasks"
+    # Check worktree cases (for merge-preview, merge, review, discard operations)
+    worktree_base = project_dir / ".auto-sleuth" / "worktrees" / "tasks"
     if worktree_base.exists():
         # Try exact match in worktree
-        worktree_spec = (
-            worktree_base / spec_identifier / ".auto-claude" / "specs" / spec_identifier
+        worktree_case = (
+            worktree_base / case_identifier / ".auto-sleuth" / "cases" / case_identifier
         )
-        if worktree_spec.exists() and (worktree_spec / "spec.md").exists():
-            return worktree_spec
+        if worktree_case.exists() and ((worktree_case / "case.md").exists() or (worktree_case / "case.md").exists()):
+            return worktree_case
 
         # Try matching by prefix in worktrees
         for worktree_dir in worktree_base.iterdir():
             if worktree_dir.is_dir() and worktree_dir.name.startswith(
-                spec_identifier + "-"
+                case_identifier + "-"
             ):
-                spec_in_worktree = (
-                    worktree_dir / ".auto-claude" / "specs" / worktree_dir.name
+                case_in_worktree = (
+                    worktree_dir / ".auto-sleuth" / "cases" / worktree_dir.name
                 )
                 if (
-                    spec_in_worktree.exists()
-                    and (spec_in_worktree / "spec.md").exists()
+                    case_in_worktree.exists()
+                    and ((case_in_worktree / "case.md").exists() or (case_in_worktree / "case.md").exists())
                 ):
-                    return spec_in_worktree
+                    return case_in_worktree
 
     return None
 
 
-def validate_environment(spec_dir: Path) -> bool:
+def validate_environment(case_dir: Path) -> bool:
     """
     Validate that the environment is set up correctly.
 
     Returns:
         True if valid, False otherwise (with error messages printed)
     """
-    # Validate platform-specific dependencies first (exits if missing)
+    # Validate platform-caseific dependencies first (exits if missing)
     validate_platform_dependencies()
 
     valid = True
@@ -163,7 +163,7 @@ def validate_environment(spec_dir: Path) -> bool:
     # Check for OAuth token (API keys are not supported)
     if not get_auth_token():
         print("Error: No OAuth token found")
-        print("\nAuto Claude requires Claude Code OAuth authentication.")
+        print("\nAuto Sleuth requires Claude Code OAuth authentication.")
         print("Direct API keys (ANTHROPIC_API_KEY) are not supported.")
         print("\nTo authenticate, run:")
         print("  claude setup-token")
@@ -179,10 +179,11 @@ def validate_environment(spec_dir: Path) -> bool:
         if base_url:
             print(f"API Endpoint: {base_url}")
 
-    # Check for spec.md in spec directory
-    spec_file = spec_dir / "spec.md"
-    if not spec_file.exists():
-        print(f"\nError: spec.md not found in {spec_dir}")
+    # Check for case.md or case.md in case directory
+    case_file = case_dir / "case.md"
+    case_file = case_dir / "case.md"
+    if not case_file.exists() and not case_file.exists():
+        print(f"\nError: case.md (or case.md) not found in {case_dir}")
         valid = False
 
     # Check Linear integration (optional but show status)
@@ -190,9 +191,9 @@ def validate_environment(spec_dir: Path) -> bool:
         print("Linear integration: ENABLED")
         # Show Linear project status if initialized
         project_dir = (
-            spec_dir.parent.parent
-        )  # auto-claude/specs/001-name -> project root
-        linear_manager = LinearManager(spec_dir, project_dir)
+            case_dir.parent.parent
+        )  # .auto-sleuth/cases/001-name -> project root
+        linear_manager = LinearManager(case_dir, project_dir)
         if linear_manager.is_initialized:
             summary = linear_manager.get_progress_summary()
             print(f"  Project: {summary.get('project_name', 'Unknown')}")
@@ -223,12 +224,12 @@ def validate_environment(spec_dir: Path) -> bool:
 
 
 def print_banner() -> None:
-    """Print the Auto-Build banner."""
+    """Print the Auto-Sleuth banner."""
     content = [
-        bold(f"{icon(Icons.LIGHTNING)} AUTO-BUILD FRAMEWORK"),
+        bold(f"{icon(Icons.LIGHTNING)} AUTO-SLEUTH DFIR FRAMEWORK"),
         "",
-        "Autonomous Multi-Session Coding Agent",
-        muted("Subtask-Based Implementation with Phase Dependencies"),
+        "Autonomous Multi-Session DFIR Agent",
+        muted("Subtask-Based Investigation with Phase Dependencies"),
     ]
     print()
     print(box(content, width=70, style="heavy"))

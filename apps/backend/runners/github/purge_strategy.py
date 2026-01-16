@@ -12,7 +12,7 @@ Features:
 - Comprehensive error handling
 
 Usage:
-    strategy = PurgeStrategy(state_dir=Path(".auto-claude/github"))
+    strategy = PurgeStrategy(state_dir=Path(".auto-sleuth/github"))
     result = await strategy.purge_by_criteria(
         pattern="issue",
         key="issue_number",
@@ -105,7 +105,7 @@ class PurgeStrategy:
         repo: str | None = None,
     ) -> PurgeResult:
         """
-        Purge all data matching specified criteria (GDPR-compliant).
+        Purge all data matching caseified criteria (GDPR-compliant).
 
         This generic method eliminates duplicate purge_issue() and purge_pr()
         implementations by using pattern-based file discovery and JSON
@@ -128,7 +128,7 @@ class PurgeStrategy:
                 value=123
             )
 
-            # Purge PR #456 from specific repo
+            # Purge PR #456 from caseific repo
             result = await strategy.purge_by_criteria(
                 pattern="pr",
                 key="pr_number",
@@ -160,7 +160,7 @@ class PurgeStrategy:
 
     async def purge_repository(self, repo: str) -> PurgeResult:
         """
-        Purge all data for a specific repository.
+        Purge all data for a caseific repository.
 
         This method handles repository-level purges which have different
         logic than issue/PR purges (directory-based instead of file-based).
@@ -231,7 +231,7 @@ class PurgeStrategy:
             if data.get(key) != value:
                 return
 
-            # Apply repository filter if specified
+            # Apply repository filter if caseified
             if repo and data.get("repo") != repo:
                 return
 

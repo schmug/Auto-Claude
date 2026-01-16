@@ -16,30 +16,30 @@ import json
 from pathlib import Path
 
 
-def get_relative_spec_path(spec_dir: Path, project_dir: Path) -> str:
+def get_relative_case_path(case_dir: Path, project_dir: Path) -> str:
     """
-    Get the spec directory path relative to the project/working directory.
+    Get the case directory path relative to the project/working directory.
 
     This ensures the AI gets a usable path regardless of absolute locations.
 
     Args:
-        spec_dir: Absolute path to spec directory
+        case_dir: Absolute path to case directory
         project_dir: Absolute path to project/working directory
 
     Returns:
-        Relative path string (e.g., "./auto-claude/specs/003-new-spec")
+        Relative path string (e.g., "./auto-sleuth/cases/003-new-case")
     """
     try:
         # Try to make path relative to project_dir
-        relative = spec_dir.relative_to(project_dir)
+        relative = case_dir.relative_to(project_dir)
         return f"./{relative}"
     except ValueError:
-        # If spec_dir is not under project_dir, return the name only
-        # This shouldn't happen if workspace.py correctly copies spec files
-        return f"./auto-claude/specs/{spec_dir.name}"
+        # If case_dir is not under project_dir, return the name only
+        # This shouldn't happen if workspace.py correctly copies case files
+        return f"./auto-sleuth/cases/{case_dir.name}"
 
 
-def generate_environment_context(project_dir: Path, spec_dir: Path) -> str:
+def generate_environment_context(project_dir: Path, case_dir: Path) -> str:
     """
     Generate environment context header for prompts.
 
@@ -47,17 +47,19 @@ def generate_environment_context(project_dir: Path, spec_dir: Path) -> str:
 
     Args:
         project_dir: The working directory for the AI
-        spec_dir: The spec directory (may be absolute or relative)
+        case_dir: The case directory (may be absolute or relative)
 
     Returns:
         Markdown string with environment context
     """
-    relative_spec = get_relative_spec_path(spec_dir, project_dir)
+    relative_case = get_relative_case_path(case_dir, project_dir)
+
+    case_file_name = "case.md" if (case_dir / "case.md").exists() else "case.md"
 
     return f"""## YOUR ENVIRONMENT
 
 **Working Directory:** `{project_dir}`
-**Spec Location:** `{relative_spec}/`
+**Case Location:** `{relative_case}/`
 
 Your filesystem is restricted to your working directory. All file paths should be
 relative to this location. Do NOT use absolute paths.
@@ -68,10 +70,10 @@ NEW location, not the working directory. See the PATH CONFUSION PREVENTION secti
 coder prompt for detailed examples.
 
 **Important Files:**
-- Spec: `{relative_spec}/spec.md`
-- Plan: `{relative_spec}/implementation_plan.json`
-- Progress: `{relative_spec}/build-progress.txt`
-- Context: `{relative_spec}/context.json`
+- Case: `{relative_case}/{case_file_name}`
+- Plan: `{relative_case}/investigation_plan.json`
+- Progress: `{relative_case}/build-progress.txt`
+- Context: `{relative_case}/context.json`
 
 ---
 
@@ -79,7 +81,7 @@ coder prompt for detailed examples.
 
 
 def generate_subtask_prompt(
-    spec_dir: Path,
+    case_dir: Path,
     project_dir: Path,
     subtask: dict,
     phase: dict,
@@ -90,7 +92,7 @@ def generate_subtask_prompt(
     Generate a minimal, focused prompt for implementing a single subtask.
 
     Args:
-        spec_dir: Directory containing spec files
+        case_dir: Directory containing case files
         project_dir: Root project directory (working directory)
         subtask: The subtask to implement
         phase: The phase containing this subtask
@@ -108,14 +110,14 @@ def generate_subtask_prompt(
     patterns_from = subtask.get("patterns_from", [])
     verification = subtask.get("verification", {})
 
-    # Get relative spec path
-    relative_spec = get_relative_spec_path(spec_dir, project_dir)
+    # Get relative case path
+    relative_case = get_relative_case_path(case_dir, project_dir)
 
     # Build the prompt
     sections = []
 
     # Environment context first
-    sections.append(generate_environment_context(project_dir, spec_dir))
+    sections.append(generate_environment_context(project_dir, case_dir))
 
     # Header
     sections.append(f"""# Subtask Implementation Task
@@ -171,7 +173,7 @@ You MUST use a DIFFERENT approach than previous attempts.
     if v_type == "command":
         sections.append(f"""Run this command to verify:
 ```bash
-{verification.get("command", 'echo "No command specified"')}
+{verification.get("command", 'echo "No command caseified"')}
 ```
 Expected: {verification.get("expected", "Success")}
 """)
@@ -215,9 +217,9 @@ Verify:""")
 5. **Commit your changes:**
    ```bash
    git add .
-   git commit -m "auto-claude: {subtask_id} - {description[:50]}"
+   git commit -m "auto-sleuth: {subtask_id} - {description[:50]}"
    ```
-6. **Update the plan** - set this subtask's status to "completed" in implementation_plan.json
+6. **Update the plan** - set this subtask's status to "completed" in investigation_plan.json
 
 ## Quality Checklist
 
@@ -241,13 +243,13 @@ Before marking complete, verify:
     return "\n".join(sections)
 
 
-def generate_planner_prompt(spec_dir: Path, project_dir: Path | None = None) -> str:
+def generate_planner_prompt(case_dir: Path, project_dir: Path | None = None) -> str:
     """
     Generate the planner prompt (used only once at start).
     This is a simplified version that focuses on plan creation.
 
     Args:
-        spec_dir: Directory containing spec.md
+        case_dir: Directory containing case.md
         project_dir: Working directory (for relative paths)
 
     Returns:
@@ -257,36 +259,38 @@ def generate_planner_prompt(spec_dir: Path, project_dir: Path | None = None) -> 
     prompts_dir = Path(__file__).parent / "prompts"
     planner_file = prompts_dir / "planner.md"
 
+    case_file_name = "case.md" if (case_dir / "case.md").exists() else "case.md"
+    
     if planner_file.exists():
         prompt = planner_file.read_text()
     else:
         prompt = (
-            "Read spec.md and create implementation_plan.json with phases and subtasks."
+            f"Read {case_file_name} and create investigation_plan.json with phases and subtasks."
         )
 
-    # Use project_dir for relative paths, or infer from spec_dir
+    # Use project_dir for relative paths, or infer from case_dir
     if project_dir is None:
-        # Infer: spec_dir is typically project/auto-claude/specs/XXX
-        project_dir = spec_dir.parent.parent.parent
+        # Infer: case_dir is typically project/auto-sleuth/cases/XXX
+        project_dir = case_dir.parent.parent.parent
 
-    # Get relative path for spec directory
-    relative_spec = get_relative_spec_path(spec_dir, project_dir)
+    # Get relative path for case directory
+    relative_case = get_relative_case_path(case_dir, project_dir)
 
     # Build header with environment context
-    header = generate_environment_context(project_dir, spec_dir)
+    header = generate_environment_context(project_dir, case_dir)
 
-    # Add spec-specific instructions
+    # Add case-caseific instructions
     header += f"""## SPEC LOCATION
 
-Your spec file is located at: `{relative_spec}/spec.md`
+Your case file is located at: `{relative_case}/{case_file_name}`
 
-Store all build artifacts in this spec directory:
-- `{relative_spec}/implementation_plan.json` - Subtask-based implementation plan
-- `{relative_spec}/build-progress.txt` - Progress notes
-- `{relative_spec}/init.sh` - Environment setup script
+Store all build artifacts in this case directory:
+- `{relative_case}/investigation_plan.json` - Subtask-based implementation plan
+- `{relative_case}/build-progress.txt` - Progress notes
+- `{relative_case}/init.sh` - Environment setup script
 
 The project root is your current working directory. Implement code in the project root,
-not in the spec directory.
+not in the case directory.
 
 ---
 
@@ -298,7 +302,7 @@ not in the spec directory.
 
 
 def load_subtask_context(
-    spec_dir: Path,
+    case_dir: Path,
     project_dir: Path,
     subtask: dict,
     max_file_lines: int = 200,
@@ -307,7 +311,7 @@ def load_subtask_context(
     Load minimal context needed for a subtask.
 
     Args:
-        spec_dir: Spec directory
+        case_dir: Case directory
         project_dir: Project root
         subtask: The subtask being implemented
         max_file_lines: Maximum lines to include per file
@@ -318,7 +322,7 @@ def load_subtask_context(
     context = {
         "patterns": {},
         "files_to_modify": {},
-        "spec_excerpt": None,
+        "case_excerpt": None,
     }
 
     # Load pattern files (truncated)

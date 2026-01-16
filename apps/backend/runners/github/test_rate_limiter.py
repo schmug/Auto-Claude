@@ -63,7 +63,7 @@ class TestTokenBucket:
 
     @pytest.mark.asyncio
     async def test_acquire_timeout(self):
-        """Acquire respects timeout."""
+        """Acquire recasets timeout."""
         bucket = TokenBucket(capacity=10, refill_rate=1.0)  # 1 token/sec
         bucket.try_acquire(10)  # Empty the bucket
 

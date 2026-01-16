@@ -1,25 +1,25 @@
 """
-Agents Module
-=============
+Agents Module - Auto-Sleuth DFIR
+=================================
 
 Modular agent system for autonomous DFIR investigations and coding.
 
 This module provides:
 - run_autonomous_agent: Main coder agent loop (legacy)
 - run_autonomous_analyst: Main evidence analyst loop (DFIR)
-- run_followup_planner: Follow-up planner for completed specs
+- run_followup_planner: Follow-up planner for completed cases
 - run_followup_case_planner: Follow-up planner for completed cases (DFIR)
 - run_evidence_validator: Evidence validation agent (DFIR)
 - Memory management (Graphiti + file-based fallback)
 - Session management and post-processing
-- Utility functions for git and plan management
+- Utility functions for git and investigation plan management
 
 Uses lazy imports to avoid circular dependencies.
 """
 
 # Explicit import required by CodeQL static analysis
 # (CodeQL doesn't recognize __getattr__ dynamic exports)
-from .utils import sync_spec_to_source, sync_case_to_source
+from .utils import sync_case_to_source
 
 __all__ = [
     # Main API - Legacy (Coding)
@@ -44,13 +44,11 @@ __all__ = [
     # Utils
     "get_latest_commit",
     "get_commit_count",
-    "load_implementation_plan",
     "load_investigation_plan",
     "find_subtask_in_plan",
     "find_phase_for_subtask",
     "find_step_in_plan",
     "find_phase_for_step",
-    "sync_spec_to_source",
     "sync_case_to_source",
     # Constants
     "AUTO_CONTINUE_DELAY_SECONDS",
@@ -76,7 +74,12 @@ def __getattr__(name):
         from .case_planner import run_followup_case_planner, run_initial_case_planning
 
         return locals()[name]
-    elif name in ("run_evidence_validator", "run_validation_loop", "verify_evidence_integrity", "verify_chain_of_custody"):
+    elif name in (
+        "run_evidence_validator",
+        "run_validation_loop",
+        "verify_evidence_integrity",
+        "verify_chain_of_custody",
+    ):
         from .evidence_validator import (
             run_evidence_validator,
             run_validation_loop,
@@ -114,9 +117,7 @@ def __getattr__(name):
         "find_step_in_plan",
         "get_commit_count",
         "get_latest_commit",
-        "load_implementation_plan",
         "load_investigation_plan",
-        "sync_spec_to_source",
         "sync_case_to_source",
     ):
         from .utils import (
@@ -126,9 +127,7 @@ def __getattr__(name):
             find_step_in_plan,
             get_commit_count,
             get_latest_commit,
-            load_implementation_plan,
             load_investigation_plan,
-            sync_spec_to_source,
             sync_case_to_source,
         )
 

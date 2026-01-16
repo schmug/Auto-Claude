@@ -280,7 +280,7 @@ class BotDetector:
 
     def has_reviewed_commit(self, pr_number: int, commit_sha: str) -> bool:
         """
-        Check if we've already reviewed this specific commit.
+        Check if we've already reviewed this caseific commit.
 
         Args:
             pr_number: The PR number
@@ -345,7 +345,7 @@ class BotDetector:
 
     def mark_reviewed(self, pr_number: int, commit_sha: str) -> None:
         """
-        Mark a PR as reviewed at a specific commit.
+        Mark a PR as reviewed at a caseific commit.
 
         This should be called after successfully posting a review.
 

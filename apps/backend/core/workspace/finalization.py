@@ -32,7 +32,7 @@ from .models import WorkspaceChoice
 
 def finalize_workspace(
     project_dir: Path,
-    spec_name: str,
+    case_name: str,
     manager: WorktreeManager | None,
     auto_continue: bool = False,
 ) -> WorkspaceChoice:
@@ -46,7 +46,7 @@ def finalize_workspace(
 
     Args:
         project_dir: The project directory
-        spec_name: Name of the spec that was built
+        case_name: Name of the case that was built
         manager: The worktree manager (None if direct mode was used)
         auto_continue: If True, skip interactive prompts (UI mode)
 
@@ -68,7 +68,7 @@ def finalize_workspace(
     # In auto_continue mode (UI), skip interactive prompts
     # The worktree stays for the UI to manage
     if auto_continue:
-        worktree_info = manager.get_worktree_info(spec_name)
+        worktree_info = manager.get_worktree_info(case_name)
         if worktree_info:
             print()
             print(success(f"Build complete in worktree: {worktree_info.path}"))
@@ -84,10 +84,10 @@ def finalize_workspace(
     print()
     print(box(content, width=60, style="heavy"))
 
-    show_build_summary(manager, spec_name)
+    show_build_summary(manager, case_name)
 
     # Get the worktree path for test instructions
-    worktree_info = manager.get_worktree_info(spec_name)
+    worktree_info = manager.get_worktree_info(case_name)
     staging_path = worktree_info.path if worktree_info else None
 
     # Enhanced menu for post-build options
@@ -138,7 +138,7 @@ def finalize_workspace(
 def handle_workspace_choice(
     choice: WorkspaceChoice,
     project_dir: Path,
-    spec_name: str,
+    case_name: str,
     manager: WorktreeManager,
 ) -> None:
     """
@@ -147,10 +147,10 @@ def handle_workspace_choice(
     Args:
         choice: What the user wants to do
         project_dir: The project directory
-        spec_name: Name of the spec
+        case_name: Name of the case
         manager: The worktree manager
     """
-    worktree_info = manager.get_worktree_info(spec_name)
+    worktree_info = manager.get_worktree_info(case_name)
     staging_path = worktree_info.path if worktree_info else None
 
     if choice == WorkspaceChoice.TEST:
@@ -169,19 +169,19 @@ def handle_workspace_choice(
         if staging_path:
             print(highlight(f"  cd {staging_path}"))
         else:
-            worktree_path = get_existing_build_worktree(project_dir, spec_name)
+            worktree_path = get_existing_build_worktree(project_dir, case_name)
             if worktree_path:
                 print(highlight(f"  cd {worktree_path}"))
             else:
                 print(
                     highlight(
-                        f"  cd {project_dir}/.auto-claude/worktrees/tasks/{spec_name}"
+                        f"  cd {project_dir}/.auto-sleuth/worktrees/tasks/{case_name}"
                     )
                 )
 
         # Show likely test/run commands
         if staging_path:
-            commands = manager.get_test_commands(spec_name)
+            commands = manager.get_test_commands(case_name)
             print()
             print("Then run your project:")
             for cmd in commands[:2]:  # Show top 2 commands
@@ -191,16 +191,16 @@ def handle_workspace_choice(
         print(muted("-" * 60))
         print()
         print("When you're done testing:")
-        print(highlight(f"  python auto-claude/run.py --spec {spec_name} --merge"))
+        print(highlight(f"  python auto-sleuth/run.py --case {case_name} --merge"))
         print()
         print("To discard (if you don't like it):")
-        print(muted(f"  python auto-claude/run.py --spec {spec_name} --discard"))
+        print(muted(f"  python auto-sleuth/run.py --case {case_name} --discard"))
         print()
 
     elif choice == WorkspaceChoice.MERGE:
         print()
         print_status("Adding changes to your project...", "progress")
-        success_result = manager.merge_worktree(spec_name, delete_after=True)
+        success_result = manager.merge_worktree(case_name, delete_after=True)
 
         if success_result:
             print()
@@ -212,7 +212,7 @@ def handle_workspace_choice(
             print(muted("You may need to merge manually or ask for help."))
 
     elif choice == WorkspaceChoice.REVIEW:
-        show_changed_files(manager, spec_name)
+        show_changed_files(manager, case_name)
         print()
         print(muted("-" * 60))
         print()
@@ -229,7 +229,7 @@ def handle_workspace_choice(
             print(highlight(f"  cd {staging_path}"))
         print()
         print("To add these changes to your project:")
-        print(highlight(f"  python auto-claude/run.py --spec {spec_name} --merge"))
+        print(highlight(f"  python auto-sleuth/run.py --case {case_name} --merge"))
         print()
 
     else:  # LATER
@@ -240,45 +240,45 @@ def handle_workspace_choice(
         if staging_path:
             print(highlight(f"  cd {staging_path}"))
         else:
-            worktree_path = get_existing_build_worktree(project_dir, spec_name)
+            worktree_path = get_existing_build_worktree(project_dir, case_name)
             if worktree_path:
                 print(highlight(f"  cd {worktree_path}"))
             else:
                 print(
                     highlight(
-                        f"  cd {project_dir}/.auto-claude/worktrees/tasks/{spec_name}"
+                        f"  cd {project_dir}/.auto-sleuth/worktrees/tasks/{case_name}"
                     )
                 )
         print()
         print("When you're ready to add it:")
-        print(highlight(f"  python auto-claude/run.py --spec {spec_name} --merge"))
+        print(highlight(f"  python auto-sleuth/run.py --case {case_name} --merge"))
         print()
         print("To see what was built:")
-        print(muted(f"  python auto-claude/run.py --spec {spec_name} --review"))
+        print(muted(f"  python auto-sleuth/run.py --case {case_name} --review"))
         print()
 
 
-def review_existing_build(project_dir: Path, spec_name: str) -> bool:
+def review_existing_build(project_dir: Path, case_name: str) -> bool:
     """
     Show what an existing build contains.
 
-    Called when user runs: python auto-claude/run.py --spec X --review
+    Called when user runs: python auto-sleuth/run.py --case X --review
 
     Args:
         project_dir: The project directory
-        spec_name: Name of the spec
+        case_name: Name of the case
 
     Returns:
         True if build exists
     """
-    worktree_path = get_existing_build_worktree(project_dir, spec_name)
+    worktree_path = get_existing_build_worktree(project_dir, case_name)
 
     if not worktree_path:
         print()
-        print_status(f"No existing build found for '{spec_name}'.", "warning")
+        print_status(f"No existing build found for '{case_name}'.", "warning")
         print()
         print("To start a new build:")
-        print(highlight(f"  python auto-claude/run.py --spec {spec_name}"))
+        print(highlight(f"  python auto-sleuth/run.py --case {case_name}"))
         return False
 
     content = [
@@ -288,10 +288,10 @@ def review_existing_build(project_dir: Path, spec_name: str) -> bool:
     print(box(content, width=60, style="heavy"))
 
     manager = WorktreeManager(project_dir)
-    worktree_info = manager.get_worktree_info(spec_name)
+    worktree_info = manager.get_worktree_info(case_name)
 
-    show_build_summary(manager, spec_name)
-    show_changed_files(manager, spec_name)
+    show_build_summary(manager, case_name)
+    show_changed_files(manager, case_name)
 
     print()
     print(muted("-" * 60))
@@ -300,7 +300,7 @@ def review_existing_build(project_dir: Path, spec_name: str) -> bool:
     print(highlight(f"  cd {worktree_path}"))
     print()
     print("To add these changes to your project:")
-    print(highlight(f"  python auto-claude/run.py --spec {spec_name} --merge"))
+    print(highlight(f"  python auto-sleuth/run.py --case {case_name} --merge"))
     print()
     print("To see full diff:")
     if worktree_info:
@@ -310,26 +310,26 @@ def review_existing_build(project_dir: Path, spec_name: str) -> bool:
     return True
 
 
-def discard_existing_build(project_dir: Path, spec_name: str) -> bool:
+def discard_existing_build(project_dir: Path, case_name: str) -> bool:
     """
     Discard an existing build (with confirmation).
 
-    Called when user runs: python auto-claude/run.py --spec X --discard
+    Called when user runs: python auto-sleuth/run.py --case X --discard
 
     Requires typing "delete" to confirm - prevents accidents.
 
     Args:
         project_dir: The project directory
-        spec_name: Name of the spec
+        case_name: Name of the case
 
     Returns:
         True if discarded
     """
-    worktree_path = get_existing_build_worktree(project_dir, spec_name)
+    worktree_path = get_existing_build_worktree(project_dir, case_name)
 
     if not worktree_path:
         print()
-        print_status(f"No existing build found for '{spec_name}'.", "warning")
+        print_status(f"No existing build found for '{case_name}'.", "warning")
         return False
 
     content = [
@@ -342,7 +342,7 @@ def discard_existing_build(project_dir: Path, spec_name: str) -> bool:
 
     manager = WorktreeManager(project_dir)
 
-    show_build_summary(manager, spec_name)
+    show_build_summary(manager, case_name)
 
     print()
     print(f"Are you sure? Type {highlight('delete')} to confirm: ", end="")
@@ -360,21 +360,21 @@ def discard_existing_build(project_dir: Path, spec_name: str) -> bool:
         return False
 
     # Actually delete
-    manager.remove_worktree(spec_name, delete_branch=True)
+    manager.remove_worktree(case_name, delete_branch=True)
 
     print()
     print_status("Build deleted.", "success")
     return True
 
 
-def check_existing_build(project_dir: Path, spec_name: str) -> bool:
+def check_existing_build(project_dir: Path, case_name: str) -> bool:
     """
     Check if there's an existing build and offer options.
 
     Returns True if user wants to continue with existing build,
     False if they want to start fresh (after discarding).
     """
-    worktree_path = get_existing_build_worktree(project_dir, spec_name)
+    worktree_path = get_existing_build_worktree(project_dir, case_name)
 
     if not worktree_path:
         return False  # No existing build
@@ -382,7 +382,7 @@ def check_existing_build(project_dir: Path, spec_name: str) -> bool:
     content = [
         info(f"{icon(Icons.INFO)} EXISTING BUILD FOUND"),
         "",
-        "There's already a build in progress for this spec.",
+        "There's already a build in progress for this case.",
     ]
     print()
     print(box(content, width=60, style="heavy"))
@@ -433,15 +433,15 @@ def check_existing_build(project_dir: Path, spec_name: str) -> bool:
     if choice == "continue":
         return True  # Continue with existing
     elif choice == "review":
-        review_existing_build(project_dir, spec_name)
+        review_existing_build(project_dir, case_name)
         print()
         input("Press Enter to continue building...")
         return True
     elif choice == "merge":
-        ws.merge_existing_build(project_dir, spec_name)
+        ws.merge_existing_build(project_dir, case_name)
         return False  # Start fresh after merge
     elif choice == "fresh":
-        discarded = discard_existing_build(project_dir, spec_name)
+        discarded = discard_existing_build(project_dir, case_name)
         return not discarded  # If discarded, start fresh
     else:
         return True  # Default to continue
@@ -449,13 +449,13 @@ def check_existing_build(project_dir: Path, spec_name: str) -> bool:
 
 def list_all_worktrees(project_dir: Path) -> list[WorktreeInfo]:
     """
-    List all spec worktrees in the project.
+    List all case worktrees in the project.
 
     Args:
         project_dir: Main project directory
 
     Returns:
-        List of WorktreeInfo for each spec worktree
+        List of WorktreeInfo for each case worktree
     """
     manager = WorktreeManager(project_dir)
     return manager.list_all_worktrees()
@@ -463,7 +463,7 @@ def list_all_worktrees(project_dir: Path) -> list[WorktreeInfo]:
 
 def cleanup_all_worktrees(project_dir: Path, confirm: bool = True) -> bool:
     """
-    Clean up all spec worktrees in the project.
+    Clean up all case worktrees in the project.
 
     Args:
         project_dir: Main project directory
@@ -484,7 +484,7 @@ def cleanup_all_worktrees(project_dir: Path, confirm: bool = True) -> bool:
         print()
         print_status(f"Found {len(worktrees)} worktree(s):", "info")
         for wt in worktrees:
-            print(f"  - {wt.spec_name}")
+            print(f"  - {wt.case_name}")
         print()
         print(f"Delete all worktrees? Type {highlight('yes')} to confirm: ", end="")
 
@@ -502,7 +502,7 @@ def cleanup_all_worktrees(project_dir: Path, confirm: bool = True) -> bool:
 
     # Clean up all worktrees
     for wt in worktrees:
-        manager.remove_worktree(wt.spec_name, delete_branch=True)
+        manager.remove_worktree(wt.case_name, delete_branch=True)
 
     print()
     print_status(f"Cleaned up {len(worktrees)} worktree(s).", "success")

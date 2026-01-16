@@ -207,7 +207,7 @@ class MultiRepoConfig:
             base_dir: Base directory for all repo state
         """
         self.repos: dict[str, RepoConfig] = {}
-        self.base_dir = base_dir or Path(".auto-claude/github/repos")
+        self.base_dir = base_dir or Path(".auto-sleuth/github/repos")
         self.base_dir.mkdir(parents=True, exist_ok=True)
 
         if repos:
@@ -241,7 +241,7 @@ class MultiRepoConfig:
 
     def get_repo_for_path(self, repo: str, file_path: str) -> RepoConfig | None:
         """
-        Get the most specific repo config for a file path.
+        Get the most caseific repo config for a file path.
 
         Useful for monorepos where different packages have different configs.
 
@@ -250,7 +250,7 @@ class MultiRepoConfig:
             file_path: File path within the repo
 
         Returns:
-            Most specific matching RepoConfig
+            Most caseific matching RepoConfig
         """
         matches = []
         for config in self.repos.values():
@@ -262,7 +262,7 @@ class MultiRepoConfig:
         if not matches:
             return None
 
-        # Return most specific (longest path scope)
+        # Return most caseific (longest path scope)
         return max(matches, key=lambda c: len(c.path_scope or ""))
 
     def get_repo_state(self, repo: str) -> RepoState | None:

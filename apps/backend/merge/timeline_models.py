@@ -122,7 +122,7 @@ class TaskIntent:
 
     title: str
     description: str
-    from_plan: bool = False  # True if extracted from implementation_plan.json
+    from_plan: bool = False  # True if extracted from investigation_plan.json
 
     def to_dict(self) -> dict:
         return {
@@ -143,7 +143,7 @@ class TaskIntent:
 @dataclass
 class TaskFileView:
     """
-    A single task's relationship with a specific file.
+    A single task's relationship with a caseific file.
 
     This captures everything we need to know about how one task
     sees and modifies one file.

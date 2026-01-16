@@ -35,7 +35,7 @@ async def process_sdk_stream(
 
     This function handles the common pattern of:
     - Tracking thinking blocks
-    - Tracking tool invocations (especially Task/subagent calls)
+    - Tracking tool invocations (ecaseially Task/subagent calls)
     - Tracking tool results
     - Collecting text output
     - Extracting structured output

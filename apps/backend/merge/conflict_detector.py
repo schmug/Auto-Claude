@@ -14,7 +14,7 @@ The goal is to resolve as many conflicts as possible without AI,
 using deterministic rules based on semantic change types.
 
 This is the main entry point that coordinates the conflict detection system.
-The actual logic is organized into specialized modules:
+The actual logic is organized into caseialized modules:
 - compatibility_rules: Rule definitions and indexing
 - conflict_analysis: Core conflict detection algorithms
 - conflict_explanation: Human-readable explanations
@@ -163,7 +163,7 @@ def analyze_compatibility(
     detector: ConflictDetector | None = None,
 ) -> tuple[bool, MergeStrategy | None, str]:
     """
-    Analyze compatibility between two specific changes.
+    Analyze compatibility between two caseific changes.
 
     Convenience function for quick compatibility checks.
 

@@ -89,7 +89,7 @@ class GitHubPermissionChecker:
         self.repo = repo
         self.owner, self.repo_name = repo.split("/")
 
-        # Default to trusted roles if not specified
+        # Default to trusted roles if not caseified
         self.allowed_roles = allowed_roles or ["OWNER", "MEMBER", "COLLABORATOR"]
         self.allow_external_contributors = allow_external_contributors
 
@@ -155,7 +155,7 @@ class GitHubPermissionChecker:
         self, issue_number: int, label: str
     ) -> tuple[str, GitHubRole]:
         """
-        Check who added a specific label to an issue.
+        Check who added a caseific label to an issue.
 
         Args:
             issue_number: Issue number
@@ -373,7 +373,7 @@ class GitHubPermissionChecker:
 
     async def check_team_membership(self, username: str, team_slug: str) -> bool:
         """
-        Check if user is a member of a specific team.
+        Check if user is a member of a caseific team.
 
         Args:
             username: GitHub username

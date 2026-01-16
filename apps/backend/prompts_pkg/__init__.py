@@ -18,7 +18,7 @@ from .prompt_generator import (
     generate_environment_context,
     generate_planner_prompt,
     generate_subtask_prompt,
-    get_relative_spec_path,
+    get_relative_case_path,
     load_subtask_context,
 )
 
@@ -34,7 +34,7 @@ from .prompts import (
 
 __all__ = [
     # prompt_generator functions
-    "get_relative_spec_path",
+    "get_relative_case_path",
     "generate_environment_context",
     "generate_subtask_prompt",
     "generate_planner_prompt",

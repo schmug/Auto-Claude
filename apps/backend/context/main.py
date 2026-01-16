@@ -3,25 +3,25 @@
 Task Context Builder
 ====================
 
-Builds focused context for a specific task by searching relevant services.
+Builds focused context for a caseific task by searching relevant services.
 This is the "RAG-like" component that finds what files matter for THIS task.
 
 Usage:
-    # Find context for a task across specific services
-    python auto-claude/context.py \
+    # Find context for a task across caseific services
+    python auto-sleuth/context.py \
         --services backend,scraper \
         --keywords "retry,error,proxy" \
         --task "Add retry logic when proxies fail" \
-        --output auto-claude/specs/001-retry/context.json
+        --output auto-sleuth/cases/001-retry/context.json
 
     # Use project index to auto-suggest services
-    python auto-claude/context.py \
+    python auto-sleuth/context.py \
         --task "Add retry logic when proxies fail" \
         --output context.json
 
 The context builder will:
 1. Load project index (from analyzer)
-2. Search specified services for relevant files
+2. Search caseified services for relevant files
 3. Find similar implementations to reference
 4. Output focused context for AI agents
 """
@@ -84,7 +84,7 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(
-        description="Build task-specific context by searching the codebase"
+        description="Build task-caseific context by searching the codebase"
     )
     parser.add_argument(
         "--project-dir",

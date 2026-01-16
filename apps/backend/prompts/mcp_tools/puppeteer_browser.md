@@ -24,7 +24,7 @@ Tool: mcp__puppeteer__puppeteer_navigate
 Args: {"url": "http://localhost:3000"}
 ```
 
-Navigate to the development server URL.
+Navigate to the investigation server URL.
 
 #### Step 2: Take Screenshot
 
@@ -39,7 +39,7 @@ Capture the initial page state for visual verification.
 
 ```
 Tool: mcp__puppeteer__puppeteer_evaluate
-Args: {"script": "document.querySelector('[data-testid=\"feature\"]') !== null"}
+Args: {"script": "document.querySelector('[data-testid=\"remediation\"]') !== null"}
 ```
 
 Check that expected elements are present on the page.

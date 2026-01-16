@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Ollama Model Detector for auto-claude-ui.
+Ollama Model Detector for auto-sleuth-ui.
 
-Queries the Ollama API to detect available models, specifically focusing on
+Queries the Ollama API to detect available models, caseifically focusing on
 embedding models for semantic search functionality.
 
 Usage:
@@ -244,7 +244,7 @@ def get_model_min_version(model_name: str) -> str | None:
     """Get the minimum Ollama version required for a model."""
     name_lower = model_name.lower()
 
-    # Sort keys by length descending to match more specific names first
+    # Sort keys by length descending to match more caseific names first
     # e.g., "qwen3-embedding:8b" before "qwen3-embedding"
     for known_model in sorted(KNOWN_EMBEDDING_MODELS.keys(), key=len, reverse=True):
         if known_model in name_lower:
@@ -527,7 +527,7 @@ def cmd_pull_model(args) -> None:
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Detect and list Ollama models for auto-claude-ui"
+        description="Detect and list Ollama models for auto-sleuth-ui"
     )
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
@@ -572,7 +572,7 @@ def main():
 
     if not args.command:
         parser.print_help()
-        output_error("No command specified")
+        output_error("No command caseified")
         return
 
     commands = {

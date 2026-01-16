@@ -2,9 +2,9 @@
 Parallel Follow-up PR Reviewer
 ===============================
 
-PR follow-up reviewer using Claude Agent SDK subagents for parallel specialist analysis.
+PR follow-up reviewer using Claude Agent SDK subagents for parallel caseialist analysis.
 
-The orchestrator analyzes incremental changes and delegates to specialized agents:
+The orchestrator analyzes incremental changes and delegates to caseialized agents:
 - resolution-verifier: Verifies previous findings are addressed
 - new-code-reviewer: Reviews new code for issues
 - comment-analyzer: Processes contributor and AI feedback
@@ -73,7 +73,7 @@ logger = logging.getLogger(__name__)
 DEBUG_MODE = os.environ.get("DEBUG", "").lower() in ("true", "1", "yes")
 
 # Directory for PR review worktrees (shared with initial reviewer)
-PR_WORKTREE_DIR = ".auto-claude/github/pr/worktrees"
+PR_WORKTREE_DIR = ".auto-sleuth/github/pr/worktrees"
 
 # Severity mapping for AI responses
 _SEVERITY_MAPPING = {
@@ -91,21 +91,21 @@ def _map_severity(severity_str: str) -> ReviewSeverity:
 
 class ParallelFollowupReviewer:
     """
-    Follow-up PR reviewer using SDK subagents for parallel specialist analysis.
+    Follow-up PR reviewer using SDK subagents for parallel caseialist analysis.
 
     The orchestrator:
     1. Analyzes incremental changes since last review
-    2. Delegates to appropriate specialist agents (SDK handles parallel execution)
+    2. Delegates to appropriate caseialist agents (SDK handles parallel execution)
     3. Synthesizes findings into a final merge verdict
 
-    Specialist Agents:
+    Caseialist Agents:
     - resolution-verifier: Verifies previous findings are addressed
     - new-code-reviewer: Reviews new code for issues
     - comment-analyzer: Processes contributor and AI feedback
 
     Model Configuration:
     - Orchestrator uses user-configured model from frontend settings
-    - Specialist agents use model="inherit" (same as orchestrator)
+    - Caseialist agents use model="inherit" (same as orchestrator)
     """
 
     def __init__(
@@ -181,9 +181,9 @@ class ParallelFollowupReviewer:
         """
         self.worktree_manager.remove_worktree(worktree_path)
 
-    def _define_specialist_agents(self) -> dict[str, AgentDefinition]:
+    def _define_caseialist_agents(self) -> dict[str, AgentDefinition]:
         """
-        Define specialist agents for follow-up review.
+        Define caseialist agents for follow-up review.
 
         Each agent has:
         - description: When the orchestrator should invoke this agent
@@ -200,7 +200,7 @@ class ParallelFollowupReviewer:
         return {
             "resolution-verifier": AgentDefinition(
                 description=(
-                    "Resolution verification specialist. Use to verify whether previous "
+                    "Resolution verification caseialist. Use to verify whether previous "
                     "findings have been addressed. Analyzes diffs to determine if issues "
                     "are truly fixed, partially fixed, or still unresolved. "
                     "Invoke when: There are previous findings to verify."
@@ -212,7 +212,7 @@ class ParallelFollowupReviewer:
             ),
             "new-code-reviewer": AgentDefinition(
                 description=(
-                    "New code analysis specialist. Reviews code added since last review "
+                    "New code analysis caseialist. Reviews code added since last review "
                     "for security, logic, quality issues, and regressions. "
                     "Invoke when: There are substantial code changes (>50 lines diff) or "
                     "changes to security-sensitive areas."
@@ -234,7 +234,7 @@ class ParallelFollowupReviewer:
             ),
             "finding-validator": AgentDefinition(
                 description=(
-                    "Finding re-investigation specialist. Re-investigates unresolved findings "
+                    "Finding re-investigation caseialist. Re-investigates unresolved findings "
                     "to validate they are actually real issues, not false positives. "
                     "Actively reads the code at the finding location with fresh eyes. "
                     "Can confirm findings as valid OR dismiss them as false positives. "
@@ -407,7 +407,7 @@ class ParallelFollowupReviewer:
 
 ---
 
-Now analyze this follow-up and delegate to the appropriate specialist agents.
+Now analyze this follow-up and delegate to the appropriate caseialist agents.
 Remember: YOU decide which agents to invoke based on YOUR analysis.
 The SDK will run invoked agents in parallel automatically.
 **CRITICAL: Your verdict MUST account for CI status. Failing CI = BLOCKED verdict.**
@@ -498,11 +498,11 @@ The SDK will run invoked agents in parallel automatically.
             # Create client with subagents defined
             client = create_client(
                 project_dir=project_root,
-                spec_dir=self.github_dir,
+                case_dir=self.github_dir,
                 model=model,
                 agent_type="pr_followup_parallel",
                 max_thinking_tokens=thinking_budget,
-                agents=self._define_specialist_agents(),
+                agents=self._define_caseialist_agents(),
                 output_format={
                     "type": "json_schema",
                     "schema": ParallelFollowupResponse.model_json_schema(),
@@ -512,7 +512,7 @@ The SDK will run invoked agents in parallel automatically.
             self._report_progress(
                 "orchestrating",
                 40,
-                "Orchestrator delegating to specialist agents...",
+                "Orchestrator delegating to caseialist agents...",
                 pr_number=context.pr_number,
             )
 
@@ -743,7 +743,7 @@ The SDK will run invoked agents in parallel automatically.
             agents_from_output = response.agents_invoked or []
             if agents_from_output:
                 print(
-                    f"[ParallelFollowup] Specialist agents invoked: {', '.join(agents_from_output)}",
+                    f"[ParallelFollowup] Caseialist agents invoked: {', '.join(agents_from_output)}",
                     flush=True,
                 )
                 for agent in agents_from_output:
@@ -1061,7 +1061,7 @@ The SDK will run invoked agents in parallel automatically.
 Agents invoked: {agents_str}
 
 ---
-*This is an AI-generated follow-up review using parallel specialist analysis with finding validation.*
+*This is an AI-generated follow-up review using parallel caseialist analysis with finding validation.*
 """
         return summary
 

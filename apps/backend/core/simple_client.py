@@ -52,7 +52,7 @@ def create_simple_client(
                    - "batch_analysis" - Read-only batch issue analysis
                    - "batch_validation" - Read-only validation
         model: Claude model to use (defaults to Haiku for fast/cheap operations)
-        system_prompt: Optional custom system prompt (for specialized tasks)
+        system_prompt: Optional custom system prompt (for caseialized tasks)
         cwd: Working directory for file operations (optional)
         max_turns: Maximum conversation turns (default: 1 for single-turn)
         max_thinking_tokens: Override thinking budget (None = use agent default from

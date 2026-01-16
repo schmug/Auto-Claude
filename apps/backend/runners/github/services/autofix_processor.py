@@ -131,15 +131,15 @@ class AutoFixProcessor:
                 "analyzing", 30, "Analyzing issue...", issue_number=issue_number
             )
 
-            # This would normally call the spec creation process
-            # For now, we just create the state and let the frontend handle spec creation
+            # This would normally call the case creation process
+            # For now, we just create the state and let the frontend handle case creation
             # via the existing investigation flow
 
             state.update_status(AutoFixStatus.CREATING_SPEC)
             await state.save(self.github_dir)
 
             self._report_progress(
-                "complete", 100, "Ready for spec creation", issue_number=issue_number
+                "complete", 100, "Ready for case creation", issue_number=issue_number
             )
             return state
 

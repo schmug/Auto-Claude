@@ -19,11 +19,11 @@ Usage Examples:
         "what_failed": ["mistake"],
         "recommendations_for_next_session": ["tip"]
     }
-    save_session_insights(spec_dir, session_num=1, insights=insights)
+    save_session_insights(case_dir, session_num=1, insights=insights)
 
     # Load all past insights
     from memory import load_all_insights
-    all_insights = load_all_insights(spec_dir)
+    all_insights = load_all_insights(case_dir)
 
     # Update codebase map
     from memory import update_codebase_map
@@ -31,15 +31,15 @@ Usage Examples:
         "src/api/auth.py": "Handles JWT authentication and token validation",
         "src/models/user.py": "User database model with password hashing"
     }
-    update_codebase_map(spec_dir, discoveries)
+    update_codebase_map(case_dir, discoveries)
 
     # Append gotcha
     from memory import append_gotcha
-    append_gotcha(spec_dir, "Database connections must be explicitly closed in workers")
+    append_gotcha(case_dir, "Database connections must be explicitly closed in workers")
 
     # Append pattern
     from memory import append_pattern
-    append_pattern(spec_dir, "Use try/except with specific exceptions, log errors with context")
+    append_pattern(case_dir, "Use try/except with caseific exceptions, log errors with context")
 
     # Check if Graphiti is enabled
     from memory import is_graphiti_memory_enabled
@@ -91,13 +91,13 @@ if __name__ == "__main__":
     from pathlib import Path
 
     parser = argparse.ArgumentParser(
-        description="Session Memory System - Manage memory for auto-claude specs"
+        description="Session Memory System - Manage memory for auto-sleuth cases"
     )
     parser.add_argument(
-        "--spec-dir",
+        "--case-dir",
         type=Path,
         required=True,
-        help="Path to spec directory (e.g., auto-claude/specs/001-feature)",
+        help="Path to case directory (e.g., auto-sleuth/cases/001-feature)",
     )
     parser.add_argument(
         "--action",
@@ -115,16 +115,16 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    if not args.spec_dir.exists():
-        print(f"Error: Spec directory not found: {args.spec_dir}")
+    if not args.case_dir.exists():
+        print(f"Error: Case directory not found: {args.case_dir}")
         sys.exit(1)
 
     if args.action == "summary":
-        summary = get_memory_summary(args.spec_dir)
+        summary = get_memory_summary(args.case_dir)
         print("\n" + "=" * 70)
         print("  MEMORY SUMMARY")
         print("=" * 70)
-        print(f"\nSpec: {args.spec_dir.name}")
+        print(f"\nCase: {args.case_dir.name}")
         print(f"Total sessions: {summary['total_sessions']}")
         print(f"Files mapped: {summary['total_files_mapped']}")
         print(f"Patterns: {summary['total_patterns']}")
@@ -138,29 +138,29 @@ if __name__ == "__main__":
                 print(f"  Session {session_num}: {subtasks} subtasks completed")
 
     elif args.action == "list-insights":
-        insights = load_all_insights(args.spec_dir)
+        insights = load_all_insights(args.case_dir)
         print(json.dumps(insights, indent=2))
 
     elif args.action == "list-map":
-        codebase_map = load_codebase_map(args.spec_dir)
+        codebase_map = load_codebase_map(args.case_dir)
         print(json.dumps(codebase_map, indent=2, sort_keys=True))
 
     elif args.action == "list-patterns":
-        patterns = load_patterns(args.spec_dir)
+        patterns = load_patterns(args.case_dir)
         print("\nCode Patterns:")
         for pattern in patterns:
             print(f"  - {pattern}")
 
     elif args.action == "list-gotchas":
-        gotchas = load_gotchas(args.spec_dir)
+        gotchas = load_gotchas(args.case_dir)
         print("\nGotchas:")
         for gotcha in gotchas:
             print(f"  - {gotcha}")
 
     elif args.action == "clear":
-        confirm = input(f"Clear all memory for {args.spec_dir.name}? (yes/no): ")
+        confirm = input(f"Clear all memory for {args.case_dir.name}? (yes/no): ")
         if confirm.lower() == "yes":
-            clear_memory(args.spec_dir)
+            clear_memory(args.case_dir)
             print("Memory cleared.")
         else:
             print("Cancelled.")

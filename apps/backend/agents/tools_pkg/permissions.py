@@ -34,7 +34,7 @@ def get_allowed_tools(
     mcp_config: dict | None = None,
 ) -> list[str]:
     """
-    Get the list of allowed tools for a specific agent type.
+    Get the list of allowed tools for a caseific agent type.
 
     This ensures each agent only sees tools relevant to their role,
     preventing context pollution and accidental misuse.
@@ -47,7 +47,7 @@ def get_allowed_tools(
         project_capabilities: Optional dict from detect_project_capabilities()
                             containing flags like is_electron, is_web_frontend, etc.
         linear_enabled: Whether Linear integration is enabled for this project
-        mcp_config: Per-project MCP server toggles from .auto-claude/.env
+        mcp_config: Per-project MCP server toggles from .auto-sleuth/.env
 
     Returns:
         List of allowed tool names
@@ -69,10 +69,10 @@ def get_allowed_tools(
         mcp_config,
     )
 
-    # Add auto-claude tools ONLY if the MCP server is available
+    # Add auto-sleuth tools ONLY if the MCP server is available
     # This prevents allowing tools that won't work because the server isn't running
-    if "auto-claude" in required_servers and is_tools_available():
-        tools.extend(config.get("auto_claude_tools", []))
+    if "auto-sleuth" in required_servers and is_tools_available():
+        tools.extend(config.get("auto_sleuth_tools", []))
 
     # Add MCP tool names based on required servers
     tools.extend(_get_mcp_tools_for_servers(required_servers))
@@ -90,7 +90,7 @@ def _get_mcp_tools_for_servers(servers: list[str]) -> list[str]:
         servers: List of MCP server names (e.g., ['context7', 'linear', 'electron'])
 
     Returns:
-        List of MCP tool names for all specified servers
+        List of MCP tool names for all caseified servers
     """
     tools = []
 
@@ -105,7 +105,7 @@ def _get_mcp_tools_for_servers(servers: list[str]) -> list[str]:
             tools.extend(ELECTRON_TOOLS)
         elif server == "puppeteer":
             tools.extend(PUPPETEER_TOOLS)
-        # auto-claude tools are already added via config["auto_claude_tools"]
+        # auto-sleuth tools are already added via config["auto_sleuth_tools"]
 
     return tools
 

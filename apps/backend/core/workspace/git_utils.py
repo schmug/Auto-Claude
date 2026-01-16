@@ -266,24 +266,24 @@ def get_current_branch(project_dir: Path) -> str:
     return result.stdout.strip()
 
 
-def get_existing_build_worktree(project_dir: Path, spec_name: str) -> Path | None:
+def get_existing_build_worktree(project_dir: Path, case_name: str) -> Path | None:
     """
-    Check if there's an existing worktree for this specific spec.
+    Check if there's an existing worktree for this caseific case.
 
     Args:
         project_dir: The main project directory
-        spec_name: The spec folder name (e.g., "001-feature-name")
+        case_name: The case folder name (e.g., "001-feature-name")
 
     Returns:
-        Path to the worktree if it exists for this spec, None otherwise
+        Path to the worktree if it exists for this case, None otherwise
     """
     # New path first
-    new_path = project_dir / ".auto-claude" / "worktrees" / "tasks" / spec_name
+    new_path = project_dir / ".auto-sleuth" / "worktrees" / "tasks" / case_name
     if new_path.exists():
         return new_path
 
     # Legacy fallback
-    legacy_path = project_dir / ".worktrees" / spec_name
+    legacy_path = project_dir / ".worktrees" / case_name
     if legacy_path.exists():
         return legacy_path
 
@@ -326,8 +326,8 @@ def get_binary_file_content_from_ref(
 def get_changed_files_from_branch(
     project_dir: Path,
     base_branch: str,
-    spec_branch: str,
-    exclude_auto_claude: bool = True,
+    case_branch: str,
+    exclude_auto_sleuth: bool = True,
 ) -> list[tuple[str, str]]:
     """
     Get list of changed files between branches.
@@ -335,14 +335,14 @@ def get_changed_files_from_branch(
     Args:
         project_dir: Project directory
         base_branch: Base branch name
-        spec_branch: Spec branch name
-        exclude_auto_claude: If True, exclude .auto-claude directory files (default True)
+        case_branch: Case branch name
+        exclude_auto_sleuth: If True, exclude .auto-sleuth directory files (default True)
 
     Returns:
         List of (file_path, status) tuples
     """
     result = run_git(
-        ["diff", "--name-status", f"{base_branch}...{spec_branch}"],
+        ["diff", "--name-status", f"{base_branch}...{case_branch}"],
         cwd=project_dir,
     )
 
@@ -353,8 +353,8 @@ def get_changed_files_from_branch(
                 parts = line.split("\t", 1)
                 if len(parts) == 2:
                     file_path = parts[1]
-                    # Exclude .auto-claude directory files from merge
-                    if exclude_auto_claude and _is_auto_claude_file(file_path):
+                    # Exclude .auto-sleuth directory files from merge
+                    if exclude_auto_sleuth and _is_auto_sleuth_file(file_path):
                         continue
                     files.append((file_path, parts[0]))  # (file_path, status)
     return files
@@ -365,15 +365,15 @@ def _normalize_path(path: str) -> str:
     return path.replace("\\", "/")
 
 
-def _is_auto_claude_file(file_path: str) -> bool:
-    """Check if a file is in the .auto-claude or auto-claude/specs directory.
+def _is_auto_sleuth_file(file_path: str) -> bool:
+    """Check if a file is in the .auto-sleuth or auto-sleuth/cases directory.
 
     Handles both forward slashes (Unix/Git output) and backslashes (Windows).
     """
     normalized = _normalize_path(file_path)
     excluded_patterns = [
-        ".auto-claude/",
-        "auto-claude/specs/",
+        ".auto-sleuth/",
+        "auto-sleuth/cases/",
     ]
     for pattern in excluded_patterns:
         if normalized.startswith(pattern):

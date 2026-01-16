@@ -2,7 +2,7 @@
 QA Management Tools
 ===================
 
-Tools for managing QA status and sign-off in implementation_plan.json.
+Tools for managing QA status and sign-off in investigation_plan.json.
 """
 
 import json
@@ -19,12 +19,12 @@ except ImportError:
     tool = None
 
 
-def create_qa_tools(spec_dir: Path, project_dir: Path) -> list:
+def create_qa_tools(case_dir: Path, project_dir: Path) -> list:
     """
     Create QA management tools.
 
     Args:
-        spec_dir: Path to the spec directory
+        case_dir: Path to the case directory
         project_dir: Path to the project root
 
     Returns:
@@ -40,7 +40,7 @@ def create_qa_tools(spec_dir: Path, project_dir: Path) -> list:
     # -------------------------------------------------------------------------
     @tool(
         "update_qa_status",
-        "Update the QA sign-off status in implementation_plan.json. Use after QA review.",
+        "Update the QA sign-off status in investigation_plan.json. Use after QA review.",
         {"status": str, "issues": str, "tests_passed": str},
     )
     async def update_qa_status(args: dict[str, Any]) -> dict[str, Any]:
@@ -66,13 +66,13 @@ def create_qa_tools(spec_dir: Path, project_dir: Path) -> list:
                 ]
             }
 
-        plan_file = spec_dir / "implementation_plan.json"
+        plan_file = case_dir / "investigation_plan.json"
         if not plan_file.exists():
             return {
                 "content": [
                     {
                         "type": "text",
-                        "text": "Error: implementation_plan.json not found",
+                        "text": "Error: investigation_plan.json not found",
                     }
                 ]
             }

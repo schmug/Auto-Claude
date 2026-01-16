@@ -9,7 +9,7 @@ The integration is OPTIONAL - if LINEAR_API_KEY is not set, all operations
 gracefully no-op and the build continues with local tracking only.
 
 Key Features:
-- Subtask → Issue mapping (sync implementation_plan.json to Linear)
+- Subtask → Issue mapping (sync investigation_plan.json to Linear)
 - Session attempt recording (comments on issues)
 - Stuck subtask escalation (move to Blocked, add detailed comments)
 - Progress tracking via META issue
@@ -35,10 +35,10 @@ from .config import (
 
 class LinearManager:
     """
-    Manages Linear integration for an Auto-Build spec.
+    Manages Linear integration for an Auto-Build case.
 
     This class provides a high-level interface for:
-    - Creating/syncing issues from implementation_plan.json
+    - Creating/syncing issues from investigation_plan.json
     - Recording session attempts and results
     - Escalating stuck subtasks
     - Tracking overall progress
@@ -46,22 +46,22 @@ class LinearManager:
     All operations are idempotent and gracefully handle Linear being unavailable.
     """
 
-    def __init__(self, spec_dir: Path, project_dir: Path):
+    def __init__(self, case_dir: Path, project_dir: Path):
         """
         Initialize Linear manager.
 
         Args:
-            spec_dir: Spec directory (contains implementation_plan.json)
+            case_dir: Case directory (contains investigation_plan.json)
             project_dir: Project root directory
         """
-        self.spec_dir = spec_dir
+        self.case_dir = case_dir
         self.project_dir = project_dir
         self.config = LinearConfig.from_env()
         self.state: LinearProjectState | None = None
         self._mcp_available = False
 
         # Load existing state if available
-        self.state = LinearProjectState.load(spec_dir)
+        self.state = LinearProjectState.load(case_dir)
 
         # Check if Linear MCP tools are available
         self._check_mcp_availability()
@@ -79,7 +79,7 @@ class LinearManager:
 
     @property
     def is_initialized(self) -> bool:
-        """Check if Linear project has been initialized for this spec."""
+        """Check if Linear project has been initialized for this case."""
         return self.state is not None and self.state.initialized
 
     def get_issue_id(self, subtask_id: str) -> str | None:
@@ -87,7 +87,7 @@ class LinearManager:
         Get the Linear issue ID for a subtask.
 
         Args:
-            subtask_id: Subtask ID from implementation_plan.json
+            subtask_id: Subtask ID from investigation_plan.json
 
         Returns:
             Linear issue ID or None if not mapped
@@ -101,18 +101,18 @@ class LinearManager:
         Store the mapping between a subtask and its Linear issue.
 
         Args:
-            subtask_id: Subtask ID from implementation_plan.json
+            subtask_id: Subtask ID from investigation_plan.json
             issue_id: Linear issue ID
         """
         if not self.state:
             self.state = LinearProjectState()
 
         self.state.issue_mapping[subtask_id] = issue_id
-        self.state.save(self.spec_dir)
+        self.state.save(self.case_dir)
 
     def initialize_project(self, team_id: str, project_name: str) -> bool:
         """
-        Initialize a Linear project for this spec.
+        Initialize a Linear project for this case.
 
         This should be called by the agent during the planner session
         to set up the Linear project and create initial issues.
@@ -136,24 +136,24 @@ class LinearManager:
             created_at=datetime.now().isoformat(),
         )
 
-        self.state.save(self.spec_dir)
+        self.state.save(self.case_dir)
         return True
 
     def update_project_id(self, project_id: str) -> None:
         """Update the Linear project ID after creation."""
         if self.state:
             self.state.project_id = project_id
-            self.state.save(self.spec_dir)
+            self.state.save(self.case_dir)
 
     def update_meta_issue_id(self, meta_issue_id: str) -> None:
         """Update the META issue ID after creation."""
         if self.state:
             self.state.meta_issue_id = meta_issue_id
-            self.state.save(self.spec_dir)
+            self.state.save(self.case_dir)
 
-    def load_implementation_plan(self) -> dict | None:
-        """Load the implementation plan from spec directory."""
-        plan_file = self.spec_dir / "implementation_plan.json"
+    def load_investigation_plan(self) -> dict | None:
+        """Load the implementation plan from case directory."""
+        plan_file = self.case_dir / "investigation_plan.json"
         if not plan_file.exists():
             return None
 
@@ -170,7 +170,7 @@ class LinearManager:
         Returns:
             List of subtask dicts with phase context
         """
-        plan = self.load_implementation_plan()
+        plan = self.load_investigation_plan()
         if not plan:
             return []
 
@@ -332,7 +332,7 @@ class LinearManager:
         Returns:
             Dict with progress statistics
         """
-        plan = self.load_implementation_plan()
+        plan = self.load_investigation_plan()
         if not plan:
             return {
                 "enabled": self.is_enabled,
@@ -403,26 +403,26 @@ Available Linear MCP tools:
     def save_state(self) -> None:
         """Save the current state to disk."""
         if self.state:
-            self.state.save(self.spec_dir)
+            self.state.save(self.case_dir)
 
 
 # Utility functions for integration with other modules
 
 
-def get_linear_manager(spec_dir: Path, project_dir: Path) -> LinearManager:
+def get_linear_manager(case_dir: Path, project_dir: Path) -> LinearManager:
     """
-    Get a LinearManager instance for the given spec.
+    Get a LinearManager instance for the given case.
 
     This is the main entry point for other modules.
 
     Args:
-        spec_dir: Spec directory
+        case_dir: Case directory
         project_dir: Project root directory
 
     Returns:
         LinearManager instance
     """
-    return LinearManager(spec_dir, project_dir)
+    return LinearManager(case_dir, project_dir)
 
 
 def is_linear_enabled() -> bool:
@@ -430,14 +430,14 @@ def is_linear_enabled() -> bool:
     return bool(os.environ.get("LINEAR_API_KEY"))
 
 
-def prepare_planner_linear_instructions(spec_dir: Path) -> str:
+def prepare_planner_linear_instructions(case_dir: Path) -> str:
     """
     Generate Linear setup instructions for the planner agent.
 
     This is included in the planner prompt when Linear is enabled.
 
     Args:
-        spec_dir: Spec directory
+        case_dir: Case directory
 
     Returns:
         Markdown instructions for Linear setup
@@ -459,13 +459,13 @@ Use mcp__linear-server__list_teams to find your team ID
 ```
 Use mcp__linear-server__create_project with:
 - team: Your team ID
-- name: The feature/spec name
-- description: Brief summary from spec.md
+- name: The feature/case name
+- description: Brief summary from case.md
 ```
 Save the project ID to .linear_project.json
 
 ### Step 3: Create Issues for Each Subtask
-For each subtask in implementation_plan.json:
+For each subtask in investigation_plan.json:
 ```
 Use mcp__linear-server__create_issue with:
 - team: Your team ID
@@ -473,7 +473,7 @@ Use mcp__linear-server__create_issue with:
 - title: "[subtask-id] Description"
 - description: Formatted subtask details
 - priority: Based on phase (1=urgent for early phases, 4=low for polish)
-- labels: ["auto-claude", "phase-N", "service-NAME"]
+- labels: ["auto-sleuth", "phase-N", "service-NAME"]
 ```
 Save the subtask_id -> issue_id mapping to .linear_project.json
 
@@ -497,14 +497,14 @@ This issue receives session summary comments.
 
 
 def prepare_coder_linear_instructions(
-    spec_dir: Path,
+    case_dir: Path,
     subtask_id: str,
 ) -> str:
     """
     Generate Linear instructions for the coding agent.
 
     Args:
-        spec_dir: Spec directory
+        case_dir: Case directory
         subtask_id: Current subtask being worked on
 
     Returns:
@@ -513,7 +513,7 @@ def prepare_coder_linear_instructions(
     if not is_linear_enabled():
         return ""
 
-    manager = LinearManager(spec_dir, spec_dir.parent.parent)  # Approximate project_dir
+    manager = LinearManager(case_dir, case_dir.parent.parent)  # Approximate project_dir
 
     if not manager.is_initialized:
         return ""
