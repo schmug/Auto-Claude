@@ -1,0 +1,97 @@
+# CyberTriage-specific DFIQ Question for Timesketch
+# Malware Detection Analysis
+---
+name: Was malware detected on the system and what actions were taken?
+type: question
+description: Analyze CyberTriage malware detection artifacts from Windows Defender and other security software to understand detected threats.
+uuid: ct004-malware-1004-aaaa-bbbbccccdddd
+id: CTQ1004
+dfiq_version: 1.1.0
+tags:
+  - CyberTriage
+  - Malware
+  - Windows Defender
+  - Security
+  - MITRE ATT&CK
+parent_ids:
+  - F1001
+approaches:
+  - name: Analyze Windows Defender detection events (CyberTriage)
+    description: >-
+      Windows Defender logs malware detections, quarantine actions, and
+      remediation events. Analyzing these helps understand what threats
+      were present and whether they were successfully contained.
+    tags:
+      - CyberTriage
+      - Windows
+      - Windows Defender
+      - Malware
+      - MITRE T1204
+    references:
+      - '[MITRE ATT&CK T1204 - User Execution](https://attack.mitre.org/techniques/T1204/)'
+      - '[Windows Defender Event IDs](https://docs.microsoft.com/en-us/microsoft-365/security/defender-endpoint/troubleshoot-microsoft-defender-antivirus)'
+    notes:
+      covered:
+        - Windows Defender detection events
+        - Quarantine actions
+        - Threat names and categories
+        - Affected file paths
+      not_covered:
+        - Third-party antivirus detections (may require different queries)
+        - Threats that evaded detection
+    steps:
+      - name: Find all Windows Defender detections
+        description: All malware detection events from Defender
+        stage: analysis
+        type: opensearch-query
+        value: 'timestamp_desc:*Defender* OR message:*Defender*'
+      - name: Find malware quarantine events
+        description: Events where malware was quarantined
+        stage: analysis
+        type: opensearch-query
+        value: 'timestamp_desc:*quarantine* OR message:*quarantine*'
+      - name: Find threat detection events
+        description: General threat detection messages
+        stage: analysis
+        type: opensearch-query
+        value: 'timestamp_desc:*threat* OR timestamp_desc:*malware* OR message:*threat*'
+      - name: Find Defender remediation actions
+        description: Actions taken against detected threats
+        stage: analysis
+        type: opensearch-query
+        value: 'message:(*removed* OR *cleaned* OR *blocked*) AND message:*Defender*'
+
+  - name: Correlate malware detection with process execution (CyberTriage)
+    description: >-
+      Cross-reference malware detections with process execution events
+      to understand how the malware was launched and what it executed.
+    tags:
+      - CyberTriage
+      - Windows
+      - Correlation
+      - MITRE T1059
+    references:
+      - '[MITRE ATT&CK T1059 - Command and Scripting Interpreter](https://attack.mitre.org/techniques/T1059/)'
+    notes:
+      covered:
+        - Process execution correlation
+        - Parent process analysis
+      not_covered:
+        - Memory-only malware
+        - Fileless attacks
+    steps:
+      - name: Find processes from malware-common locations
+        description: Processes running from temp/downloads often malware
+        stage: analysis
+        type: opensearch-query
+        value: 'timestamp_desc:"Process Created" AND (path:*\\Temp\\* OR path:*\\Downloads\\* OR path:*\\AppData\\Local\\Temp\\*)'
+      - name: Find unsigned executables
+        description: Unsigned processes may be suspicious
+        stage: analysis
+        type: opensearch-query
+        value: 'timestamp_desc:"Process Created" AND NOT signature:*'
+      - name: Find processes with suspicious hashes
+        description: Check for known malware hashes
+        stage: analysis
+        type: opensearch-query
+        value: 'timestamp_desc:"Process Created" AND sha256hash:*'

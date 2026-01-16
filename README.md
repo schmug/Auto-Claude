@@ -1,8 +1,8 @@
-# Auto-DFIR
+# Auto Sleuth
 
 **Autonomous multi-agent DFIR framework that plans, investigates, and validates cybersecurity incidents for you.**
 
-![Auto-DFIR Case Board](.github/assets/Auto-DFIR-Kanban.png)
+![Auto Sleuth Case Board](.github/assets/Auto-Claude-Kanban.png)
 
 [![License](https://img.shields.io/badge/license-AGPL--3.0-green?style=flat-square)](./agpl-3.0.txt)
 [![Discord](https://img.shields.io/badge/Discord-Join%20Community-5865F2?style=flat-square&logo=discord&logoColor=white)](https://discord.gg/KCXaPBr4Dj)
@@ -11,9 +11,9 @@
 
 ## Overview
 
-Auto-DFIR is an AI-powered Digital Forensics and Incident Response platform that leverages autonomous agents to automate the entire investigation lifecycle. From initial case intake to final reporting, Auto-DFIR handles evidence collection, analysis, IOC extraction, timeline reconstruction, and evidence validation—all while maintaining chain of custody.
+Auto Sleuth is an AI-powered Digital Forensics and Incident Response platform that leverages autonomous agents to automate the entire investigation lifecycle. From initial case intake to final reporting, Auto Sleuth handles evidence collection, analysis, IOC extraction, timeline reconstruction, and evidence validation—all while maintaining chain of custody.
 
-Built on the foundation of [Auto-Claude](https://github.com/AndyMik90/Auto-Claude), Auto-DFIR transforms the multi-agent coding framework into a powerful cybersecurity investigation tool.
+Built on the foundation of [Auto-Claude](https://github.com/AndyMik90/Auto-Claude), Auto Sleuth transforms the multi-agent coding framework into a powerful cybersecurity investigation tool.
 
 ---
 
@@ -114,8 +114,12 @@ Visual case management from intake through closure. Create cases and monitor age
 ### Agent Terminals
 AI-powered terminals with one-click case context injection. Spawn multiple agents for parallel analysis.
 
+![Agent Terminals](.github/assets/Auto-Claude-Agents-terminals.png)
+
 ### Threat Landscape
 AI-assisted threat analysis with IOC enrichment and MITRE ATT&CK visualization.
+
+![Investigation Roadmap](.github/assets/Auto-Claude-roadmap.png)
 
 ---
 
@@ -152,7 +156,7 @@ AI-assisted threat analysis with IOC enrichment and MITRE ATT&CK visualization.
 ## Project Structure
 
 ```
-Auto-DFIR/
+Auto Sleuth/
 ├── apps/
 │   ├── backend/
 │   │   ├── agents/           # AI agent implementations
@@ -209,7 +213,7 @@ Want to build from source or contribute? See [CONTRIBUTING.md](CONTRIBUTING.md) 
 
 ## Security
 
-Auto-DFIR uses a three-layer security model:
+Auto Sleuth uses a three-layer security model:
 
 1. **OS Sandbox** - Analysis commands run in isolation
 2. **Filesystem Restrictions** - Operations limited to evidence workspace
@@ -239,7 +243,7 @@ We welcome contributions! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for:
 
 **AGPL-3.0** - GNU Affero General Public License v3.0
 
-Auto-DFIR is free to use. If you modify and distribute it, or run it as a service, your code must also be open source under AGPL-3.0.
+Auto Sleuth is free to use. If you modify and distribute it, or run it as a service, your code must also be open source under AGPL-3.0.
 
 ---
 

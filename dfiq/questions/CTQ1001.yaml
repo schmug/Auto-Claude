@@ -1,0 +1,154 @@
+# CyberTriage-specific DFIQ Question for Timesketch
+# Process Execution Analysis
+---
+name: Were there suspicious process executions on the system?
+type: question
+description: Analyze CyberTriage process execution artifacts to identify potentially malicious or suspicious process activity.
+uuid: ct001-proc-exec-1001-aaaa-bbbbccccdddd
+id: CTQ1001
+dfiq_version: 1.1.0
+tags:
+  - CyberTriage
+  - Process Execution
+  - Windows
+  - MITRE ATT&CK
+parent_ids:
+  - F1001
+approaches:
+  - name: Detect processes executed from suspicious locations (CyberTriage)
+    description: >-
+      Processes launched from Temp, Downloads, AppData, or ProgramData folders
+      are often indicators of malicious activity. Legitimate software typically
+      runs from Program Files or Windows directories.
+    tags:
+      - CyberTriage
+      - Windows
+      - Process Execution
+      - MITRE T1059
+    references:
+      - '[MITRE ATT&CK T1059 - Command and Scripting Interpreter](https://attack.mitre.org/techniques/T1059/)'
+      - '[CyberTriage Documentation](https://www.cybertriage.com/documentation/)'
+    notes:
+      covered:
+        - Processes from Temp folders
+        - Processes from Downloads folders
+        - Processes from AppData folders
+        - Processes from ProgramData folders
+        - Processes from Public user profile
+      not_covered:
+        - Processes that have been deleted
+        - Memory-only malware
+    steps:
+      - name: Find processes from Temp folders
+        description: Search for processes executed from any Temp directory
+        stage: analysis
+        type: opensearch-query
+        value: 'timestamp_desc:"Process Created" AND path:(*\\Temp\\* OR *\\tmp\\*)'
+      - name: Find processes from Downloads folders
+        description: Search for processes executed from Downloads directory
+        stage: analysis
+        type: opensearch-query
+        value: 'timestamp_desc:"Process Created" AND path:*\\Downloads\\*'
+      - name: Find processes from AppData folders
+        description: Search for processes from user AppData (often used for persistence)
+        stage: analysis
+        type: opensearch-query
+        value: 'timestamp_desc:"Process Created" AND path:*\\AppData\\*'
+      - name: Find processes from ProgramData
+        description: Search for processes from ProgramData (writable by all users)
+        stage: analysis
+        type: opensearch-query
+        value: 'timestamp_desc:"Process Created" AND path:*\\ProgramData\\*'
+      - name: Find processes from Public profile
+        description: Search for processes from Public user profile
+        stage: analysis
+        type: opensearch-query
+        value: 'timestamp_desc:"Process Created" AND path:*\\Users\\Public\\*'
+
+  - name: Detect Living-off-the-Land Binaries (LOLBins) execution (CyberTriage)
+    description: >-
+      Living-off-the-Land Binaries (LOLBins) are legitimate Windows system tools
+      frequently abused by attackers to execute malicious code, download payloads,
+      or bypass security controls.
+    tags:
+      - CyberTriage
+      - Windows
+      - LOLBins
+      - MITRE T1218
+    references:
+      - '[LOLBAS Project](https://lolbas-project.github.io/)'
+      - '[MITRE ATT&CK T1218 - System Binary Proxy Execution](https://attack.mitre.org/techniques/T1218/)'
+    notes:
+      covered:
+        - PowerShell execution
+        - cmd.exe execution
+        - certutil.exe execution
+        - bitsadmin.exe execution
+        - mshta.exe execution
+        - regsvr32.exe execution
+        - rundll32.exe execution
+      not_covered:
+        - Less common LOLBins
+        - Renamed LOLBins
+    steps:
+      - name: Find PowerShell executions
+        description: PowerShell is commonly used for malicious scripting
+        stage: analysis
+        type: opensearch-query
+        value: 'timestamp_desc:"Process Created" AND path:*powershell*'
+      - name: Find certutil executions
+        description: Certutil is often abused for downloading files
+        stage: analysis
+        type: opensearch-query
+        value: 'timestamp_desc:"Process Created" AND path:*certutil*'
+      - name: Find bitsadmin executions
+        description: Bitsadmin is used for background file transfers
+        stage: analysis
+        type: opensearch-query
+        value: 'timestamp_desc:"Process Created" AND path:*bitsadmin*'
+      - name: Find mshta executions
+        description: Mshta runs HTML applications, often abused for code execution
+        stage: analysis
+        type: opensearch-query
+        value: 'timestamp_desc:"Process Created" AND path:*mshta*'
+      - name: Find regsvr32 executions
+        description: Regsvr32 can be used for proxy execution of malicious code
+        stage: analysis
+        type: opensearch-query
+        value: 'timestamp_desc:"Process Created" AND path:*regsvr32*'
+      - name: Find wmic executions
+        description: WMIC is often used for reconnaissance and execution
+        stage: analysis
+        type: opensearch-query
+        value: 'timestamp_desc:"Process Created" AND path:*wmic*'
+
+  - name: Detect processes with encoded command line arguments (CyberTriage)
+    description: >-
+      Attackers often use Base64 or other encoding in command line arguments
+      to obfuscate malicious commands. This is particularly common with PowerShell.
+    tags:
+      - CyberTriage
+      - Windows
+      - Obfuscation
+      - MITRE T1027
+    references:
+      - '[MITRE ATT&CK T1027 - Obfuscated Files or Information](https://attack.mitre.org/techniques/T1027/)'
+    notes:
+      covered:
+        - Base64 encoded commands
+        - PowerShell -EncodedCommand usage
+        - Common obfuscation patterns
+      not_covered:
+        - Custom encoding schemes
+        - Heavily obfuscated commands
+    steps:
+      - name: Find encoded PowerShell commands
+        description: Search for PowerShell with -enc or -encoded flags
+        stage: analysis
+        type: opensearch-query
+        value: 'timestamp_desc:"Process Created" AND args:(*-enc* OR *-encoded* OR *FromBase64*)'
+      - name: Find commands with Base64 patterns
+        description: Search for Base64 strings in command arguments
+        stage: analysis
+        type: opensearch-query
+        value: 'timestamp_desc:"Process Created" AND args:*base64*'

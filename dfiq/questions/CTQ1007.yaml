@@ -1,0 +1,162 @@
+# CyberTriage-specific DFIQ Question for Timesketch
+# Defense Evasion Analysis
+---
+name: Was there evidence of anti-forensic activity or defense evasion?
+type: question
+description: Analyze CyberTriage artifacts for evidence of log tampering, security tool disabling, or other defense evasion techniques.
+uuid: ct007-defense-1007-aaaa-bbbbccccdddd
+id: CTQ1007
+dfiq_version: 1.1.0
+tags:
+  - CyberTriage
+  - Defense Evasion
+  - Anti-Forensics
+  - Windows
+  - MITRE ATT&CK
+parent_ids:
+  - F1001
+approaches:
+  - name: Detect event log clearing activity (CyberTriage)
+    description: >-
+      Attackers often clear Windows event logs to hide their activities.
+      Detecting log clearing events is a critical indicator of malicious
+      activity attempting to cover their tracks.
+    tags:
+      - CyberTriage
+      - Windows
+      - Log Clearing
+      - MITRE T1070.001
+    references:
+      - '[MITRE ATT&CK T1070.001 - Clear Windows Event Logs](https://attack.mitre.org/techniques/T1070/001/)'
+      - '[Windows Event ID 1102](https://docs.microsoft.com/en-us/windows/security/threat-protection/auditing/event-1102)'
+    notes:
+      covered:
+        - Security log clearing (Event ID 1102)
+        - System log clearing
+        - Application log clearing
+      not_covered:
+        - Selective event deletion
+        - Log rotation abuse
+    steps:
+      - name: Find event log cleared events
+        description: Logs that record when event logs are cleared
+        stage: analysis
+        type: opensearch-query
+        value: 'timestamp_desc:*Log Cleared* OR message:*log cleared* OR message:*audit log was cleared*'
+      - name: Find Security log clear events
+        description: Event ID 1102 indicates Security log clearing
+        stage: analysis
+        type: opensearch-query
+        value: 'timestamp_desc:*Security* AND message:*cleared*'
+      - name: Find wevtutil usage
+        description: Wevtutil can be used to clear logs
+        stage: analysis
+        type: opensearch-query
+        value: 'timestamp_desc:"Process Created" AND path:*wevtutil* AND args:*cl*'
+
+  - name: Detect security tool tampering (CyberTriage)
+    description: >-
+      Attackers may attempt to disable or tamper with security tools like
+      Windows Defender, firewalls, or EDR solutions to avoid detection.
+    tags:
+      - CyberTriage
+      - Windows
+      - Security Tools
+      - MITRE T1562
+    references:
+      - '[MITRE ATT&CK T1562 - Impair Defenses](https://attack.mitre.org/techniques/T1562/)'
+    notes:
+      covered:
+        - Windows Defender disabling
+        - Firewall disabling
+        - Service stopping
+      not_covered:
+        - EDR evasion techniques
+        - Kernel-level tampering
+    steps:
+      - name: Find Defender disable attempts
+        description: Attempts to disable Windows Defender
+        stage: analysis
+        type: opensearch-query
+        value: 'message:(*DisableRealtimeMonitoring* OR *Set-MpPreference* OR *Defender* AND *disabled*)'
+      - name: Find firewall disable attempts
+        description: Disabling Windows Firewall
+        stage: analysis
+        type: opensearch-query
+        value: 'message:(*netsh* AND *firewall* AND *off*) OR message:(*firewall* AND *disabled*)'
+      - name: Find service stop attempts
+        description: Stopping security services
+        stage: analysis
+        type: opensearch-query
+        value: 'timestamp_desc:"Process Created" AND args:(*net stop* OR *sc stop* OR *Stop-Service*)'
+      - name: Find tamper protection events
+        description: Events related to security tool tampering
+        stage: analysis
+        type: opensearch-query
+        value: 'timestamp_desc:*tamper* OR message:*tamper*'
+
+  - name: Detect audit policy modifications (CyberTriage)
+    description: >-
+      Modifying audit policies can prevent security events from being logged,
+      which is a technique used by attackers to avoid detection.
+    tags:
+      - CyberTriage
+      - Windows
+      - Audit Policy
+      - MITRE T1562.002
+    references:
+      - '[MITRE ATT&CK T1562.002 - Disable Windows Event Logging](https://attack.mitre.org/techniques/T1562/002/)'
+    notes:
+      covered:
+        - Audit policy changes
+        - AuditPol command usage
+      not_covered:
+        - Group Policy audit modifications
+        - Registry-based changes
+    steps:
+      - name: Find audit policy changes
+        description: Events showing audit policy was modified
+        stage: analysis
+        type: opensearch-query
+        value: 'timestamp_desc:*Audit Policy* OR message:*audit policy*'
+      - name: Find AuditPol usage
+        description: AuditPol.exe modifies audit settings
+        stage: analysis
+        type: opensearch-query
+        value: 'timestamp_desc:"Process Created" AND path:*auditpol*'
+      - name: Find registry audit modifications
+        description: Audit settings stored in registry
+        stage: analysis
+        type: opensearch-query
+        value: 'message:*HKLM\\System\\CurrentControlSet\\Control\\Lsa*Audit*'
+
+  - name: Detect timestomping and file attribute changes (CyberTriage)
+    description: >-
+      Attackers may modify file timestamps or attributes to hide malicious
+      files or make them appear benign.
+    tags:
+      - CyberTriage
+      - Windows
+      - Timestomping
+      - MITRE T1070.006
+    references:
+      - '[MITRE ATT&CK T1070.006 - Timestomp](https://attack.mitre.org/techniques/T1070/006/)'
+    notes:
+      covered:
+        - File attribute changes
+        - Touch command usage
+        - PowerShell timestamp modification
+      not_covered:
+        - Low-level disk modifications
+        - MFT direct manipulation
+    steps:
+      - name: Find attrib command usage
+        description: Attrib can hide files or modify attributes
+        stage: analysis
+        type: opensearch-query
+        value: 'timestamp_desc:"Process Created" AND path:*attrib* AND args:(*+h* OR *+s*)'
+      - name: Find PowerShell timestamp modification
+        description: PowerShell can modify file timestamps
+        stage: analysis
+        type: opensearch-query
+        value: 'timestamp_desc:*PowerShell* AND args:(*CreationTime* OR *LastWriteTime* OR *LastAccessTime*)'

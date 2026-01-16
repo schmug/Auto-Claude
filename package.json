@@ -1,9 +1,9 @@
 {
-  "name": "auto-dfir",
-  "version": "1.0.0",
+  "name": "auto-sleuth",
+  "version": "2.7.2",
   "description": "Autonomous multi-agent DFIR framework that plans, investigates, and validates cybersecurity incidents",
   "license": "AGPL-3.0",
-  "author": "Auto-DFIR Team",
+  "author": "Auto Sleuth Team",
   "workspaces": [
     "apps/*",
     "libs/*"

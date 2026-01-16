@@ -1,0 +1,137 @@
+# CyberTriage-specific DFIQ Question for Timesketch
+# Authentication Analysis
+---
+name: Were there unauthorized login attempts or credential attacks?
+type: question
+description: Analyze CyberTriage authentication artifacts to identify brute force attacks, unauthorized access attempts, or suspicious authentication patterns.
+uuid: ct002-auth-fail-1002-aaaa-bbbbccccdddd
+id: CTQ1002
+dfiq_version: 1.1.0
+tags:
+  - CyberTriage
+  - Authentication
+  - Windows
+  - Credential Access
+  - MITRE ATT&CK
+parent_ids:
+  - F1001
+approaches:
+  - name: Detect failed login attempts indicating brute force (CyberTriage)
+    description: >-
+      High volumes of failed login attempts may indicate brute force attacks,
+      credential stuffing, or password spraying attempts. Analyzing the source
+      IPs and target accounts helps identify attack patterns.
+    tags:
+      - CyberTriage
+      - Windows
+      - Authentication
+      - MITRE T1110
+    references:
+      - '[MITRE ATT&CK T1110 - Brute Force](https://attack.mitre.org/techniques/T1110/)'
+      - '[Windows Security Log Events](https://docs.microsoft.com/en-us/windows/security/threat-protection/auditing/)'
+    notes:
+      covered:
+        - Failed logon events from Windows Security logs
+        - Source IP addresses for network logons
+        - Target user accounts
+        - Failure reason codes
+      not_covered:
+        - Failed authentications to non-Windows systems
+        - Application-level authentication failures
+    steps:
+      - name: Find all failed logon events
+        description: Identify all failed logon attempts in the dataset
+        stage: analysis
+        type: opensearch-query
+        value: 'timestamp_desc:"Failed Logon"'
+      - name: Find failed logons from external IPs
+        description: Filter for failed logons from non-RFC1918 addresses
+        stage: analysis
+        type: opensearch-query
+        value: 'timestamp_desc:"Failed Logon" AND NOT sourceIP:(10.* OR 192.168.* OR 172.16.* OR 172.17.* OR 172.18.* OR 172.19.* OR 172.20.* OR 172.21.* OR 172.22.* OR 172.23.* OR 172.24.* OR 172.25.* OR 172.26.* OR 172.27.* OR 172.28.* OR 172.29.* OR 172.30.* OR 172.31.*)'
+      - name: Find failed logons with specific failure codes
+        description: Look for common attack-related failure codes
+        stage: analysis
+        type: opensearch-query
+        value: 'timestamp_desc:"Failed Logon" AND failureReasons:(*0xC000006D* OR *0xC0000064* OR *0xC000006A*)'
+      - name: Find RDP brute force attempts
+        description: Failed logons over RDP (logon type 10)
+        stage: analysis
+        type: opensearch-query
+        value: 'timestamp_desc:"Failed Logon" AND loginType:10'
+
+  - name: Detect successful logons after failed attempts (CyberTriage)
+    description: >-
+      A successful logon immediately following multiple failed attempts may
+      indicate a successful brute force attack or credential compromise.
+    tags:
+      - CyberTriage
+      - Windows
+      - Authentication
+      - MITRE T1078
+    references:
+      - '[MITRE ATT&CK T1078 - Valid Accounts](https://attack.mitre.org/techniques/T1078/)'
+    notes:
+      covered:
+        - Successful logon events
+        - Interactive logons
+        - Network logons
+      not_covered:
+        - Correlation across time windows (manual analysis required)
+    steps:
+      - name: Find all successful logon sessions
+        description: Identify successful logon events
+        stage: analysis
+        type: opensearch-query
+        value: 'timestamp_desc:"Logon Session"'
+      - name: Find network logons (Type 3)
+        description: Network logons often used for lateral movement
+        stage: analysis
+        type: opensearch-query
+        value: 'timestamp_desc:"Logon Session" AND loginType:3'
+      - name: Find interactive logons (Type 2)
+        description: Interactive logons at console
+        stage: analysis
+        type: opensearch-query
+        value: 'timestamp_desc:"Logon Session" AND loginType:2'
+      - name: Find remote interactive logons (Type 10)
+        description: RDP logons
+        stage: analysis
+        type: opensearch-query
+        value: 'timestamp_desc:"Logon Session" AND loginType:10'
+
+  - name: Detect suspicious account usage patterns (CyberTriage)
+    description: >-
+      Identify unusual account activity such as SYSTEM accounts logging in
+      remotely, service accounts used interactively, or admin accounts
+      accessing unusual systems.
+    tags:
+      - CyberTriage
+      - Windows
+      - Privilege Escalation
+      - MITRE T1078
+    references:
+      - '[MITRE ATT&CK T1078.002 - Domain Accounts](https://attack.mitre.org/techniques/T1078/002/)'
+    notes:
+      covered:
+        - SYSTEM account activity
+        - Service account usage
+        - Administrator account patterns
+      not_covered:
+        - Normal vs abnormal behavior analysis (requires baseline)
+    steps:
+      - name: Find SYSTEM account logons
+        description: SYSTEM account should not have interactive logons
+        stage: analysis
+        type: opensearch-query
+        value: 'timestamp_desc:(*Logon*) AND userID:SYSTEM'
+      - name: Find service account interactive logons
+        description: Service accounts logging in interactively is suspicious
+        stage: analysis
+        type: opensearch-query
+        value: 'timestamp_desc:"Logon Session" AND loginType:2 AND userID:(*svc* OR *service*)'
+      - name: Find Administrator account usage
+        description: Track privileged account usage
+        stage: analysis
+        type: opensearch-query
+        value: 'timestamp_desc:(*Logon*) AND userID:(*admin* OR *Administrator*)'

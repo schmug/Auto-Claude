@@ -1,0 +1,127 @@
+# CyberTriage-specific DFIQ Question for Timesketch
+# Network Activity Analysis
+---
+name: Was there suspicious network activity or C2 communication?
+type: question
+description: Analyze CyberTriage network artifacts to identify command and control communications, data exfiltration, or lateral movement.
+uuid: ct003-network-1003-aaaa-bbbbccccdddd
+id: CTQ1003
+dfiq_version: 1.1.0
+tags:
+  - CyberTriage
+  - Network
+  - Windows
+  - Command and Control
+  - MITRE ATT&CK
+parent_ids:
+  - F1001
+approaches:
+  - name: Detect connections on suspicious ports (CyberTriage)
+    description: >-
+      Certain ports are commonly used by malware for command and control
+      communications. While some ports like 443 are legitimate, unusual
+      combinations or patterns may indicate malicious activity.
+    tags:
+      - CyberTriage
+      - Network
+      - C2
+      - MITRE T1571
+    references:
+      - '[MITRE ATT&CK T1571 - Non-Standard Port](https://attack.mitre.org/techniques/T1571/)'
+      - '[Common C2 Ports](https://attack.mitre.org/techniques/T1095/)'
+    notes:
+      covered:
+        - Outbound network connections
+        - Port analysis
+        - Remote IP addresses
+      not_covered:
+        - Encrypted traffic content
+        - DNS over HTTPS
+    steps:
+      - name: Find connections on common C2 ports
+        description: Ports like 4444, 5555, 8080 are common for C2
+        stage: analysis
+        type: opensearch-query
+        value: 'timestamp_desc:"Network Connection" AND remotePort:(4444 OR 5555 OR 6666 OR 8080 OR 8443 OR 1337 OR 31337)'
+      - name: Find connections to external IPs
+        description: Outbound connections to non-RFC1918 addresses
+        stage: analysis
+        type: opensearch-query
+        value: 'timestamp_desc:"Network Connection" AND NOT remoteIP:(10.* OR 192.168.* OR 172.16.* OR 172.17.* OR 172.18.* OR 172.19.* OR 172.20.* OR 172.21.* OR 172.22.* OR 172.23.* OR 172.24.* OR 172.25.* OR 172.26.* OR 172.27.* OR 172.28.* OR 172.29.* OR 172.30.* OR 172.31.* OR 127.*)'
+      - name: Find all network connections
+        description: View all network connection events
+        stage: analysis
+        type: opensearch-query
+        value: 'timestamp_desc:"Network Connection" OR ctType:"Network Connection"'
+
+  - name: Detect potential lateral movement connections (CyberTriage)
+    description: >-
+      Internal network connections to other hosts using administrative ports
+      may indicate lateral movement activity by an attacker.
+    tags:
+      - CyberTriage
+      - Network
+      - Lateral Movement
+      - MITRE T1021
+    references:
+      - '[MITRE ATT&CK T1021 - Remote Services](https://attack.mitre.org/techniques/T1021/)'
+    notes:
+      covered:
+        - SMB connections (445)
+        - RDP connections (3389)
+        - WinRM connections (5985, 5986)
+        - Remote PowerShell
+      not_covered:
+        - Custom lateral movement techniques
+        - Network traffic not captured by CyberTriage
+    steps:
+      - name: Find SMB connections (port 445)
+        description: SMB is commonly used for lateral movement
+        stage: analysis
+        type: opensearch-query
+        value: 'timestamp_desc:"Network Connection" AND remotePort:445'
+      - name: Find RDP connections (port 3389)
+        description: RDP connections may indicate remote access
+        stage: analysis
+        type: opensearch-query
+        value: 'timestamp_desc:"Network Connection" AND remotePort:3389'
+      - name: Find WinRM connections
+        description: WinRM used for remote PowerShell
+        stage: analysis
+        type: opensearch-query
+        value: 'timestamp_desc:"Network Connection" AND remotePort:(5985 OR 5986)'
+      - name: Find internal connections
+        description: Connections to RFC1918 addresses (internal network)
+        stage: analysis
+        type: opensearch-query
+        value: 'timestamp_desc:"Network Connection" AND remoteIP:(10.* OR 192.168.* OR 172.16.* OR 172.17.* OR 172.18.* OR 172.19.* OR 172.20.*)'
+
+  - name: Detect DNS queries for suspicious domains (CyberTriage)
+    description: >-
+      DNS queries to unusual domains may indicate malware beaconing,
+      DNS tunneling, or domain generation algorithms (DGAs).
+    tags:
+      - CyberTriage
+      - Network
+      - DNS
+      - MITRE T1071
+    references:
+      - '[MITRE ATT&CK T1071.004 - DNS](https://attack.mitre.org/techniques/T1071/004/)'
+    notes:
+      covered:
+        - DNS query records
+        - Domain names queried
+      not_covered:
+        - Encrypted DNS (DoH, DoT)
+        - DNS cache without logging
+    steps:
+      - name: Find all DNS queries
+        description: View all DNS query events
+        stage: analysis
+        type: opensearch-query
+        value: 'timestamp_desc:"DNS Query" OR ctType:*DNS*'
+      - name: Find queries to suspicious TLDs
+        description: Uncommon TLDs sometimes used for malicious infrastructure
+        stage: analysis
+        type: opensearch-query
+        value: 'timestamp_desc:"DNS Query" AND message:(*.xyz OR *.top OR *.tk OR *.ml OR *.ga OR *.cf)'

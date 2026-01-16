@@ -1,0 +1,138 @@
+# CyberTriage-specific DFIQ Question for Timesketch
+# PowerShell Activity Analysis
+---
+name: Was there suspicious PowerShell activity indicating malicious execution?
+type: question
+description: Analyze CyberTriage PowerShell artifacts to identify potentially malicious script execution, encoded commands, or download cradles.
+uuid: ct005-powershell-1005-aaaa-bbbbccccdddd
+id: CTQ1005
+dfiq_version: 1.1.0
+tags:
+  - CyberTriage
+  - PowerShell
+  - Windows
+  - Execution
+  - MITRE ATT&CK
+parent_ids:
+  - F1001
+approaches:
+  - name: Detect encoded or obfuscated PowerShell commands (CyberTriage)
+    description: >-
+      Attackers frequently use Base64 encoding or other obfuscation techniques
+      to hide malicious PowerShell commands. Detecting these patterns helps
+      identify potential attacks.
+    tags:
+      - CyberTriage
+      - Windows
+      - PowerShell
+      - Obfuscation
+      - MITRE T1059.001
+    references:
+      - '[MITRE ATT&CK T1059.001 - PowerShell](https://attack.mitre.org/techniques/T1059/001/)'
+      - '[MITRE ATT&CK T1027 - Obfuscated Files or Information](https://attack.mitre.org/techniques/T1027/)'
+    notes:
+      covered:
+        - Encoded PowerShell commands
+        - Base64 strings in command lines
+        - Common obfuscation patterns
+      not_covered:
+        - Advanced obfuscation techniques
+        - Custom encoding schemes
+    steps:
+      - name: Find PowerShell with -EncodedCommand flag
+        description: The -enc flag is commonly used for encoded commands
+        stage: analysis
+        type: opensearch-query
+        value: 'timestamp_desc:*PowerShell* AND args:(*-enc* OR *-EncodedCommand*)'
+      - name: Find PowerShell with Base64 decoding
+        description: Scripts that decode Base64 at runtime
+        stage: analysis
+        type: opensearch-query
+        value: 'timestamp_desc:*PowerShell* AND args:(*FromBase64* OR *[Convert]::*)'
+      - name: Find PowerShell with execution policy bypass
+        description: Bypassing execution policy is often suspicious
+        stage: analysis
+        type: opensearch-query
+        value: 'timestamp_desc:*PowerShell* AND args:(*-ExecutionPolicy* AND (*Bypass* OR *Unrestricted*))'
+      - name: Find obfuscated PowerShell patterns
+        description: Common obfuscation like concatenation and variable substitution
+        stage: analysis
+        type: opensearch-query
+        value: 'timestamp_desc:*PowerShell* AND args:(*`* OR *+* OR *$env:*)'
+
+  - name: Detect PowerShell download cradles (CyberTriage)
+    description: >-
+      PowerShell download cradles are one-liners that download and execute
+      code from the internet. These are commonly used in initial compromise
+      and malware delivery.
+    tags:
+      - CyberTriage
+      - Windows
+      - PowerShell
+      - Download Cradle
+      - MITRE T1105
+    references:
+      - '[MITRE ATT&CK T1105 - Ingress Tool Transfer](https://attack.mitre.org/techniques/T1105/)'
+      - '[PowerShell Download Cradles](https://gist.github.com/HarmJ0y/bb48307ffa663256e239)'
+    notes:
+      covered:
+        - WebClient download methods
+        - Invoke-WebRequest
+        - Invoke-Expression with downloads
+        - BitsTransfer
+      not_covered:
+        - Custom download methods
+        - Obfuscated download cradles
+    steps:
+      - name: Find PowerShell with WebClient
+        description: DownloadString and DownloadFile methods
+        stage: analysis
+        type: opensearch-query
+        value: 'timestamp_desc:*PowerShell* AND args:(*DownloadString* OR *DownloadFile* OR *WebClient*)'
+      - name: Find PowerShell with Invoke-WebRequest
+        description: Modern download method
+        stage: analysis
+        type: opensearch-query
+        value: 'timestamp_desc:*PowerShell* AND args:(*Invoke-WebRequest* OR *iwr* OR *wget* OR *curl*)'
+      - name: Find PowerShell with IEX pattern
+        description: Invoke-Expression often used with downloads
+        stage: analysis
+        type: opensearch-query
+        value: 'timestamp_desc:*PowerShell* AND args:(*Invoke-Expression* OR *iex*)'
+      - name: Find PowerShell with BitsTransfer
+        description: BITS can be used for stealthy downloads
+        stage: analysis
+        type: opensearch-query
+        value: 'timestamp_desc:*PowerShell* AND args:*BitsTransfer*'
+
+  - name: Detect PowerShell loading .NET assemblies or modules (CyberTriage)
+    description: >-
+      Attackers use PowerShell to load malicious .NET assemblies or modules
+      directly into memory, enabling fileless attacks.
+    tags:
+      - CyberTriage
+      - Windows
+      - PowerShell
+      - Fileless
+      - MITRE T1620
+    references:
+      - '[MITRE ATT&CK T1620 - Reflective Code Loading](https://attack.mitre.org/techniques/T1620/)'
+    notes:
+      covered:
+        - Assembly loading patterns
+        - Reflection-based loading
+        - Add-Type usage
+      not_covered:
+        - Memory analysis
+        - Injected assemblies
+    steps:
+      - name: Find PowerShell Assembly loading
+        description: Loading assemblies in memory
+        stage: analysis
+        type: opensearch-query
+        value: 'timestamp_desc:*PowerShell* AND args:(*[Reflection.Assembly]* OR *LoadAssembly* OR *Load(*)'
+      - name: Find PowerShell Add-Type
+        description: Add-Type can compile and load C# code
+        stage: analysis
+        type: opensearch-query
+        value: 'timestamp_desc:*PowerShell* AND args:*Add-Type*'

@@ -1,0 +1,126 @@
+# CyberTriage-specific DFIQ Question for Timesketch
+# File Download Analysis
+---
+name: Were there suspicious file downloads or web activity?
+type: question
+description: Analyze CyberTriage file download artifacts to identify potentially malicious downloads, drive-by attacks, or malware delivery.
+uuid: ct006-downloads-1006-aaaa-bbbbccccdddd
+id: CTQ1006
+dfiq_version: 1.1.0
+tags:
+  - CyberTriage
+  - Downloads
+  - Windows
+  - Web
+  - MITRE ATT&CK
+parent_ids:
+  - F1001
+approaches:
+  - name: Detect executable file downloads (CyberTriage)
+    description: >-
+      Downloaded executable files (.exe, .dll, .scr, etc.) may be malware
+      or unwanted software. Identifying these downloads helps trace initial
+      compromise vectors.
+    tags:
+      - CyberTriage
+      - Windows
+      - Downloads
+      - MITRE T1105
+    references:
+      - '[MITRE ATT&CK T1105 - Ingress Tool Transfer](https://attack.mitre.org/techniques/T1105/)'
+    notes:
+      covered:
+        - Downloaded executable files
+        - Browser download history
+        - Zone.Identifier (Mark of the Web)
+      not_covered:
+        - Encrypted downloads
+        - Downloads from HTTPS sites without decryption
+    steps:
+      - name: Find all file download events
+        description: All file download activities recorded by CyberTriage
+        stage: analysis
+        type: opensearch-query
+        value: 'timestamp_desc:"File Downloaded"'
+      - name: Find downloaded executables
+        description: Executables downloaded from the internet
+        stage: analysis
+        type: opensearch-query
+        value: 'timestamp_desc:"File Downloaded" AND path:(*.exe OR *.dll OR *.scr OR *.bat OR *.cmd OR *.ps1)'
+      - name: Find downloaded scripts
+        description: Script files that may contain malicious code
+        stage: analysis
+        type: opensearch-query
+        value: 'timestamp_desc:"File Downloaded" AND path:(*.vbs OR *.js OR *.hta OR *.wsf)'
+      - name: Find downloaded archives
+        description: Archives may contain malware
+        stage: analysis
+        type: opensearch-query
+        value: 'timestamp_desc:"File Downloaded" AND path:(*.zip OR *.rar OR *.7z OR *.iso)'
+
+  - name: Detect downloads from suspicious sources (CyberTriage)
+    description: >-
+      Downloads from file sharing sites, URL shorteners, or unusual domains
+      may indicate malware delivery or phishing.
+    tags:
+      - CyberTriage
+      - Windows
+      - Downloads
+      - Phishing
+      - MITRE T1566
+    references:
+      - '[MITRE ATT&CK T1566 - Phishing](https://attack.mitre.org/techniques/T1566/)'
+    notes:
+      covered:
+        - File sharing site downloads
+        - URL shortener redirects
+        - Unusual TLD downloads
+      not_covered:
+        - Encrypted download sources
+        - CDN-hosted malware
+    steps:
+      - name: Find downloads from file sharing sites
+        description: Common file sharing services used for malware
+        stage: analysis
+        type: opensearch-query
+        value: 'timestamp_desc:"File Downloaded" AND message:(*dropbox* OR *drive.google* OR *onedrive* OR *mega.nz* OR *mediafire* OR *sendspace*)'
+      - name: Find downloads from URL shorteners
+        description: Shortened URLs often hide malicious destinations
+        stage: analysis
+        type: opensearch-query
+        value: 'timestamp_desc:"File Downloaded" AND message:(*bit.ly* OR *goo.gl* OR *tinyurl* OR *t.co* OR *ow.ly*)'
+      - name: Find downloads from suspicious TLDs
+        description: Some TLDs are commonly used for malicious content
+        stage: analysis
+        type: opensearch-query
+        value: 'timestamp_desc:"File Downloaded" AND message:(*.xyz* OR *.top* OR *.tk* OR *.ml* OR *.ga*)'
+
+  - name: Detect files in Downloads folder executed (CyberTriage)
+    description: >-
+      Correlate downloads with execution to identify files that were
+      downloaded and then run, which is a common malware delivery pattern.
+    tags:
+      - CyberTriage
+      - Windows
+      - Execution
+      - MITRE T1204
+    references:
+      - '[MITRE ATT&CK T1204 - User Execution](https://attack.mitre.org/techniques/T1204/)'
+    notes:
+      covered:
+        - Execution from Downloads folder
+        - Recently downloaded files
+      not_covered:
+        - Files moved before execution
+        - Renamed files
+    steps:
+      - name: Find processes from Downloads folder
+        description: Executables run from the Downloads directory
+        stage: analysis
+        type: opensearch-query
+        value: 'timestamp_desc:"Process Created" AND path:*\\Downloads\\*'
+      - name: Find processes from browser cache
+        description: Sometimes files run from browser cache
+        stage: analysis
+        type: opensearch-query
+        value: 'timestamp_desc:"Process Created" AND path:(*\\Chrome\\* OR *\\Firefox\\* OR *\\Edge\\*)'
