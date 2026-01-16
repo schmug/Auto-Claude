@@ -23,9 +23,9 @@ from pathlib import Path
 # Import merge functions from workspace.py (which coexists with this package)
 # We use importlib to explicitly load workspace.py since Python prefers the package
 _workspace_file = Path(__file__).parent.parent / "workspace.py"
-_case = importlib.util.case_from_file_location("workspace_module", _workspace_file)
-_workspace_module = importlib.util.module_from_case(_case)
-_case.loader.exec_module(_workspace_module)
+_spec = importlib.util.spec_from_file_location("workspace_module", _workspace_file)
+_workspace_module = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(_workspace_module)
 merge_existing_build = _workspace_module.merge_existing_build
 _run_parallel_merges = _workspace_module._run_parallel_merges
 
