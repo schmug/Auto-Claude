@@ -59,6 +59,7 @@ lerna-debug.log*
 .auto-build-security.json
 .auto-claude-security.json
 .auto-claude-status
+.auto-sleuth/
 .claude_settings.json
 .update-metadata.json
 
