@@ -42,6 +42,12 @@ export class TerminalNameGenerator extends EventEmitter {
    * Get the auto-claude source path (detects automatically if not configured)
    */
   private getAutoBuildSourcePath(): string | null {
+    const hasRunner = (basePath: string): boolean => {
+      const caseRunner = path.join(basePath, 'runners', 'case_runner.py');
+      const specRunner = path.join(basePath, 'runners', 'spec_runner.py');
+      return existsSync(basePath) && (existsSync(caseRunner) || existsSync(specRunner));
+    };
+
     if (this.autoBuildSourcePath && existsSync(this.autoBuildSourcePath)) {
       return this.autoBuildSourcePath;
     }
@@ -50,13 +56,13 @@ export class TerminalNameGenerator extends EventEmitter {
     if (app.isPackaged) {
       // Check for user-updated backend source first (takes priority over bundled)
       const overridePath = path.join(app.getPath('userData'), 'backend-source');
-      if (existsSync(overridePath) && existsSync(path.join(overridePath, 'runners', 'spec_runner.py'))) {
+      if (hasRunner(overridePath)) {
         debug('Using user-updated backend from userData:', overridePath);
         return overridePath;
       }
       // Fall back to bundled backend in resources
       const resourcesPath = path.join(process.resourcesPath, 'backend');
-      if (existsSync(resourcesPath) && existsSync(path.join(resourcesPath, 'runners', 'spec_runner.py'))) {
+      if (hasRunner(resourcesPath)) {
         debug('Using bundled backend from resources:', resourcesPath);
         return resourcesPath;
       }
@@ -71,7 +77,7 @@ export class TerminalNameGenerator extends EventEmitter {
     ];
 
     for (const p of possiblePaths) {
-      if (existsSync(p) && existsSync(path.join(p, 'runners', 'spec_runner.py'))) {
+      if (hasRunner(p)) {
         return p;
       }
     }

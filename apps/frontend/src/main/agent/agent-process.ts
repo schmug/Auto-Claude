@@ -265,9 +265,11 @@ export class AgentProcessManager {
    * Get the auto-claude source path (detects automatically if not configured)
    */
   getAutoBuildSourcePath(): string | null {
-    // Use runners/spec_runner.py as the validation marker - this is the file actually needed
+    // Use runner presence as the validation marker (case_runner or spec_runner).
     const validatePath = (p: string): boolean => {
-      return existsSync(p) && existsSync(path.join(p, 'runners', 'spec_runner.py'));
+      const caseRunner = path.join(p, 'runners', 'case_runner.py');
+      const specRunner = path.join(p, 'runners', 'spec_runner.py');
+      return existsSync(p) && (existsSync(caseRunner) || existsSync(specRunner));
     };
 
     // If manually configured AND valid, use that

@@ -56,7 +56,9 @@ export class InsightsConfig {
     // 3. Bundled backend (process.resourcesPath/backend)
     // 4. Development paths
     const effectivePath = getEffectiveSourcePath();
-    if (existsSync(effectivePath) && existsSync(path.join(effectivePath, 'runners', 'spec_runner.py'))) {
+    const caseRunner = path.join(effectivePath, 'runners', 'case_runner.py');
+    const specRunner = path.join(effectivePath, 'runners', 'spec_runner.py');
+    if (existsSync(effectivePath) && (existsSync(caseRunner) || existsSync(specRunner))) {
       return effectivePath;
     }
 

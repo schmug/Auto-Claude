@@ -237,9 +237,10 @@ export interface InitializationResult {
  */
 export function hasLocalSource(projectPath: string): boolean {
   const localSourcePath = path.join(projectPath, 'apps', 'backend');
-  // Use runners/spec_runner.py as marker - ensures valid backend
-  const markerFile = path.join(localSourcePath, 'runners', 'spec_runner.py');
-  return existsSync(localSourcePath) && existsSync(markerFile);
+  // Use runner presence as marker (case_runner or spec_runner).
+  const caseRunner = path.join(localSourcePath, 'runners', 'case_runner.py');
+  const specRunner = path.join(localSourcePath, 'runners', 'spec_runner.py');
+  return existsSync(localSourcePath) && (existsSync(caseRunner) || existsSync(specRunner));
 }
 
 /**

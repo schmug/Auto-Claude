@@ -112,6 +112,12 @@ export class ChangelogService extends EventEmitter {
    * Get the auto-claude source path (detects automatically if not configured)
    */
   private getAutoBuildSourcePath(): string | null {
+    const hasRunner = (basePath: string): boolean => {
+      const caseRunner = path.join(basePath, 'runners', 'case_runner.py');
+      const specRunner = path.join(basePath, 'runners', 'spec_runner.py');
+      return existsSync(basePath) && (existsSync(caseRunner) || existsSync(specRunner));
+    };
+
     if (this.autoBuildSourcePath && existsSync(this.autoBuildSourcePath)) {
       return this.autoBuildSourcePath;
     }
@@ -124,7 +130,7 @@ export class ChangelogService extends EventEmitter {
     ];
 
     for (const p of possiblePaths) {
-      if (existsSync(p) && existsSync(path.join(p, 'runners', 'spec_runner.py'))) {
+      if (hasRunner(p)) {
         return p;
       }
     }

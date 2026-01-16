@@ -93,7 +93,7 @@ export function getDefaultDbPath(): string {
  * Get the path to the query_memory.py script
  */
 function getQueryScriptPath(): string | null {
-  // Look for the script in backend directory - validate using spec_runner.py marker
+  // Look for the script in backend directory - validate using runner marker
   const possiblePaths = [
     // Packaged app: backend is in extraResources (process.resourcesPath/backend)
     ...(app.isPackaged ? [path.join(process.resourcesPath, 'backend', 'query_memory.py')] : []),
@@ -104,10 +104,10 @@ function getQueryScriptPath(): string | null {
   ];
 
   for (const p of possiblePaths) {
-    // Validate backend structure by checking for spec_runner.py marker
     const backendPath = path.dirname(p);
+    const caseRunnerPath = path.join(backendPath, 'runners', 'case_runner.py');
     const specRunnerPath = path.join(backendPath, 'runners', 'spec_runner.py');
-    if (fs.existsSync(p) && fs.existsSync(specRunnerPath)) {
+    if (fs.existsSync(p) && (fs.existsSync(caseRunnerPath) || fs.existsSync(specRunnerPath))) {
       return p;
     }
   }

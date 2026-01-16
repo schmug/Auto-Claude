@@ -109,22 +109,29 @@ export class AgentManager extends EventEmitter {
       return;
     }
 
+    const caseRunnerPath = path.join(autoBuildSource, 'runners', 'case_runner.py');
     const specRunnerPath = path.join(autoBuildSource, 'runners', 'spec_runner.py');
+    const runnerPath = existsSync(caseRunnerPath) ? caseRunnerPath : specRunnerPath;
+    const runnerType = existsSync(caseRunnerPath) ? 'case' : 'spec';
 
-    if (!existsSync(specRunnerPath)) {
-      this.emit('error', taskId, `Spec runner not found at: ${specRunnerPath}`);
+    if (!existsSync(runnerPath)) {
+      this.emit(
+        'error',
+        taskId,
+        `Runner not found at: ${caseRunnerPath} or ${specRunnerPath}`
+      );
       return;
     }
 
     // Get combined environment variables
     const combinedEnv = this.processManager.getCombinedEnv(projectPath);
 
-    // spec_runner.py will auto-start run.py after spec creation completes
-    const args = [specRunnerPath, '--task', taskDescription, '--project-dir', projectPath];
+    // Runner will auto-start run.py after case/spec creation completes
+    const args = [runnerPath, '--task', taskDescription, '--project-dir', projectPath];
 
     // Pass spec directory if provided (for UI-created tasks that already have a directory)
     if (specDir) {
-      args.push('--spec-dir', specDir);
+      args.push(runnerType === 'case' ? '--case-dir' : '--spec-dir', specDir);
     }
 
     // Pass base branch if specified (ensures worktrees are created from the correct branch)
@@ -141,7 +148,7 @@ export class AgentManager extends EventEmitter {
     // Pass model and thinking level configuration
     // For auto profile, use phase-specific config; otherwise use single model/thinking
     if (metadata?.isAutoProfile && metadata.phaseModels && metadata.phaseThinking) {
-      // Pass the spec phase model and thinking level to spec_runner
+      // Pass the phase model and thinking level to the runner
       args.push('--model', metadata.phaseModels.spec);
       args.push('--thinking-level', metadata.phaseThinking.spec);
     } else if (metadata?.model) {
@@ -197,7 +204,8 @@ export class AgentManager extends EventEmitter {
     // Get combined environment variables
     const combinedEnv = this.processManager.getCombinedEnv(projectPath);
 
-    const args = [runPath, '--spec', specId, '--project-dir', projectPath];
+    const useCaseFlag = existsSync(path.join(autoBuildSource, 'runners', 'case_runner.py'));
+    const args = [runPath, useCaseFlag ? '--case' : '--spec', specId, '--project-dir', projectPath];
 
     // Always use auto-continue when running from UI (non-interactive)
     args.push('--auto-continue');

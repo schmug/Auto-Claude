@@ -271,20 +271,29 @@ app.whenReady().then(() => {
   try {
     const settings = JSON.parse(readFileSync(settingsPath, 'utf-8'));
 
-    // Validate and migrate autoBuildPath - must contain runners/spec_runner.py
+    // Validate and migrate autoBuildPath - must contain runners/case_runner.py or runners/spec_runner.py
     // Uses EAFP pattern (try/catch with accessSync) instead of existsSync to avoid TOCTOU race conditions
     let validAutoBuildPath = settings.autoBuildPath;
     if (validAutoBuildPath) {
+      const caseRunnerPath = join(validAutoBuildPath, 'runners', 'case_runner.py');
       const specRunnerPath = join(validAutoBuildPath, 'runners', 'spec_runner.py');
-      let specRunnerExists = false;
+      let runnerExists = false;
       try {
-        accessSync(specRunnerPath);
-        specRunnerExists = true;
+        accessSync(caseRunnerPath);
+        runnerExists = true;
       } catch {
         // File doesn't exist or isn't accessible
       }
+      if (!runnerExists) {
+        try {
+          accessSync(specRunnerPath);
+          runnerExists = true;
+        } catch {
+          // File doesn't exist or isn't accessible
+        }
+      }
 
-      if (!specRunnerExists) {
+      if (!runnerExists) {
         // Migration: Try to fix stale paths from old project structure
         // Old structure: /path/to/project/auto-claude
         // New structure: /path/to/project/apps/backend
@@ -292,14 +301,23 @@ app.whenReady().then(() => {
         if (validAutoBuildPath.endsWith('/auto-claude') || validAutoBuildPath.endsWith('\\auto-claude')) {
           const basePath = validAutoBuildPath.replace(/[/\\]auto-claude$/, '');
           const correctedPath = join(basePath, 'apps', 'backend');
+          const correctedCaseRunnerPath = join(correctedPath, 'runners', 'case_runner.py');
           const correctedSpecRunnerPath = join(correctedPath, 'runners', 'spec_runner.py');
 
           let correctedPathExists = false;
           try {
-            accessSync(correctedSpecRunnerPath);
+            accessSync(correctedCaseRunnerPath);
             correctedPathExists = true;
           } catch {
             // Corrected path doesn't exist
+          }
+          if (!correctedPathExists) {
+            try {
+              accessSync(correctedSpecRunnerPath);
+              correctedPathExists = true;
+            } catch {
+              // Corrected path doesn't exist
+            }
           }
 
           if (correctedPathExists) {
@@ -319,7 +337,7 @@ app.whenReady().then(() => {
         }
 
         if (!migrated) {
-          console.warn('[main] Configured autoBuildPath is invalid (missing runners/spec_runner.py), will use auto-detection:', validAutoBuildPath);
+          console.warn('[main] Configured autoBuildPath is invalid (missing runners/case_runner.py or runners/spec_runner.py), will use auto-detection:', validAutoBuildPath);
           validAutoBuildPath = undefined; // Let auto-detection find the correct path
         }
       }
