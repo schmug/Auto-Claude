@@ -1,34 +1,34 @@
 {
   "sections": {
-    "project": "Project",
+    "project": "Case",
     "tools": "Tools"
   },
   "items": {
-    "kanban": "Kanban Board",
-    "terminals": "Agent Terminals",
-    "insights": "Insights",
-    "roadmap": "Roadmap",
-    "ideation": "Ideation",
-    "changelog": "Changelog",
-    "context": "Context",
+    "kanban": "Investigation Board",
+    "terminals": "Forensic Console",
+    "insights": "Analysis Insights",
+    "roadmap": "Case Strategy",
+    "ideation": "Hypothesis Generation",
+    "changelog": "Case Log",
+    "context": "Intel",
     "githubIssues": "GitHub Issues",
     "githubPRs": "GitHub PRs",
     "gitlabIssues": "GitLab Issues",
     "gitlabMRs": "GitLab MRs",
-    "worktrees": "Worktrees",
+    "worktrees": "Parallel Ops",
     "agentTools": "MCP Overview"
   },
   "actions": {
     "settings": "Settings",
     "help": "Help & Feedback",
-    "newTask": "New Task"
+    "newTask": "New Lead"
   },
   "tooltips": {
     "settings": "Application Settings",
     "help": "Help & Feedback"
   },
   "messages": {
-    "initializeToCreateTasks": "Initialize Auto Claude to create tasks"
+    "initializeToCreateTasks": "Initialize Auto Sleuth to create leads"
   },
   "claudeCode": {
     "checking": "Checking Claude Code...",

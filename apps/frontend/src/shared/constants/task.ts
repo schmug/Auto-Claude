@@ -56,8 +56,8 @@ export const SUBTASK_STATUS_COLORS: Record<string, string> = {
 // Execution phase labels
 export const EXECUTION_PHASE_LABELS: Record<string, string> = {
   idle: 'Idle',
-  planning: 'Planning',
-  coding: 'Coding',
+  planning: 'Strategizing',
+  coding: 'Executing',
   qa_review: 'AI Review',
   qa_fixing: 'Fixing Issues',
   complete: 'Complete',
@@ -103,10 +103,10 @@ export const EXECUTION_PHASE_WEIGHTS: Record<string, { start: number; end: numbe
 
 export const TASK_CATEGORY_LABELS: Record<string, string> = {
   feature: 'Feature',
-  bug_fix: 'Bug Fix',
+  bug_fix: 'Incident',
   refactoring: 'Refactoring',
   documentation: 'Docs',
-  security: 'Security',
+  security: 'Threat',
   performance: 'Performance',
   ui_ux: 'UI/UX',
   infrastructure: 'Infrastructure',

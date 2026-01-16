@@ -1,11 +1,11 @@
 {
   "status": {
-    "backlog": "Queued",
-    "todo": "To Investigate",
-    "in_progress": "In Progress",
-    "review": "Validation",
-    "prCreated": "Report Ready",
-    "complete": "Complete",
+    "backlog": "Backlog",
+    "todo": "To Analyze",
+    "in_progress": "Under Investigation",
+    "review": "Evidence Review",
+    "prCreated": "Findings Submitted",
+    "complete": "Resolved",
     "archived": "Archived"
   },
   "actions": {
@@ -43,21 +43,21 @@
     "viewPR": "Open investigation report in browser"
   },
   "creation": {
-    "title": "Create New Investigation",
-    "description": "Describe the incident to investigate",
-    "placeholder": "Describe the incident, evidence sources, and investigation objectives..."
+    "title": "New Investigation Objective",
+    "description": "Describe the incident or finding to investigate",
+    "placeholder": "Describe the investigative requirement..."
   },
   "empty": {
     "title": "No investigations yet",
     "description": "Create your first investigation to get started"
   },
   "columns": {
-    "backlog": "Case Intake",
-    "in_progress": "Analysis",
-    "ai_review": "AI Validation",
-    "human_review": "Analyst Review",
-    "done": "Complete",
-    "pr_created": "Report Ready"
+    "backlog": "Lead Queue",
+    "in_progress": "Active Analysis",
+    "ai_review": "Sleuth Review",
+    "human_review": "Lead Review",
+    "done": "Resolved",
+    "pr_created": "Findings Submitted"
   },
   "kanban": {
     "emptyBacklog": "No cases queued",
@@ -100,9 +100,9 @@
       "entries": "entries"
     },
     "shortPhases": {
-      "plan": "Plan",
-      "code": "Analyze",
-      "qa": "Validate"
+      "plan": "Strategy",
+      "code": "Exec",
+      "qa": "Review"
     }
   },
   "files": {
@@ -131,9 +131,9 @@
     "backgroundTaskDescription": "The investigation is still running. You can reopen this dialog to monitor progress."
   },
   "wizard": {
-    "createTitle": "Create New Investigation",
-    "createDescription": "Describe the incident to investigate. The AI will analyze your request and create a detailed investigation plan.",
-    "descriptionPlaceholder": "Describe the security incident, available evidence sources, and investigation objectives. Be as specific as possible about the scope, timeframe, and affected systems. Type @ to reference evidence files.",
+    "createTitle": "Define New Objective",
+    "createDescription": "Describe the case requirement. The AI Sleuth will analyze your request and define investigative steps.",
+    "descriptionPlaceholder": "Describe the feature, incident, or improvement you want to investigate. Be as specific as possible about requirements and constraints. Type @ to reference evidence files.",
     "draftRestored": "Draft restored",
     "startFresh": "Start Fresh",
     "hideFiles": "Hide Evidence",
