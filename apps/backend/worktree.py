@@ -33,10 +33,10 @@ if "core" not in sys.modules:
 
 # Now load core.worktree directly
 _worktree_file = _backend_dir / "core" / "worktree.py"
-_case = importlib.util.case_from_file_location("core.worktree", _worktree_file)
-_worktree_module = importlib.util.module_from_case(_case)
+_spec = importlib.util.spec_from_file_location("core.worktree", _worktree_file)
+_worktree_module = importlib.util.module_from_spec(_spec)
 sys.modules["core.worktree"] = _worktree_module
-_case.loader.exec_module(_worktree_module)
+_spec.loader.exec_module(_worktree_module)
 
 # Re-export everything from core.worktree
 from core.worktree import *  # noqa: F401, F403
