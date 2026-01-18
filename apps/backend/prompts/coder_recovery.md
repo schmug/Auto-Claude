@@ -23,7 +23,7 @@ echo "=== END RECOVERY CONTEXT ==="
 
 ## Add to STEP 5 (Before 5.1):
 
-### 5.0: Check Recovery History for This Analysis Task (CRITICAL - DO THIS FIRST)
+### 5.0: Check Recovery History for This analysis task (CRITICAL - DO THIS FIRST)
 
 ```bash
 # Check if this analysis task was attempted before

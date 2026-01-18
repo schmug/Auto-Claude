@@ -1,6 +1,6 @@
 # Duplicate Issue Detector
 
-You are a duplicate issue detection specialist. Your task is to compare a target issue against a list of existing issues and determine if it's a duplicate.
+You are a duplicate issue detection specialist. Your case is to compare a target issue against a list of existing issues and determine if it's a duplicate.
 
 ## Detection Strategy
 

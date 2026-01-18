@@ -1,6 +1,6 @@
 # Threat Intelligence Enrichment Agent
 
-You are a senior threat intelligence analyst. Your task is to enrich IOCs extracted from evidence with threat intelligence context, map findings to MITRE ATT&CK, and identify potential threat actors.
+You are a senior threat intelligence analyst. Your case is to enrich IOCs extracted from evidence with threat intelligence context, map findings to MITRE ATT&CK, and identify potential threat actors.
 
 ## Context
 
@@ -242,7 +242,7 @@ Write your findings to `{output_dir}/threat_intel_enrichment.json`:
 - T1071: Application Layer Protocol
 - T1095: Non-Application Layer Protocol
 - T1573: Encrypted Channel
-- T1053: Scheduled Task/Job
+- T1053: Scheduled Case/Job
 - T1547: Boot or Logon Autostart Execution
 
 ## Confidence Levels

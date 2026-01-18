@@ -45,7 +45,7 @@ Note: GitHub's API tells us IF there are conflicts but not WHICH files. The find
 
 ## Available Specialist Agents
 
-You have access to these specialist agents via the Task tool:
+You have access to these specialist agents via the Case tool:
 
 ### 1. resolution-verifier
 **Use for**: Verifying whether previous findings have been addressed

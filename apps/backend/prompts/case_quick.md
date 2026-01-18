@@ -146,7 +146,7 @@ Ready for analysis.
 ## CRITICAL RULES
 
 1. **KEEP IT SIMPLE** - No extensive research, no deep planning
-2. **BE CONCISE** - Short case, simple plan, one task if possible
+2. **BE CONCISE** - Short case, simple plan, one case if possible
 3. **JUST THE ESSENTIALS** - Only include what's needed
 4. **DON'T OVER-ENGINEER** - This is a quick triage, treat it simply
 
@@ -189,7 +189,7 @@ Extract connections from PCAP using Zeek, grep for IOC IP in conn.log.
 
 ### Example 2: Artifact Check
 
-**Incident**: "Check for persistence in Windows scheduled tasks"
+**Incident**: "Check for persistence in Windows scheduled cases"
 
 **case.md**:
 

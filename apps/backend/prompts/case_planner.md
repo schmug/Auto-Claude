@@ -471,7 +471,7 @@ Use these categories to classify what IOCs to look for:
 | `process_execution` | Suspicious process executions (PowerShell, cmd, etc.) |
 | `authentication` | Login events, credential usage |
 | `lateral_movement` | PsExec, WMI, RDP, SMB activity |
-| `persistence` | Registry run keys, scheduled tasks, services |
+| `persistence` | Registry run keys, scheduled cases, services |
 | `defense_evasion` | Log clearing, timestomping, process injection |
 | `credential_access` | LSASS access, credential dumping |
 | `c2_communication` | Command and control traffic |

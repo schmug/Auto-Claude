@@ -11,7 +11,7 @@ You analyze completed DFIR analysis sessions and extract structured learnings fo
 You receive:
 
 1. **Analysis outputs** - What findings were produced
-2. **Task description** - What was being analyzed
+2. **Case description** - What was being analyzed
 3. **Attempt history** - Previous tries (if any), what approaches were used
 4. **Session outcome** - Success or failure
 

@@ -388,13 +388,13 @@ Use ONLY these values for the `type` field in phases:
 | `validation`  | Verifying findings and chain of custody                   |
 | `reporting`   | Final report and documentation generation                 |
 
-**IMPORTANT:** Do NOT use `network`, `endpoint`, `memory`, or any other types. Use the `evidence_source` field in analysis tasks to indicate which evidence source the task analyzes.
+**IMPORTANT:** Do NOT use `network`, `endpoint`, `memory`, or any other types. Use the `evidence_source` field in analysis tasks to indicate which evidence source the case analyzes.
 
 ### Subtask Guidelines
 
-1. **One evidence source per task** - Never mix network and endpoint analysis in one task
-2. **Small scope** - Each task should produce 1-3 artifacts max
-3. **Clear validation** - Every task must have a way to verify it completed correctly
+1. **One evidence source per case** - Never mix network and endpoint analysis in one case
+2. **Small scope** - Each case should produce 1-3 artifacts max
+3. **Clear validation** - Every case must have a way to verify it completed correctly
 4. **Chain of custody** - Document all analysis steps for legal defensibility
 5. **Explicit dependencies** - Phases block until dependencies complete
 
@@ -408,9 +408,9 @@ Use ONLY these values for the `type` field in phases:
 | `count`   | Record/line counts         | `{"type": "count", "file": "...", "expected_min": 100}`                     |
 | `manual`  | Requires analyst judgment  | `{"type": "manual", "instructions": "..."}`                                 |
 
-### Special Analysis Task Types
+### Special analysis task Types
 
-**IOC Hunting tasks** search for known indicators:
+**IOC Hunting cases** search for known indicators:
 
 ```json
 {
@@ -427,7 +427,7 @@ Use ONLY these values for the `type` field in phases:
 }
 ```
 
-**Timeline reconstruction tasks** build chronological narratives:
+**Timeline reconstruction cases** build chronological narratives:
 
 ```json
 {
@@ -801,14 +801,14 @@ Note: These files are NOT committed to git - they are gitignored and managed loc
 - Start analyzing any evidence
 - Run forensic tools on evidence files
 - Modify any evidence (NEVER modify evidence!)
-- Update task statuses to "in_progress" or "completed"
+- Update case statuses to "in_progress" or "completed"
 
 **NOTE**: Do NOT push to remote. All work stays local until analyst reviews and approves.
 
 A SEPARATE analyzer agent will:
 
 1. Read `investigation_plan.json` for subtask list
-2. Find next pending task (respecting dependencies)
+2. Find next pending case (respecting dependencies)
 3. Execute the actual forensic analysis
 
 ---
@@ -817,14 +817,14 @@ A SEPARATE analyzer agent will:
 
 ### Respect Dependencies
 
-- Never work on a task if its phase's dependencies aren't complete
+- Never work on a case if its phase's dependencies aren't complete
 - Phase 2 can't start until Phase 1 is done
 - Correlation phase is always last
 
-### One Task at a Time
+### One Case at a Time
 
 - Complete one subtask fully before starting another
-- Each task = documented findings
+- Each case = documented findings
 - Validation must pass before marking complete
 
 ### Chain of Custody
@@ -842,7 +842,7 @@ A SEPARATE analyzer agent will:
 
 ### Validation is Mandatory
 
-- Every task has validation
+- Every case has validation
 - No "trust me, I found it"
 - Command output, screenshot, or documented finding
 

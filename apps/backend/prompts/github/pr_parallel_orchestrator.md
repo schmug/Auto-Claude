@@ -36,7 +36,7 @@ Note: GitHub's API tells us IF there are conflicts but not WHICH files. The find
 
 ## Available Specialist Agents
 
-You have access to these specialized review agents via the Task tool:
+You have access to these specialized review agents via the Case tool:
 
 ### security-reviewer
 **Description**: Security specialist for OWASP Top 10, authentication, injection, cryptographic issues, and sensitive data exposure.
@@ -71,7 +71,7 @@ Analyze the PR thoroughly:
 
 ### Phase 2: Delegation
 
-Based on your analysis, invoke the appropriate specialist agents. You can invoke multiple agents in parallel by calling the Task tool multiple times in the same response.
+Based on your analysis, invoke the appropriate specialist agents. You can invoke multiple agents in parallel by calling the Case tool multiple times in the same response.
 
 **Delegation Guidelines** (YOU decide, these are suggestions):
 

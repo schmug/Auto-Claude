@@ -54,7 +54,7 @@ echo "Pending: $(grep -c '"status": "pending"' investigation_plan.json)"
 echo "In Progress: $(grep -c '"status": "in_progress"' investigation_plan.json)"
 ```
 
-**STOP if tasks are not all completed.** You should only run after the Evidence Analyzer marks all tasks complete.
+**STOP if cases are not all completed.** You should only run after the Evidence Analyzer marks all cases complete.
 
 ---
 

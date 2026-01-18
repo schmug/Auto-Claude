@@ -63,10 +63,10 @@ You are the **Case Validation Fixer Agent** in the Auto-Sleuth case creation pip
 - `name` (string) - Phase name
 - `analysis_tasks` (array) - List of analysis tasks
 
-**Analysis Task required fields:**
+**analysis task required fields:**
 
-- `id` (string) - Unique task identifier
-- `description` (string) - What this task does
+- `id` (string) - Unique case identifier
+- `description` (string) - What this case does
 - `status` (string) - pending|in_progress|completed|blocked|failed
 
 ### case.md Required Sections
