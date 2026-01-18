@@ -4,12 +4,12 @@
     "description": "Auto Sleuth needs to initialize this directory to track investigations and evidence. This will create a .auto-claude directory.",
     "button": "Initialize Case",
     "createFolder": "Create a .auto-claude folder in your project",
-    "copyFramework": "Copy the Auto Claude framework files",
+    "copyFramework": "Copy the Auto Sleuth framework files",
     "setupSpecs": "Set up the specs directory for your tasks",
     "sourcePathNotConfigured": "Source path not configured",
-    "sourcePathNotConfiguredDescription": "Please set the Auto Claude source path in App Settings before initializing.",
+    "sourcePathNotConfiguredDescription": "Please set the Auto Sleuth source path in App Settings before initializing.",
     "initFailed": "Initialization Failed",
-    "initFailedDescription": "Failed to initialize Auto Claude. Please try again."
+    "initFailedDescription": "Failed to initialize Auto Sleuth. Please try again."
   },
   "gitSetup": {
     "title": "Evidence Integrity Setup",
@@ -34,16 +34,16 @@
   },
   "githubSetup": {
     "connectTitle": "Connect to GitHub",
-    "connectDescription": "Auto Claude requires GitHub to manage your code branches and keep tasks up to date.",
+    "connectDescription": "Auto Sleuth requires GitHub to manage your code branches and keep cases up to date.",
     "claudeTitle": "Connect to Claude AI",
-    "claudeDescription": "Auto Claude uses Claude AI for intelligent features like Roadmap generation, Task automation, and Ideation.",
+    "claudeDescription": "Auto Sleuth uses Claude AI for intelligent capabilities like Roadmap generation, Case automation, and Ideation.",
     "selectRepo": "Select Repository",
-    "repoDescription": "Auto Claude will use this repository for managing task branches and keeping your code up to date.",
+    "repoDescription": "Auto Sleuth will use this repository for managing case branches and keeping your code up to date.",
     "selectBranch": "Select Base Branch",
-    "branchDescription": "Choose which branch Auto Claude should use as the base for creating task branches.",
+    "branchDescription": "Choose which branch Auto Sleuth should use as the base for creating case branches.",
     "whyBranch": "Why select a branch?",
-    "branchExplanation": "Auto Claude creates isolated workspaces for each task. Selecting the right base branch ensures your tasks start with the latest code from your main development line.",
-    "ready": "Auto Claude is ready to use! You can now create tasks that will be automatically based on the {{branchName}} branch.",
+    "branchExplanation": "Auto Sleuth creates isolated workspaces for each case. Selecting the right base branch ensures your cases start with the latest code from your main development line.",
+    "ready": "Auto Sleuth is ready to use! You can now create cases that will be automatically based on the {{branchName}} branch.",
     "createRepoAriaLabel": "Create new repository on GitHub",
     "linkRepoAriaLabel": "Link to existing repository",
     "goBackAriaLabel": "Go back to repository selection",
@@ -73,7 +73,7 @@
     "errorDescription": "Failed to cleanup worktree. Please try again."
   },
   "update": {
-    "title": "Auto Claude",
+    "title": "Auto Sleuth",
     "projectInitialized": "Project is initialized."
   },
   "addFeature": {
@@ -154,7 +154,7 @@
   },
   "appUpdate": {
     "title": "App Update Available",
-    "description": "A new version of Auto Claude is ready to download",
+    "description": "A new version of Auto Sleuth is ready to download",
     "newVersion": "New Version",
     "released": "Released",
     "downloading": "Downloading...",

@@ -10,8 +10,8 @@
     "addProjectAriaLabel": "Ajouter un projet"
   },
   "accessibility": {
-    "deleteFeatureAriaLabel": "Supprimer la fonctionnalité",
-    "closeFeatureDetailsAriaLabel": "Fermer les détails de la fonctionnalité",
+    "deleteFeatureAriaLabel": "Supprimer l'objectif",
+    "closeFeatureDetailsAriaLabel": "Fermer les détails de l'objectif",
     "regenerateRoadmapAriaLabel": "Régénérer la feuille de route",
     "repositoryOwnerAriaLabel": "Propriétaire du dépôt",
     "repositoryVisibilityAriaLabel": "Visibilité du dépôt",

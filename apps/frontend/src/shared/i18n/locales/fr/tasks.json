@@ -133,7 +133,7 @@
   "wizard": {
     "createTitle": "Créer une nouvelle tâche",
     "createDescription": "Décrivez ce que vous voulez construire. L'IA analysera votre demande et créera une spécification détaillée.",
-    "descriptionPlaceholder": "Décrivez la fonctionnalité, la correction de bug ou l'amélioration que vous souhaitez implémenter. Soyez aussi précis que possible sur les exigences, les contraintes et le comportement attendu. Tapez @ pour référencer des fichiers.",
+    "descriptionPlaceholder": "Décrivez le cas, l'incident ou l'amélioration que vous souhaitez investiguer. Soyez aussi précis que possible sur les exigences et les contraintes. Tapez @ pour référencer des éléments de preuve.",
     "draftRestored": "Brouillon restauré",
     "startFresh": "Recommencer",
     "hideFiles": "Masquer les fichiers",
@@ -163,7 +163,7 @@
   },
   "form": {
     "description": "Description",
-    "descriptionPlaceholder": "Décrivez la fonctionnalité, la correction de bug ou l'amélioration que vous souhaitez implémenter. Soyez aussi précis que possible sur les exigences, les contraintes et le comportement attendu.",
+    "descriptionPlaceholder": "Décrivez l'incident de sécurité, les sources de preuve disponibles et les objectifs d'investigation. Soyez aussi précis que possible sur la portée, la chronologie et les systèmes affectés.",
     "imageAddedSuccess": "Image ajoutée avec succès !",
     "taskTitle": "Titre de la tâche",
     "titlePlaceholder": "Laissez vide pour générer automatiquement à partir de la description",
@@ -190,11 +190,11 @@
       "helpText": "Ces étiquettes aident à organiser et à prioriser les tâches. Elles sont optionnelles mais utiles pour le filtrage.",
       "values": {
         "category": {
-          "feature": "Fonctionnalité",
-          "bug_fix": "Correction de bug",
-          "refactoring": "Refactoring",
-          "documentation": "Documentation",
-          "security": "Sécurité"
+          "feature": "Malware",
+          "bug_fix": "Ransomware",
+          "refactoring": "Fuite de données",
+          "documentation": "Phishing",
+          "security": "Accès non autorisé"
         },
         "priority": {
           "low": "Basse",

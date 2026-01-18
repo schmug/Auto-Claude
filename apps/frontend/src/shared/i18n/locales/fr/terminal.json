@@ -14,7 +14,7 @@
     "createTitle": "Creer un Worktree Terminal",
     "createDescription": "Creer un espace de travail isole pour ce terminal. Tout le travail se fera dans le repertoire du worktree.",
     "name": "Nom du Worktree",
-    "namePlaceholder": "ma-fonctionnalite",
+    "namePlaceholder": "mon-cas",
     "nameRequired": "Le nom du worktree est requis",
     "nameInvalid": "Le nom doit commencer et se terminer par une lettre ou un chiffre",
     "nameHelp": "Lettres minuscules, chiffres, tirets et underscores uniquement",

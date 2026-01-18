@@ -1,22 +1,22 @@
 {
   "wizard": {
     "title": "Assistant de configuration",
-    "description": "Configurez votre environnement Auto Claude en quelques étapes simples",
-    "helpText": "Cet assistant vous aidera à configurer votre environnement en quelques étapes. Vous pouvez configurer votre token OAuth Claude, activer les fonctionnalités de mémoire et créer votre première tâche."
+    "description": "Configurez votre environnement Auto Sleuth en quelques étapes simples",
+    "helpText": "Cet assistant vous aidera à configurer votre environnement en quelques étapes. Vous pouvez configurer votre token OAuth Claude, activer la mémoire et créer votre premier cas."
   },
   "welcome": {
-    "title": "Bienvenue sur Auto Claude",
-    "subtitle": "Construisez des logiciels de manière autonome avec des agents IA",
+    "title": "Bienvenue sur Auto Sleuth",
+    "subtitle": "Menez des investigations de manière autonome avec des agents IA",
     "getStarted": "Commencer",
     "skip": "Passer la configuration",
     "features": {
       "aiPowered": {
-        "title": "Développement assisté par IA",
-        "description": "Générez du code et construisez des fonctionnalités avec les agents Claude Code"
+        "title": "Investigations assistées par IA",
+        "description": "Générez des étapes d'analyse et lancez des cas avec les agents Claude Code"
       },
       "specDriven": {
-        "title": "Workflow basé sur les specs",
-        "description": "Définissez des tâches avec des spécifications claires et laissez Auto Claude gérer l'implémentation"
+        "title": "Workflow piloté par les cas",
+        "description": "Définissez des cas avec un brief clair et laissez Auto Sleuth gérer l'investigation"
       },
       "memory": {
         "title": "Mémoire & Contexte",
@@ -24,20 +24,20 @@
       },
       "parallel": {
         "title": "Exécution parallèle",
-        "description": "Exécutez plusieurs agents en parallèle pour des cycles de développement plus rapides"
+        "description": "Exécutez plusieurs agents en parallèle pour des investigations plus rapides"
       }
     }
   },
   "oauth": {
     "title": "Authentification Claude",
-    "description": "Connectez votre compte Claude pour activer les fonctionnalités IA",
+    "description": "Connectez votre compte Claude pour activer les capacités IA",
     "keychainTitle": "Stockage sécurisé",
     "keychainDescription": "Vos jetons sont chiffrés à l'aide du trousseau de clés de votre système. Une demande de mot de passe macOS peut apparaître — cliquez sur « Toujours autoriser » pour ne plus la revoir."
   },
   "memory": {
     "title": "Mémoire",
     "description": "Configurer la mémoire persistante entre sessions pour les agents",
-    "contextDescription": "La mémoire Auto Claude aide à retenir le contexte entre vos sessions de code",
+    "contextDescription": "La mémoire Auto Sleuth aide à retenir le contexte entre vos sessions d'investigation",
     "enableMemory": "Activer la mémoire",
     "enableMemoryDescription": "Mémoire persistante entre sessions utilisant LadybugDB (base de données intégrée)",
     "memoryDisabledInfo": "La mémoire est désactivée. Les informations de session seront stockées uniquement dans des fichiers locaux. Activez la mémoire pour un contexte persistant entre sessions avec recherche sémantique.",
@@ -75,14 +75,14 @@
   },
   "completion": {
     "title": "Vous êtes prêt !",
-    "subtitle": "Auto Claude est prêt à vous aider à construire des logiciels incroyables",
+    "subtitle": "Auto Sleuth est prêt à vous aider à mener des investigations",
     "setupComplete": "Configuration terminée",
-    "setupCompleteDescription": "Votre environnement est configuré et prêt. Vous pouvez commencer à créer des tâches immédiatement ou explorer l'application à votre rythme.",
+    "setupCompleteDescription": "Votre environnement est configuré et prêt. Vous pouvez commencer à créer des cas immédiatement ou explorer l'application à votre rythme.",
     "whatsNext": "Et maintenant ?",
     "createTask": {
-      "title": "Créer une tâche",
-      "description": "Commencez par créer votre première tâche pour voir Auto Claude en action.",
-      "action": "Ouvrir le créateur de tâches"
+      "title": "Créer un cas",
+      "description": "Commencez par créer votre premier cas pour voir Auto Sleuth en action.",
+      "action": "Ouvrir le créateur de cas"
     },
     "customizeSettings": {
       "title": "Personnaliser les paramètres",
@@ -91,9 +91,9 @@
     },
     "exploreDocs": {
       "title": "Explorer la documentation",
-      "description": "En savoir plus sur les fonctionnalités avancées, les bonnes pratiques et le dépannage."
+      "description": "En savoir plus sur les capacités avancées, les bonnes pratiques et le dépannage."
     },
-    "finish": "Terminer et commencer à construire",
+    "finish": "Terminer et commencer l'investigation",
     "rerunHint": "Vous pouvez toujours relancer cet assistant depuis Paramètres → Application"
   },
   "steps": {
@@ -107,7 +107,7 @@
     "done": "Terminé"
   },
   "privacy": {
-    "title": "Aidez à améliorer Auto Claude",
+    "title": "Aidez à améliorer Auto Sleuth",
     "subtitle": "Les rapports d'erreurs anonymes nous aident à corriger les bugs plus rapidement",
     "whatWeCollect": {
       "title": "Ce que nous collectons",
@@ -129,11 +129,11 @@
   },
   "claudeCode": {
     "title": "Claude Code CLI",
-    "description": "Installez ou mettez à jour le CLI Claude Code pour activer les fonctionnalités IA",
+    "description": "Installez ou mettez à jour le CLI Claude Code pour activer les capacités IA",
     "detecting": "Vérification de l'installation de Claude Code...",
     "info": {
       "title": "Qu'est-ce que Claude Code ?",
-      "description": "Claude Code est le CLI officiel d'Anthropic qui alimente les fonctionnalités IA d'Auto Claude. Il fournit une authentification sécurisée et un accès direct aux modèles Claude."
+      "description": "Claude Code est le CLI officiel d'Anthropic qui alimente les capacités IA d'Auto Sleuth. Il fournit une authentification sécurisée et un accès direct aux modèles Claude."
     },
     "status": {
       "installed": "Installé",
@@ -155,19 +155,19 @@
   },
   "devtools": {
     "title": "Outils de développement",
-    "description": "Choisissez votre IDE et terminal préférés pour travailler avec les worktrees Auto Claude",
+    "description": "Choisissez votre IDE et terminal préférés pour travailler avec les worktrees Auto Sleuth",
     "detecting": "Détection des outils installés...",
     "detectAgain": "Détecter à nouveau",
     "whyConfigure": "Pourquoi configurer ceci ?",
-    "whyConfigureDescription": "Quand Auto Claude construit des fonctionnalités dans des worktrees isolés, vous pouvez les ouvrir directement dans votre IDE ou terminal préféré pour tester et réviser les changements.",
+    "whyConfigureDescription": "Quand Auto Sleuth prépare des cas dans des worktrees isolés, vous pouvez les ouvrir directement dans votre IDE ou terminal préféré pour valider et réviser les changements.",
     "ide": {
       "label": "IDE préféré",
-      "description": "Auto Claude ouvrira les worktrees dans cet éditeur",
+      "description": "Auto Sleuth ouvrira les worktrees dans cet éditeur",
       "customPath": "Chemin IDE personnalisé"
     },
     "terminal": {
       "label": "Terminal préféré",
-      "description": "Auto Claude ouvrira les sessions terminal ici",
+      "description": "Auto Sleuth ouvrira les sessions terminal ici",
       "customPath": "Chemin terminal personnalisé"
     },
     "detectedSummary": "Détecté sur votre système :",
@@ -178,7 +178,7 @@
   "ollama": {
     "notInstalled": {
       "title": "Ollama non installé",
-      "description": "Ollama fournit des modèles d'embeddings locaux gratuits pour la recherche sémantique. Installez-le en un clic pour activer cette fonctionnalité.",
+      "description": "Ollama fournit des modèles d'embeddings locaux gratuits pour la recherche sémantique. Installez-le en un clic pour activer cette capacité.",
       "installSuccess": "Installation lancée dans votre terminal. Terminez l'installation là-bas, puis cliquez sur Réessayer.",
       "installButton": "Installer Ollama",
       "installing": "Installation...",

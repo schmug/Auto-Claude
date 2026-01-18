@@ -14,7 +14,7 @@
     "createTitle": "Create Terminal Worktree",
     "createDescription": "Create an isolated workspace for this terminal. All work will happen in the worktree directory.",
     "name": "Worktree Name",
-    "namePlaceholder": "my-feature",
+    "namePlaceholder": "my-case",
     "nameRequired": "Worktree name is required",
     "nameInvalid": "Name must start and end with a letter or number",
     "nameHelp": "Lowercase letters, numbers, dashes, and underscores only",
