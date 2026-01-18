@@ -38,6 +38,11 @@ def _compute_case_hash(case_dir: Path) -> str:
     return hashlib.md5(combined.encode("utf-8"), usedforsecurity=False).hexdigest()
 
 
+def _compute_spec_hash(case_dir: Path) -> str:
+    """Legacy alias for spec-based hash calculation."""
+    return _compute_case_hash(case_dir)
+
+
 @dataclass
 class ReviewState:
     """
