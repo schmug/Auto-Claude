@@ -24,7 +24,7 @@ export interface ChangelogTask {
 export interface TaskSpecContent {
   taskId: string;
   specId: string;
-  spec?: string; // Content of case.md (fallback: spec.md)
+  spec?: string; // Content of case brief (case.md; fallback: spec.md)
   requirements?: Record<string, unknown>; // Parsed requirements.json
   qaReport?: string; // Content of qa_report.md
   implementationPlan?: InvestigationPlan; // Parsed investigation_plan.json

@@ -166,7 +166,7 @@ export type ModelTypeShort = 'haiku' | 'sonnet' | 'opus';
 // Phase-based model configuration for Auto profile
 // Each phase can use a different model optimized for that task type
 export interface PhaseModelConfig {
-  spec: ModelTypeShort;       // Spec creation (discovery, requirements, context)
+  spec: ModelTypeShort;       // Case brief creation (discovery, requirements, context)
   planning: ModelTypeShort;   // Implementation planning
   coding: ModelTypeShort;     // Actual coding implementation
   qa: ModelTypeShort;         // QA review and fixing

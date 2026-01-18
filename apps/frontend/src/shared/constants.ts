@@ -1,5 +1,5 @@
 /**
- * Shared constants for Auto Claude UI
+ * Shared constants for Auto Sleuth UI
  *
  * This file has been refactored for better organization and maintainability.
  * All constants are now organized in domain-specific modules in the constants/ directory.
@@ -14,7 +14,7 @@
  *
  * Domain-specific modules:
  *   - constants/ipc.ts - IPC channel names
- *   - constants/task.ts - Task status, categories, complexity, priority
+ *   - constants/task.ts - Case status, categories, complexity, priority
  *   - constants/roadmap.ts - Roadmap priority, complexity, impact
  *   - constants/ideation.ts - Ideation types, categories, configuration
  *   - constants/changelog.ts - Changelog formats, audiences, configuration

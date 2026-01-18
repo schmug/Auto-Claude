@@ -1,5 +1,5 @@
 /**
- * Task-related types
+ * Case-related types (task schema)
  */
 
 import type { ThinkingLevel, PhaseModelConfig, PhaseThinkingConfig } from './settings';
@@ -11,7 +11,7 @@ export type TaskStatus = 'backlog' | 'in_progress' | 'ai_review' | 'human_review
 // - 'completed': All subtasks done and QA passed, ready for final approval/merge
 // - 'errors': Subtasks failed during execution
 // - 'qa_rejected': QA found issues that need fixing
-// - 'plan_review': Spec/plan created and awaiting approval before coding starts
+// - 'plan_review': Case brief/plan created and awaiting approval before coding starts
 export type ReviewReason = 'completed' | 'errors' | 'qa_rejected' | 'plan_review';
 
 export type SubtaskStatus = 'pending' | 'in_progress' | 'completed' | 'failed';
@@ -216,7 +216,7 @@ export interface TaskMetadata {
   referencedFiles?: ReferencedFile[];
 
   // Review settings
-  requireReviewBeforeCoding?: boolean;  // Require human review of spec/plan before coding starts
+  requireReviewBeforeCoding?: boolean;  // Require human review of case brief/plan before coding starts
 
   // Agent configuration (from agent profile or manual selection)
   model?: ModelType;  // Claude model to use (haiku, sonnet, opus) - used when not auto profile
@@ -253,7 +253,7 @@ export interface Task {
   stagedInMainProject?: boolean;  // True if changes were staged to main project (worktree merged with --no-commit)
   stagedAt?: string;  // ISO timestamp when changes were staged
   location?: 'main' | 'worktree';  // Where task was loaded from (main project or worktree)
-  specsPath?: string;  // Full path to specs directory for this task
+  specsPath?: string;  // Full path to case files directory for this task
   createdAt: Date;
   updatedAt: Date;
 }
@@ -470,8 +470,8 @@ export interface WorktreeCreatePRResult {
 }
 
 /**
- * Information about a single spec worktree
- * Per-spec architecture: Each spec has its own worktree at .worktrees/{spec-name}/
+ * Information about a single case worktree
+ * Per-case architecture: Each case has its own worktree at .worktrees/{spec-name}/
  */
 export interface WorktreeListItem {
   specName: string;
@@ -485,7 +485,7 @@ export interface WorktreeListItem {
 }
 
 /**
- * Result of listing all spec worktrees
+ * Result of listing all case worktrees
  */
 export interface WorktreeListResult {
   worktrees: WorktreeListItem[];
