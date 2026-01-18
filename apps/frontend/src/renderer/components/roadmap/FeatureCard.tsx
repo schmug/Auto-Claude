@@ -36,7 +36,7 @@ export function FeatureCard({
               variant="outline"
               className={`text-xs ${ROADMAP_IMPACT_COLORS[feature.impact]}`}
             >
-              {feature.impact} impact
+              {feature.impact} severity
             </Badge>
             {hasCompetitorInsight && (
               <Tooltip>

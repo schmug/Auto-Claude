@@ -1,14 +1,14 @@
 /**
- * AddFeatureDialog - Dialog for adding new features to the roadmap
+ * AddFeatureDialog - Dialog for adding new objectives to the roadmap
  *
- * Allows users to create new roadmap features with title, description,
+ * Allows users to create new roadmap objectives with title, description,
  * priority, phase, complexity, and impact fields.
  * Follows the same dialog pattern as TaskEditDialog for consistency.
  *
  * Features:
  * - Form validation (title and description required)
  * - Selectable classification fields (priority, phase, complexity, impact)
- * - Adds feature to roadmap store and persists to file
+ * - Adds objective to roadmap store and persists to file
  *
  * @example
  * ```tsx
@@ -16,7 +16,7 @@
  *   phases={roadmap.phases}
  *   open={isAddDialogOpen}
  *   onOpenChange={setIsAddDialogOpen}
- *   onFeatureAdded={(featureId) => console.log('Feature added:', featureId)}
+ *   onFeatureAdded={(featureId) => console.log('Objective added:', featureId)}
  * />
  * ```
  */
@@ -63,7 +63,7 @@ interface AddFeatureDialogProps {
   open: boolean;
   /** Callback when the dialog open state changes */
   onOpenChange: (open: boolean) => void;
-  /** Optional callback when feature is successfully added, receives the new feature ID */
+  /** Optional callback when objective is successfully added, receives the new feature ID */
   onFeatureAdded?: (featureId: string) => void;
   /** Optional default phase ID to pre-select */
   defaultPhaseId?: string;
@@ -141,11 +141,11 @@ export function AddFeatureDialog({
     setError(null);
 
     try {
-      // Add feature to store
+      // Add objective to store
       const newFeatureId = addFeature({
         title: title.trim(),
         description: description.trim(),
-        rationale: rationale.trim() || `User-created feature for ${title.trim()}`,
+        rationale: rationale.trim() || `User-created objective for ${title.trim()}`,
         priority,
         complexity,
         impact,

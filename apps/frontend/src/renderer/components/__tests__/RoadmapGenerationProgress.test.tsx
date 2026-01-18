@@ -32,7 +32,7 @@ describe('RoadmapGenerationProgress', () => {
     it('should have configuration for discovering phase', () => {
       // The discovering phase should have:
       // - label: 'Discovering'
-      // - description: 'Discovering target audience and user needs...'
+      // - description: 'Discovering stakeholders and investigation scope...'
       // - icon: Users
       // - color: 'bg-info'
       const status = createTestStatus({ phase: 'discovering' });
@@ -42,7 +42,7 @@ describe('RoadmapGenerationProgress', () => {
     it('should have configuration for generating phase', () => {
       // The generating phase should have:
       // - label: 'Generating'
-      // - description: 'Generating feature roadmap...'
+      // - description: 'Generating investigation roadmap...'
       // - icon: Sparkles
       // - color: 'bg-primary'
       const status = createTestStatus({ phase: 'generating' });

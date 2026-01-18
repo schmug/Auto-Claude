@@ -101,7 +101,7 @@ export function CreateMergeRequestDialog({
               <Label htmlFor="source">Source Branch</Label>
               <Input
                 id="source"
-                placeholder="feature/my-feature"
+                placeholder="case/my-case"
                 value={sourceBranch}
                 onChange={(e) => setSourceBranch(e.target.value)}
               />

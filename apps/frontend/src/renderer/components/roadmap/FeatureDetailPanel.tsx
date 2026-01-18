@@ -218,7 +218,7 @@ export function FeatureDetailPanel({
         <div className="shrink-0 p-4 border-t border-border">
           <Button className="w-full" onClick={() => onGoToTask(feature.linkedSpecId!)}>
             <ExternalLink className="h-4 w-4 mr-2" />
-            Go to Task
+            View Case
           </Button>
         </div>
       ) : (
@@ -226,7 +226,7 @@ export function FeatureDetailPanel({
           <div className="shrink-0 p-4 border-t border-border">
             <Button className="w-full" onClick={() => onConvertToSpec(feature)}>
               <Zap className="h-4 w-4 mr-2" />
-              Convert to Auto-Build Task
+              Convert to Case
             </Button>
           </div>
         )
@@ -240,7 +240,7 @@ export function FeatureDetailPanel({
               <Trash2 className="h-6 w-6 text-destructive" />
             </div>
             <div>
-              <h3 className="font-semibold">Delete Feature?</h3>
+              <h3 className="font-semibold">Delete Objective?</h3>
               <p className="text-sm text-muted-foreground mt-1">
                 This will permanently remove "{feature.title}" from your roadmap.
               </p>

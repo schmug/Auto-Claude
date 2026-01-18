@@ -64,14 +64,14 @@ const PHASE_CONFIG: Record<
   },
   discovering: {
     label: 'Discovering',
-    description: 'Discovering target audience and user needs...',
+    description: 'Discovering stakeholders and investigation scope...',
     icon: Users,
     color: 'bg-info',
     bgColor: 'bg-info/20',
   },
   generating: {
     label: 'Generating',
-    description: 'Generating feature roadmap...',
+    description: 'Generating investigation roadmap...',
     icon: Sparkles,
     color: 'bg-primary',
     bgColor: 'bg-primary/20',

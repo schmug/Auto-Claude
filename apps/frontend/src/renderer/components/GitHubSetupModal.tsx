@@ -49,11 +49,11 @@ interface GitHubSetupModalProps {
 type SetupStep = 'github-auth' | 'claude-auth' | 'repo-confirm' | 'repo' | 'branch' | 'complete';
 
 /**
- * Setup Modal - Required setup flow after Auto Claude initialization
+ * Setup Modal - Required setup flow after Auto Sleuth initialization
  *
  * Flow:
  * 1. Authenticate with GitHub (via gh CLI OAuth) - for repo operations
- * 2. Authenticate with Claude (via claude CLI OAuth) - for AI features
+ * 2. Authenticate with Claude (via claude CLI OAuth) - for AI capabilities
  * 3. Detect/confirm repository
  * 4. Select base branch for tasks (with recommended default)
  */

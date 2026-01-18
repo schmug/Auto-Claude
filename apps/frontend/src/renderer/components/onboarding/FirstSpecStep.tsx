@@ -55,12 +55,12 @@ export function FirstSpecStep({ onNext, onBack, onSkip, onOpenTaskCreator }: Fir
     {
       icon: <PenLine className="h-4 w-4" />,
       title: 'Be Descriptive',
-      description: 'Clearly describe what you want to build. Include requirements, constraints, and expected behavior.'
+      description: 'Clearly describe what you want to investigate. Include requirements, constraints, and expected outcomes.'
     },
     {
       icon: <Target className="h-4 w-4" />,
       title: 'Start Small',
-      description: 'Begin with a focused task like adding a feature or fixing a bug. Smaller tasks are easier to verify.'
+      description: 'Begin with a focused case like investigating an alert or confirming a suspicious event. Smaller cases are easier to validate.'
     },
     {
       icon: <ListChecks className="h-4 w-4" />,
@@ -70,7 +70,7 @@ export function FirstSpecStep({ onNext, onBack, onSkip, onOpenTaskCreator }: Fir
     {
       icon: <Sparkles className="h-4 w-4" />,
       title: 'Let AI Help',
-      description: 'The AI can generate titles and classify tasks. Focus on describing what you want, not the details.'
+      description: 'The AI can generate titles and classify cases. Focus on describing the incident, not the details.'
     }
   ];
 

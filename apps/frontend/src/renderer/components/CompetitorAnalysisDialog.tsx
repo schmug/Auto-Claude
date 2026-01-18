@@ -66,7 +66,7 @@ export function CompetitorAnalysisDialog({
               <li className="flex items-start gap-2">
                 <TrendingUp className="h-4 w-4 mt-0.5 text-primary flex-shrink-0" />
                 <span>
-                  Suggests features that address gaps in competitor products
+                  Suggests objectives that address gaps in external solutions
                 </span>
               </li>
             </ul>
@@ -81,7 +81,7 @@ export function CompetitorAnalysisDialog({
                   Web searches will be performed
                 </h4>
                 <p className="text-xs text-muted-foreground mt-1">
-                  This feature will perform web searches to gather competitor information.
+                  This capability will perform web searches to gather external context.
                   Your project name and type will be used in search queries.
                   No code or sensitive data is shared.
                 </p>

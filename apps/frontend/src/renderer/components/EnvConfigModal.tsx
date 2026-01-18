@@ -47,7 +47,7 @@ export function EnvConfigModal({
   onOpenChange,
   onConfigured,
   title = 'Claude Authentication Required',
-  description = 'A Claude Code OAuth token is required to use AI features like Ideation and Roadmap generation.',
+  description = 'A Claude Code OAuth token is required to use AI capabilities like Ideation and Roadmap generation.',
   projectId
 }: EnvConfigModalProps) {
   const [token, setToken] = useState('');
@@ -289,7 +289,7 @@ export function EnvConfigModal({
                   Token configured successfully
                 </p>
                 <p className="text-xs text-success/80 mt-1">
-                  You can now use AI features like Ideation and Roadmap generation.
+                  You can now use AI capabilities like Ideation and Roadmap generation.
                 </p>
               </div>
             </div>

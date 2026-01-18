@@ -9,7 +9,7 @@ interface InitializationGuardProps {
 
 /**
  * Guard component that shows a message when Auto-Build is not initialized.
- * Used to prevent configuration of features that require Auto-Build setup.
+ * Used to prevent configuration of capabilities that require Auto-Build setup.
  */
 export function InitializationGuard({
   initialized,

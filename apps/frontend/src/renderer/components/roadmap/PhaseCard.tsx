@@ -51,7 +51,7 @@ export function PhaseCard({
         <div className="flex items-center justify-between text-sm mb-1">
           <span className="text-muted-foreground">Progress</span>
           <span>
-            {completedCount}/{features.length} features
+            {completedCount}/{features.length} objectives
           </span>
         </div>
         <Progress value={progress} className="h-2" />
@@ -82,9 +82,9 @@ export function PhaseCard({
         </div>
       )}
 
-      {/* Features */}
+      {/* Objectives */}
       <div>
-        <h4 className="text-sm font-medium mb-2">Features ({features.length})</h4>
+        <h4 className="text-sm font-medium mb-2">Objectives ({features.length})</h4>
         <div className="grid gap-2">
           {features.slice(0, 5).map((feature) => (
             <div
@@ -117,7 +117,7 @@ export function PhaseCard({
                   }}
                 >
                   <ExternalLink className="h-3 w-3 mr-1" />
-                  View Task
+                  View Case
                 </Button>
               ) : (
                 <Button
@@ -130,14 +130,14 @@ export function PhaseCard({
                   }}
                 >
                   <Play className="h-3 w-3 mr-1" />
-                  Build
+                  Investigate
                 </Button>
               )}
             </div>
           ))}
           {features.length > 5 && (
             <div className="text-sm text-muted-foreground text-center py-1">
-              +{features.length - 5} more features
+              +{features.length - 5} more objectives
             </div>
           )}
         </div>

@@ -10,8 +10,8 @@ export function RoadmapEmptyState({ onGenerate }: RoadmapEmptyStateProps) {
         <Map className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
         <h2 className="text-xl font-semibold mb-2">No Roadmap Yet</h2>
         <p className="text-muted-foreground mb-6">
-          Generate an AI-powered roadmap that understands your project's target audience and
-          creates a strategic feature plan.
+          Generate an AI-powered roadmap that understands your project's objectives and
+          creates a strategic case plan.
         </p>
         <Button onClick={onGenerate} size="lg">
           <Sparkles className="h-4 w-4 mr-2" />

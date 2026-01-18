@@ -30,7 +30,7 @@ export function RoadmapTabs({
       <TabsList className="shrink-0 mx-4 mt-4">
         <TabsTrigger value="kanban">Kanban</TabsTrigger>
         <TabsTrigger value="phases">Phases</TabsTrigger>
-        <TabsTrigger value="features">All Features</TabsTrigger>
+        <TabsTrigger value="features">All Objectives</TabsTrigger>
         <TabsTrigger value="priorities">By Priority</TabsTrigger>
       </TabsList>
 
@@ -63,7 +63,7 @@ export function RoadmapTabs({
         </div>
       </TabsContent>
 
-      {/* All Features View */}
+      {/* All Objectives View */}
       <TabsContent value="features" className="flex-1 overflow-auto p-4">
         <div className="grid gap-3">
           {roadmap.features.map((feature: RoadmapFeature) => (
@@ -90,7 +90,7 @@ export function RoadmapTabs({
                   <Badge variant="outline" className={ROADMAP_PRIORITY_COLORS[priority]}>
                     {ROADMAP_PRIORITY_LABELS[priority]}
                   </Badge>
-                  <span className="text-sm text-muted-foreground">{features.length} features</span>
+                  <span className="text-sm text-muted-foreground">{features.length} objectives</span>
                 </div>
                 <div className="space-y-2">
                   {features.map((feature: RoadmapFeature) => (
@@ -111,7 +111,7 @@ export function RoadmapTabs({
                           variant="outline"
                           className={`text-xs ${ROADMAP_IMPACT_COLORS[feature.impact]}`}
                         >
-                          {feature.impact} impact
+                          {feature.impact} severity
                         </Badge>
                         {hasCompetitorInsight(feature) && (
                           <Badge variant="outline" className="text-xs text-primary border-primary/50">

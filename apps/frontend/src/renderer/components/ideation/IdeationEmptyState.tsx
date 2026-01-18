@@ -32,8 +32,8 @@ export function IdeationEmptyState({
         <Lightbulb className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
         <h2 className="text-xl font-semibold mb-2">No Ideas Yet</h2>
         <p className="text-muted-foreground mb-6">
-          Generate AI-powered feature ideas based on your project's context,
-          existing patterns, and target audience.
+          Generate AI-powered investigation ideas based on your project's context,
+          existing patterns, and case objectives.
         </p>
 
         {/* Configuration Preview */}

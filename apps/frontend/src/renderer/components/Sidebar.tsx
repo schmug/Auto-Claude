@@ -381,7 +381,7 @@ export function Sidebar({
         </div>
       </div>
 
-      {/* Initialize Auto Claude Dialog */}
+      {/* Initialize Auto Sleuth Dialog */}
       <Dialog open={showInitDialog} onOpenChange={(open) => {
         // Only allow closing if user manually closes (not during initialization)
         if (!open && !isInitializing) {

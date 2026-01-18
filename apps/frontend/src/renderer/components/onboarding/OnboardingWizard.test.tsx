@@ -22,14 +22,14 @@ vi.mock('react-i18next', () => ({
       // Keys are without namespace since component uses useTranslation('namespace')
       const translations: Record<string, string> = {
         'welcome.title': 'Welcome to Auto Sleuth',
-        'welcome.subtitle': 'AI-powered autonomous coding assistant',
+        'welcome.subtitle': 'AI-powered autonomous investigation assistant',
         'welcome.getStarted': 'Get Started',
         'welcome.skip': 'Skip Setup',
         'wizard.helpText': 'Let us help you get started with Auto Sleuth',
         'welcome.features.aiPowered.title': 'AI-Powered',
         'welcome.features.aiPowered.description': 'Powered by Claude',
-        'welcome.features.specDriven.title': 'Spec-Driven',
-        'welcome.features.specDriven.description': 'Create from specs',
+        'welcome.features.specDriven.title': 'Case-Driven',
+        'welcome.features.specDriven.description': 'Create from cases',
         'welcome.features.memory.title': 'Memory',
         'welcome.features.memory.description': 'Remembers context',
         'welcome.features.parallel.title': 'Parallel',
