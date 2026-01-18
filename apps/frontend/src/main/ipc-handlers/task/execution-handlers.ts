@@ -269,7 +269,6 @@ export function registerTaskExecutionHandlers(
       // the in-memory 'in_progress' status, causing the task to flip back and forth.
       // Uses shared utility for consistency with agent-events-handlers.ts
       // NOTE: This is now async and non-blocking for better UI responsiveness
-      const planPath = getPlanPath(project, task);
       setImmediate(async () => {
         const persistStart = Date.now();
         try {

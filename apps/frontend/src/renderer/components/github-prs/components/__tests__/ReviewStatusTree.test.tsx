@@ -8,7 +8,7 @@
  * Key behavior tested:
  * - 'reviewing' status is properly handled
  * - Status dot color is animated blue when reviewing
- * - Status label shows "AI Review in Progress" when reviewing
+ * - Status label shows "AI Validation in Progress" when reviewing
  * - Cancel button is shown when reviewing
  * - Tree structure shows correct steps during review
  */
@@ -191,7 +191,7 @@ describe('ReviewStatusTree - Reviewing Status (ACS-200)', () => {
       expect(screen.getByText(i18n.t('prReview.cancel'))).toBeInTheDocument();
     });
 
-    it('should show "AI Review in Progress" status label when isReviewing', () => {
+    it('should show "AI Validation in Progress" status label when isReviewing', () => {
       render(
         <ReviewStatusTree
           status="not_reviewed"
@@ -293,10 +293,16 @@ describe('ReviewStatusTree - Reviewing Status (ACS-200)', () => {
       );
 
       // Should show previous review step
-      expect(screen.getByText(/Previous Review/)).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          i18n.t('prReview.previousReview', { count: previousResult.findings.length })
+        )
+      ).toBeInTheDocument();
 
       // Should show new commits step
-      expect(screen.getByText(/2 New Commits/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(i18n.t('prReview.newCommits', { count: 2 }))
+      ).toBeInTheDocument();
 
       // Should show follow-up analysis step
       expect(screen.getByText(i18n.t('prReview.followupInProgress'))).toBeInTheDocument();
@@ -318,8 +324,8 @@ describe('ReviewStatusTree - Reviewing Status (ACS-200)', () => {
         />
       );
 
-      // Should show AI Review in Progress (when reviewing, this takes precedence)
-      expect(screen.getByText('AI Review in Progress')).toBeInTheDocument();
+      // Should show AI Validation in Progress (when reviewing, this takes precedence)
+      expect(screen.getByText(i18n.t('prReview.aiReviewInProgress'))).toBeInTheDocument();
 
       // Should show cancel button when reviewing
       expect(screen.getByText(i18n.t('prReview.cancel'))).toBeInTheDocument();
@@ -376,7 +382,7 @@ describe('ReviewStatusTree - Reviewing Status (ACS-200)', () => {
   });
 
   describe('Status Label Logic', () => {
-    it('should return "AI Review in Progress" when isReviewing', () => {
+    it('should return "AI Validation in Progress" when isReviewing', () => {
       // getStatusLabel function in ReviewStatusTree:
       // if (isReviewing) return t('prReview.aiReviewInProgress');
 

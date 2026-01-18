@@ -98,7 +98,7 @@ describe('File Watcher Integration', () => {
       const errorHandler = vi.fn();
       watcher.on('error', errorHandler);
 
-      await watcher.watch('task-1', TEST_SPEC_DIR);
+      await watcher.watch('task-1', path.join(TEST_SPEC_DIR, 'investigation_plan.json'));
 
       expect(errorHandler).toHaveBeenCalledWith(
         'task-1',
@@ -115,7 +115,7 @@ describe('File Watcher Integration', () => {
       const { FileWatcher } = await import('../../main/file-watcher');
       const watcher = new FileWatcher();
 
-      await watcher.watch('task-1', TEST_SPEC_DIR);
+      await watcher.watch('task-1', planPath);
 
       expect(chokidar.default.watch).toHaveBeenCalledWith(
         planPath,
@@ -141,7 +141,7 @@ describe('File Watcher Integration', () => {
       const progressHandler = vi.fn();
       watcher.on('progress', progressHandler);
 
-      await watcher.watch('task-1', TEST_SPEC_DIR);
+      await watcher.watch('task-1', planPath);
 
       expect(progressHandler).toHaveBeenCalledWith('task-1', expect.objectContaining({
         case_name: 'Test Feature'
@@ -158,7 +158,7 @@ describe('File Watcher Integration', () => {
       const progressHandler = vi.fn();
       watcher.on('progress', progressHandler);
 
-      await watcher.watch('task-1', TEST_SPEC_DIR);
+      await watcher.watch('task-1', planPath);
       progressHandler.mockClear();
 
       // Update file
@@ -202,7 +202,7 @@ describe('File Watcher Integration', () => {
       watcher.on('progress', progressHandler);
       watcher.on('error', errorHandler);
 
-      await watcher.watch('task-1', TEST_SPEC_DIR);
+      await watcher.watch('task-1', planPath);
       progressHandler.mockClear();
 
       // Write invalid JSON
@@ -225,7 +225,7 @@ describe('File Watcher Integration', () => {
       const errorHandler = vi.fn();
       watcher.on('error', errorHandler);
 
-      await watcher.watch('task-1', TEST_SPEC_DIR);
+      await watcher.watch('task-1', planPath);
 
       // Simulate watcher error
       mockWatcher.emit('error', new Error('Watch failed'));
@@ -240,7 +240,7 @@ describe('File Watcher Integration', () => {
       const { FileWatcher } = await import('../../main/file-watcher');
       const watcher = new FileWatcher();
 
-      await watcher.watch('task-1', TEST_SPEC_DIR);
+      await watcher.watch('task-1', planPath);
       expect(watcher.isWatching('task-1')).toBe(true);
 
       await watcher.unwatch('task-1');
@@ -256,8 +256,8 @@ describe('File Watcher Integration', () => {
       const { FileWatcher } = await import('../../main/file-watcher');
       const watcher = new FileWatcher();
 
-      await watcher.watch('task-1', TEST_SPEC_DIR);
-      await watcher.watch('task-1', TEST_SPEC_DIR);
+      await watcher.watch('task-1', planPath);
+      await watcher.watch('task-1', planPath);
 
       // Should have called close on the first watcher
       expect(mockWatcher.close).toHaveBeenCalled();
@@ -275,8 +275,8 @@ describe('File Watcher Integration', () => {
       const { FileWatcher } = await import('../../main/file-watcher');
       const watcher = new FileWatcher();
 
-      await watcher.watch('task-1', TEST_SPEC_DIR);
-      await watcher.watch('task-2', spec2Dir);
+      await watcher.watch('task-1', planPath);
+      await watcher.watch('task-2', plan2Path);
 
       expect(watcher.isWatching('task-1')).toBe(true);
       expect(watcher.isWatching('task-2')).toBe(true);
@@ -289,7 +289,7 @@ describe('File Watcher Integration', () => {
       const { FileWatcher } = await import('../../main/file-watcher');
       const watcher = new FileWatcher();
 
-      await watcher.watch('task-1', TEST_SPEC_DIR);
+      await watcher.watch('task-1', planPath);
       await watcher.unwatchAll();
 
       expect(watcher.isWatching('task-1')).toBe(false);
@@ -303,7 +303,7 @@ describe('File Watcher Integration', () => {
       const { FileWatcher } = await import('../../main/file-watcher');
       const watcher = new FileWatcher();
 
-      await watcher.watch('task-1', TEST_SPEC_DIR);
+      await watcher.watch('task-1', planPath);
 
       const currentPlan = watcher.getCurrentPlan('task-1');
 

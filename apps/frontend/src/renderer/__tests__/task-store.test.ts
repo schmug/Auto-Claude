@@ -363,7 +363,7 @@ describe('Task Store', () => {
 
       useTaskStore.getState().updateTaskFromPlan('task-1', plan);
 
-      expect(useTaskStore.getState().tasks[0].title).toBe('New Feature Name');
+      expect(useTaskStore.getState().tasks[0].title).toBe('New Case Name');
     });
 
     it('should NOT update status when task is in active execution phase (planning)', () => {
