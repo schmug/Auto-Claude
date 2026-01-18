@@ -26,7 +26,7 @@ auto-sleuth/agents/
 ### `utils.py` (3.6 KB)
 - Git operations: `get_latest_commit()`, `get_commit_count()`
 - Plan management: `load_investigation_plan()`, `find_subtask_in_plan()`, `find_phase_for_subtask()`
-- Workspace sync: `sync_spec_to_source()`
+- Workspace sync: `sync_case_to_source()` (via legacy shim)
 
 ### `memory.py` (13 KB)
 - Dual-layer memory system (Graphiti primary, file-based fallback)
@@ -42,7 +42,7 @@ auto-sleuth/agents/
 - Recovery manager integration
 
 ### `planner.py` (5.4 KB)
-- `run_followup_planner()` - Add new subtasks to completed case specs
+- `run_followup_planner()` - Add new subtasks to completed cases
 - Follow-up planning workflow
 - Plan validation and status updates
 
@@ -73,7 +73,7 @@ from agents import (
     # Utilities
     get_latest_commit,
     load_investigation_plan,
-    sync_spec_to_source,
+    sync_case_to_source,
 )
 ```
 

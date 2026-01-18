@@ -30,7 +30,7 @@ cat VALIDATION_FIX_REQUEST.md
 # 2. Read the validation report (full context on issues)
 cat validation_report.md 2>/dev/null || echo "No detailed report"
 
-# 3. Read the case specification (requirements)
+# 3. Read the case brief (requirements)
 cat case.md
 
 # 4. Read the investigation plan (see validation_signoff status)

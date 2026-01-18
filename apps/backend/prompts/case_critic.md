@@ -10,7 +10,7 @@ You are the **Case Critic Agent** in the Auto-Sleuth case creation pipeline. You
 
 **Inputs**:
 
-- `case.md` - The case specification to critique
+- `case.md` - The case brief to critique
 - `research.json` - Validated research findings
 - `case_intake.json` - Original incident details
 - `context.json` - Evidence context

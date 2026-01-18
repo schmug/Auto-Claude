@@ -43,14 +43,14 @@ python run.py --case 001
 
 | Command | Description |
 |---------|-------------|
-| `--list` | List all case specs |
-| `--spec 001` | Run case spec 001 |
-| `--spec 001 --isolated` | Run in isolated workspace |
-| `--spec 001 --direct` | Run directly in repo |
-| `--spec 001 --merge` | Merge completed build |
-| `--spec 001 --review` | Review build changes |
-| `--spec 001 --discard` | Discard build |
-| `--spec 001 --qa` | Run QA validation |
+| `--list` | List all cases |
+| `--case 001` | Run case 001 |
+| `--case 001 --isolated` | Run in isolated workspace |
+| `--case 001 --direct` | Run directly in repo |
+| `--case 001 --merge` | Merge completed build |
+| `--case 001 --review` | Review build changes |
+| `--case 001 --discard` | Discard build |
+| `--case 001 --qa` | Run QA validation |
 | `--list-worktrees` | List all worktrees |
 | `--help` | Show all options |
 
@@ -90,7 +90,7 @@ backend/
 ├── project/         # Project detection
 ├── prompts/         # Prompt templates
 ├── qa/              # QA validation
-├── spec/            # Spec management
+├── spec/            # Case file management (legacy name)
 └── ui/              # Terminal UI
 ```
 

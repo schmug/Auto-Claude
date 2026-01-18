@@ -38,7 +38,7 @@ Data structures and type definitions:
 Git operations and utilities:
 - `has_uncommitted_changes()` - Check for unsaved work
 - `get_current_branch()` - Get active branch name
-- `get_existing_build_worktree()` - Check for existing case spec worktree
+- `get_existing_build_worktree()` - Check for existing case worktree
 - `get_file_content_from_ref()` - Get file from git ref
 - `get_changed_files_from_branch()` - List changed files
 - `is_process_running()` - Check if PID is active
@@ -55,7 +55,7 @@ Git operations and utilities:
 ### setup.py
 Workspace setup and initialization:
 - `choose_workspace()` - Let user choose workspace mode
-- `copy_spec_to_worktree()` - Copy case spec files to worktree
+- `copy_spec_to_worktree()` - Copy case files to worktree
 - `setup_workspace()` - Set up isolated or direct workspace
 - `ensure_timeline_hook_installed()` - Install git post-commit hook
 - `initialize_timeline_tracking()` - Register case for timeline tracking
@@ -74,7 +74,7 @@ Post-build finalization and user interaction:
 - `review_existing_build()` - Show existing build contents
 - `discard_existing_build()` - Delete build with confirmation
 - `check_existing_build()` - Check for existing build and offer options
-- `list_all_worktrees()` - List all case spec worktrees
+- `list_all_worktrees()` - List all case worktrees
 - `cleanup_all_worktrees()` - Clean up all worktrees
 
 ### workspace.py (parent module)
@@ -114,7 +114,7 @@ from workspace.finalization import review_existing_build
 ```python
 # merge_existing_build is in the parent workspace.py module
 import workspace
-workspace.merge_existing_build(project_dir, spec_name)
+workspace.merge_existing_build(project_dir, case_name)
 ```
 
 ## Backward Compatibility

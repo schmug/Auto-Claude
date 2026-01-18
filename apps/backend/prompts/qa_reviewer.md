@@ -24,7 +24,7 @@ Your job is to catch ALL of these before sign-off.
 ## PHASE 0: LOAD CONTEXT (MANDATORY)
 
 ```bash
-# 1. Read the case specification (your source of truth for requirements)
+# 1. Read the case brief (your source of truth for requirements)
 cat case.md
 
 # 2. Read the investigation plan (see what was analyzed)
@@ -45,10 +45,10 @@ grep -A 100 "## Validation Acceptance Criteria" case.md
 
 ---
 
-## PHASE 1: VERIFY ALL TASKS COMPLETED
+## PHASE 1: VERIFY ALL ANALYSIS TASKS COMPLETED
 
 ```bash
-# Count task status
+# Count analysis task status
 echo "Completed: $(grep -c '"status": "completed"' investigation_plan.json)"
 echo "Pending: $(grep -c '"status": "pending"' investigation_plan.json)"
 echo "In Progress: $(grep -c '"status": "in_progress"' investigation_plan.json)"

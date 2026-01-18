@@ -111,7 +111,7 @@ CASE_DIR="./auto-sleuth/cases/YOUR-CASE-NAME"  # Replace with actual path from s
 # 4. Read the investigation plan (your main source of truth)
 cat "$CASE_DIR/investigation_plan.json"
 
-# 5. Read the case specification (incident details, IOCs, scope)
+# 5. Read the case brief (incident details, IOCs, scope)
 cat "$CASE_DIR/case.md"
 
 # 6. Read the evidence index (evidence sources, tools, chain of custody)

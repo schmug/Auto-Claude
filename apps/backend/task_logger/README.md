@@ -32,7 +32,7 @@ Main logging implementation:
 ### storage.py
 Persistent storage functionality:
 - `LogStorage`: Handles JSON file storage and retrieval
-- `load_task_logs()`: Load logs from a case spec directory
+- `load_task_logs()`: Load logs from a case directory
 - `get_active_phase()`: Get currently active phase
 
 ### streaming.py
@@ -56,7 +56,7 @@ Agent session integration:
 ```python
 from task_logger import TaskLogger, LogPhase
 
-# Create logger for a spec
+# Create logger for a case
 logger = TaskLogger(case_dir)
 
 # Start a phase
