@@ -5,20 +5,20 @@ Utility functions for implementation planner.
 from .models import PlannerContext
 
 
-def extract_feature_name(context: PlannerContext) -> str:
-    """Extract feature name from case."""
+def extract_case_name(context: PlannerContext) -> str:
+    """Extract case name from case content."""
     # Try to find title in case
     lines = context.case_content.split("\n")
     for line in lines[:10]:
         if line.startswith("# "):
             title = line[2:].strip()
             # Remove common prefixes
-            for prefix in ["Caseification:", "Case:", "Feature:"]:
+            for prefix in ["Case:", "Investigation:", "Incident:"]:
                 if title.startswith(prefix):
                     title = title[len(prefix) :].strip()
             return title
 
-    return "Unnamed Feature"
+    return "Unnamed Case"
 
 
 def group_files_by_service(context: PlannerContext) -> dict[str, list[dict]]:
@@ -122,9 +122,9 @@ def extract_acceptance_criteria(context: PlannerContext) -> list[str]:
     # If no criteria found, create generic ones
     if not criteria:
         criteria = [
-            "Feature works as caseified",
-            "No console errors",
-            "No regressions in existing functionality",
+            "Evidence collected and preserved",
+            "Findings documented with supporting artifacts",
+            "Next steps or remediation guidance recorded",
         ]
 
     return criteria

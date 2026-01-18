@@ -116,7 +116,7 @@ const AGENT_CONFIGS: Record<string, AgentConfig> = {
   },
   spec_writer: {
     label: 'Spec Writer',
-    description: 'Creates the spec.md document',
+    description: 'Creates the case.md document',
     category: 'spec',
     tools: ['Read', 'Glob', 'Grep', 'Write', 'Edit', 'Bash'],
     mcp_servers: [],

@@ -69,8 +69,10 @@ export function TaskFiles({ task }: TaskFilesProps) {
         (file) => !file.isDirectory && ALLOWED_EXTENSIONS.some(ext => file.name.endsWith(ext))
       );
 
-      // Sort files: spec.md first, then alphabetically
+      // Sort files: case.md first (fallback spec.md), then alphabetically
       filteredFiles.sort((a, b) => {
+        if (a.name === 'case.md') return -1;
+        if (b.name === 'case.md') return 1;
         if (a.name === 'spec.md') return -1;
         if (b.name === 'spec.md') return 1;
         return a.name.localeCompare(b.name);
@@ -116,7 +118,7 @@ export function TaskFiles({ task }: TaskFilesProps) {
     loadFiles();
   }, [loadFiles]);
 
-  // Auto-select first file (spec.md) when files are loaded
+  // Auto-select first file (case.md or spec.md) when files are loaded
   useEffect(() => {
     if (files.length > 0 && selectedFile === null) {
       loadFileContent(files[0].path);

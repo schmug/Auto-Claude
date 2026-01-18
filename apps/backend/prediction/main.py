@@ -7,7 +7,7 @@ Command-line interface for the bug prediction system.
 
 Usage:
     python prediction.py <case-dir> [--demo]
-    python prediction.py auto-sleuth/cases/001-feature/
+    python prediction.py auto-sleuth/cases/001-case-name/
 """
 
 import json
@@ -21,7 +21,7 @@ def main():
     """Main entry point for CLI."""
     if len(sys.argv) < 2:
         print("Usage: python prediction.py <case-dir> [--demo]")
-        print("       python prediction.py auto-sleuth/cases/001-feature/")
+        print("       python prediction.py auto-sleuth/cases/001-case-name/")
         sys.exit(1)
 
     case_dir = Path(sys.argv[1])

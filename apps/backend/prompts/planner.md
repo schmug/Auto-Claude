@@ -268,7 +268,7 @@ Based on the investigation type and evidence sources involved, create the invest
 {
   "case_id": "INC-2024-001",
   "case_name": "Investigate [short incident name]",
-  "investigation_type": "investigation",
+  "investigation_type": "triage",
   "description": "Why this investigation type was chosen",
   "phases": [
     {

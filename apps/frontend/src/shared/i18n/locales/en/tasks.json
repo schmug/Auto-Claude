@@ -133,7 +133,7 @@
   "wizard": {
     "createTitle": "Define New Objective",
     "createDescription": "Describe the case requirement. The AI Sleuth will analyze your request and define investigative steps.",
-    "descriptionPlaceholder": "Describe the feature, incident, or improvement you want to investigate. Be as specific as possible about requirements and constraints. Type @ to reference evidence files.",
+    "descriptionPlaceholder": "Describe the case, incident, or improvement you want to investigate. Be as specific as possible about requirements and constraints. Type @ to reference evidence files.",
     "draftRestored": "Draft restored",
     "startFresh": "Start Fresh",
     "hideFiles": "Hide Evidence",

@@ -17,7 +17,7 @@ from .utils import (
     create_verification,
     determine_service_order,
     extract_acceptance_criteria,
-    extract_feature_name,
+    extract_case_name,
     get_patterns_for_service,
     group_files_by_service,
     infer_subtask_type,
@@ -37,11 +37,11 @@ class PlanGenerator:
 
 
 class FeaturePlanGenerator(PlanGenerator):
-    """Generates analysis plans for feature-style tasks."""
+    """Generates analysis plans for triage-style tasks."""
 
     def generate(self) -> InvestigationPlan:
         """Generate a plan based on file-level context."""
-        case_name = extract_feature_name(self.context)
+        case_name = extract_case_name(self.context)
         case_id = self.case_dir.name
         files_by_service = group_files_by_service(self.context)
 
@@ -153,6 +153,7 @@ class FeaturePlanGenerator(PlanGenerator):
             description=self.context.task_context.get("task_description", ""),
             phases=phases,
             final_acceptance=final_acceptance,
+            evidence_sources=self.context.evidence_sources,
             case_file=str(self.case_dir / "case.md"),
         )
 
@@ -162,7 +163,7 @@ class InvestigationPlanGenerator(PlanGenerator):
 
     def generate(self) -> InvestigationPlan:
         """Generate an investigation plan for debugging."""
-        case_name = extract_feature_name(self.context)
+        case_name = extract_case_name(self.context)
         case_id = self.case_dir.name
 
         phases = [
@@ -256,6 +257,7 @@ class InvestigationPlanGenerator(PlanGenerator):
                 "Root cause documented",
                 "Regression test in place",
             ],
+            evidence_sources=self.context.evidence_sources,
             case_file=str(self.case_dir / "case.md"),
         )
 
@@ -265,7 +267,7 @@ class RefactorPlanGenerator(PlanGenerator):
 
     def generate(self) -> InvestigationPlan:
         """Generate a refactor plan with stage-based phases."""
-        case_name = extract_feature_name(self.context)
+        case_name = extract_case_name(self.context)
         case_id = self.case_dir.name
 
         phases = [
@@ -357,6 +359,7 @@ class RefactorPlanGenerator(PlanGenerator):
                 "Old system completely removed",
                 "No regressions in existing functionality",
             ],
+            evidence_sources=self.context.evidence_sources,
             case_file=str(self.case_dir / "case.md"),
         )
 

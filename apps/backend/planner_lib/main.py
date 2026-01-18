@@ -15,7 +15,7 @@ The planner:
 6. Outputs investigation_plan.json
 
 Usage:
-    python auto-sleuth/planner.py --case-dir auto-sleuth/cases/001-feature/
+    python auto-sleuth/planner.py --case-dir auto-sleuth/cases/001-case-name/
 """
 
 import json

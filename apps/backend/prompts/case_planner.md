@@ -231,7 +231,7 @@ Based on the investigation type and evidence sources, create the investigation p
   "case_id": "CASE-2024-001",
   "case_name": "Investigate [short incident name]",
   "case_type": "ransomware|intrusion|data_breach|insider_threat|malware|phishing|apt",
-  "investigation_type": "full|triage|re-analysis|incident_analysis",
+  "investigation_type": "triage|intrusion|malware|insider_threat|data_breach|incident_response|incident_analysis|ransomware|phishing|threat_hunting",
   "investigation_rationale": "Why this investigation approach was chosen",
   "phases": [
     {

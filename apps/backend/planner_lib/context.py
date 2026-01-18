@@ -20,9 +20,9 @@ def _normalize_workflow_type(value: str) -> str:
 
 
 _WORKFLOW_TYPE_MAPPING: dict[str, str] = {
-    "feature": "feature",
-    "refactor": "refactor",
-    "investigation": "investigation",
+    "feature": "triage",
+    "refactor": "triage",
+    "investigation": "triage",
     "intrusion": "intrusion",
     "malware": "malware",
     "insiderthreat": "insider_threat",
@@ -33,9 +33,9 @@ _WORKFLOW_TYPE_MAPPING: dict[str, str] = {
     "ransomware": "ransomware",
     "phishing": "phishing",
     "threathunting": "threat_hunting",
-    "migration": "migration",
-    "simple": "simple",
-    "bugfix": "investigation",
+    "migration": "triage",
+    "simple": "triage",
+    "bugfix": "triage",
 }
 
 
@@ -65,10 +65,20 @@ class ContextLoader:
             with open(context_file) as f:
                 task_context = json.load(f)
 
-        # Determine services involved
-        services = task_context.get("scoped_services", [])
-        if not services:
-            services = list(project_index.get("services", {}).keys())
+        # Determine evidence sources (prefer requirements.json, fall back to context)
+        evidence_sources = []
+        requirements_file = self.case_dir / "requirements.json"
+        if requirements_file.exists():
+            try:
+                with open(requirements_file) as f:
+                    requirements = json.load(f)
+                evidence_sources = requirements.get("evidence_sources", []) or []
+            except (json.JSONDecodeError, OSError):
+                evidence_sources = []
+        if not evidence_sources:
+            evidence_sources = task_context.get("scoped_services", [])
+        if not evidence_sources:
+            evidence_sources = list(project_index.get("services", {}).keys())
 
         # Determine investigation type from multiple sources (priority order)
         investigation_type = self._determine_investigation_type(case_content)
@@ -77,7 +87,7 @@ class ContextLoader:
             case_content=case_content,
             project_index=project_index,
             task_context=task_context,
-            services_involved=services,
+            evidence_sources=evidence_sources,
             investigation_type=investigation_type,
             files_to_modify=task_context.get("files_to_modify", []),
             files_to_reference=task_context.get("files_to_reference", []),
@@ -135,9 +145,11 @@ class ContextLoader:
         """
         content_lower = case_content.lower()
 
-        # Check for explicit workflow type declaration in case
-        # Look for patterns like "**Type**: feature" or "Type: refactor"
+        # Check for explicit investigation type declaration in case
+        # Look for patterns like "**Investigation Type**: intrusion" or "Type: triage"
         explicit_type_patterns = [
+            r"investigation\s*type:\s*(\w+)",
+            r"\*\*investigation\s*type\*\*:\s*(\w+)",
             r"\*\*type\*\*:\s*(\w+)",  # **Type**: feature
             r"type:\s*(\w+)",  # Type: feature
             r"workflow\s*type:\s*(\w+)",  # Workflow Type: feature
@@ -200,5 +212,5 @@ class ContextLoader:
         if any(kw in content_lower for kw in migration_keywords):
             return _WORKFLOW_TYPE_MAPPING["migration"]
 
-        # Default to feature
-        return _WORKFLOW_TYPE_MAPPING["feature"]
+        # Default to triage for DFIR workflows
+        return _WORKFLOW_TYPE_MAPPING["triage"]
