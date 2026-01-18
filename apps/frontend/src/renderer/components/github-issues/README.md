@@ -1,6 +1,6 @@
 # GitHub Issues Module
 
-A well-structured, modular implementation of the GitHub Issues feature for the Auto Claude UI.
+A well-structured, modular implementation of the GitHub Issues feature for the Auto Sleuth UI.
 
 ## Quick Stats
 
@@ -108,7 +108,7 @@ Centralized TypeScript definitions for:
 
 ### AI Investigation
 - Investigate issues with AI analysis
-- Create tasks from GitHub issues
+- Create cases from GitHub issues
 - Track investigation progress
 - View investigation results
 - Complexity estimation
@@ -279,4 +279,4 @@ When contributing to this module:
 
 ## License
 
-Part of the Auto Claude project.
+Part of the Auto Sleuth project.

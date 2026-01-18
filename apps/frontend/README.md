@@ -1,6 +1,6 @@
-# Auto Claude UI - Frontend
+# Auto Sleuth UI - Frontend
 
-A modern Electron + React desktop application for the Auto Claude autonomous coding framework.
+A modern Electron + React desktop application for the Auto Sleuth autonomous DFIR framework.
 
 ## Prerequisites
 
@@ -87,7 +87,7 @@ src/
 │
 ├── renderer/                # React frontend
 │   ├── features/            # Feature modules (self-contained)
-│   │   ├── tasks/           # Task management, kanban, creation
+│   │   ├── tasks/           # Case management, kanban, creation
 │   │   ├── terminals/       # Terminal emulation
 │   │   ├── projects/        # Project management, file explorer
 │   │   ├── settings/        # App and project settings
@@ -224,7 +224,7 @@ type(scope): description
 | `test` | Adding or updating tests |
 | `build` | Build system or dependencies |
 | `ci` | CI/CD configuration |
-| `chore` | Maintenance tasks |
+| `chore` | Maintenance changes |
 | `revert` | Reverting a previous commit |
 
 **Examples:**

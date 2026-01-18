@@ -1,6 +1,6 @@
 # Context Handlers Module
 
-This directory contains the refactored context-related IPC handlers for the Auto Claude UI application. The handlers manage project context, memory systems (both file-based and Graphiti/LadybugDB), and project index operations.
+This directory contains the refactored context-related IPC handlers for the Auto Sleuth UI application. The handlers manage project context, memory systems (both file-based and Graphiti/LadybugDB), and project index operations.
 
 ## Architecture
 
@@ -29,7 +29,7 @@ Shared utility functions for environment configuration and parsing.
 Handlers for checking Graphiti/memory system configuration status.
 
 **Exports:**
-- `loadGraphitiStateFromSpecs(projectPath, autoBuildPath)` - Load Graphiti state from most recent spec
+- `loadGraphitiStateFromSpecs(projectPath, autoBuildPath)` - Load Graphiti state from most recent case spec
 - `buildMemoryStatus(projectPath, autoBuildPath, memoryState)` - Build memory status from environment
 - `registerMemoryStatusHandlers(getMainWindow)` - Register IPC handlers
 
@@ -40,7 +40,7 @@ Handlers for checking Graphiti/memory system configuration status.
 Handlers for retrieving and searching memories (both file-based and LadybugDB).
 
 **Exports:**
-- `loadFileBasedMemories(specsDir, limit)` - Load memories from spec files
+- `loadFileBasedMemories(specsDir, limit)` - Load memories from case spec files
 - `searchFileBasedMemories(specsDir, query, limit)` - Search file-based memories
 - `registerMemoryDataHandlers(getMainWindow)` - Register IPC handlers
 
@@ -50,7 +50,7 @@ Handlers for retrieving and searching memories (both file-based and LadybugDB).
 
 **Features:**
 - Dual-source memory loading (LadybugDB primary, file-based fallback)
-- Session insights extraction from spec directories
+- Session insights extraction from case spec directories
 - Codebase map integration
 - Semantic search support (when Graphiti is available)
 
@@ -66,7 +66,7 @@ Handlers for project context and index operations.
 
 **Features:**
 - Project index loading and caching
-- Graphiti state detection from specs
+- Graphiti state detection from case specs
 - Memory status aggregation
 - Analyzer script execution for index regeneration
 

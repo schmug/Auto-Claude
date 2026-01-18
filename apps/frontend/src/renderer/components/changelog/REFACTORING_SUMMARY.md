@@ -40,7 +40,7 @@ Refactored a 789-line monolithic component into a modular, maintainable architec
   - Shows success with link or error
 
 - **`ArchiveTasksCard.tsx`** (85 lines)
-  - Task archiving card
+  - Case archiving card
   - Manages archive operation state
   - Displays success or error messages
 
@@ -125,7 +125,7 @@ ChangelogDetails.tsx (Main)
 | PreviewPanel.tsx | 100 | Preview UI |
 | Step3SuccessScreen.tsx | 55 | Success layout |
 | GitHubReleaseCard.tsx | 95 | GitHub release |
-| ArchiveTasksCard.tsx | 85 | Task archiving |
+| ArchiveTasksCard.tsx | 85 | Case archiving |
 | utils.ts | 45 | Utility functions |
 | **Total** | **899** | **Well-organized** |
 
@@ -154,7 +154,7 @@ All refactoring is internal to the changelog module. Exports in `index.ts` updat
 3. **End-to-End**
    - Full changelog generation flow
    - Image upload via drag-and-drop
-   - GitHub release and task archiving
+   - GitHub release and case archiving
 
 ## Future Improvements
 

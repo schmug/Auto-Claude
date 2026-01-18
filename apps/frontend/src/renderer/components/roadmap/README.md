@@ -58,14 +58,14 @@ roadmap/
 - Compact feature card display
 - Priority, complexity, and impact badges
 - Competitor insight indicator
-- Build/View Task actions
+- Build/View Case actions
 
 #### `FeatureDetailPanel.tsx`
 - Slide-in side panel for feature details
 - Full description, rationale, and metrics
 - User stories and acceptance criteria
 - Dependencies and competitor insights
-- Convert to task or view existing task actions
+- Convert to case or view existing case actions
 
 ### Logic and State
 

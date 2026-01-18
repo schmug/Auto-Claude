@@ -98,7 +98,7 @@ hooks/
 - Configure Linear API credentials
 - Display connection status
 - Manage real-time sync settings
-- Handle task import from Linear
+- Handle case import from Linear
 
 #### GitHubIntegrationSection.tsx
 **Purpose**: Configures GitHub issues integration.
@@ -152,8 +152,8 @@ hooks/
 - `onUpdateSettings`: Settings update handler
 
 **Responsibilities**:
-- Toggle task completion notifications
-- Toggle task failure notifications
+- Toggle case completion notifications
+- Toggle case failure notifications
 - Toggle review needed notifications
 - Toggle sound notifications
 

@@ -1,6 +1,6 @@
 # IPC Handlers - Modular Architecture
 
-This directory contains the refactored IPC (Inter-Process Communication) handlers for Auto Claude UI, organized into domain-specific modules for better maintainability and code organization.
+This directory contains the refactored IPC (Inter-Process Communication) handlers for Auto Sleuth UI, organized into domain-specific modules for better maintainability and code organization.
 
 ## Overview
 
@@ -22,20 +22,20 @@ Handles project lifecycle and Python environment management:
 - Python environment initialization and status events
 
 #### `task-handlers.ts` (52KB) - Largest module
-Manages task lifecycle and execution:
-- `TASK_LIST` - List tasks for project
-- `TASK_CREATE` - Create new task with auto-generated title
-- `TASK_DELETE` - Delete task
-- `TASK_UPDATE` - Update task properties
-- `TASK_START` - Start task execution
-- `TASK_STOP` - Stop running task
-- `TASK_REVIEW` - Review task results
-- `TASK_UPDATE_STATUS` - Update task status
-- `TASK_RECOVER_STUCK` - Recover stuck tasks
-- `TASK_CHECK_RUNNING` - Check if task is running
+Manages case lifecycle and execution:
+- `TASK_LIST` - List cases for project
+- `TASK_CREATE` - Create new case with auto-generated title
+- `TASK_DELETE` - Delete case
+- `TASK_UPDATE` - Update case properties
+- `TASK_START` - Start case execution
+- `TASK_STOP` - Stop running case
+- `TASK_REVIEW` - Review case results
+- `TASK_UPDATE_STATUS` - Update case status
+- `TASK_RECOVER_STUCK` - Recover stuck cases
+- `TASK_CHECK_RUNNING` - Check if case is running
 - `TASK_ARCHIVE` / `TASK_UNARCHIVE` - Archive management
 - Worktree operations (status, diff, merge, discard)
-- Task logs (get, watch, unwatch)
+- Case logs (get, watch, unwatch)
 
 #### `terminal-handlers.ts` (16KB)
 Terminal and Claude profile management:
@@ -69,7 +69,7 @@ Roadmap generation and management:
 - `ROADMAP_GENERATE` - Generate roadmap with AI
 - `ROADMAP_REFRESH` - Refresh roadmap
 - `ROADMAP_UPDATE_FEATURE` - Update feature status
-- `ROADMAP_CONVERT_TO_SPEC` - Convert feature to task spec
+- `ROADMAP_CONVERT_TO_SPEC` - Convert feature to case spec
 
 #### `ideation-handlers.ts` (22KB)
 AI-powered ideation system:
@@ -78,7 +78,7 @@ AI-powered ideation system:
 - `IDEATION_REFRESH` - Refresh ideas
 - `IDEATION_STOP` - Stop generation
 - `IDEATION_UPDATE_IDEA` - Update idea
-- `IDEATION_CONVERT_TO_TASK` - Convert idea to task
+- `IDEATION_CONVERT_TO_TASK` - Convert idea to case
 - `IDEATION_DISMISS` / `IDEATION_DISMISS_ALL` - Dismiss ideas
 
 #### `insights-handlers.ts` (9.4KB)
@@ -86,13 +86,13 @@ AI insights chat system:
 - `INSIGHTS_GET_SESSION` - Get chat session
 - `INSIGHTS_SEND_MESSAGE` - Send chat message
 - `INSIGHTS_CLEAR_SESSION` - Clear session
-- `INSIGHTS_CREATE_TASK` - Create task from insights
+- `INSIGHTS_CREATE_TASK` - Create case from insights
 - Session management (list, new, switch, delete, rename)
 
 #### `changelog-handlers.ts` (8.2KB)
 Changelog generation:
-- `CHANGELOG_GET_DONE_TASKS` - Get completed tasks
-- `CHANGELOG_LOAD_TASK_SPECS` - Load task specifications
+- `CHANGELOG_GET_DONE_TASKS` - Get completed cases
+- `CHANGELOG_LOAD_TASK_SPECS` - Load case specifications
 - `CHANGELOG_GENERATE` - Generate changelog with AI
 - `CHANGELOG_SAVE` - Save changelog
 - `CHANGELOG_READ_EXISTING` - Read existing changelog
@@ -116,7 +116,7 @@ GitHub integration:
 - `GITHUB_GET_ISSUE` - Get single issue
 - `GITHUB_CHECK_CONNECTION` - Test connection
 - `GITHUB_INVESTIGATE_ISSUE` - AI investigation
-- `GITHUB_IMPORT_ISSUES` - Import issues as tasks
+- `GITHUB_IMPORT_ISSUES` - Import issues as cases
 - `GITHUB_CREATE_RELEASE` - Create GitHub release
 
 #### `linear-handlers.ts` (15KB)
@@ -124,7 +124,7 @@ Linear integration:
 - `LINEAR_GET_TEAMS` - List teams
 - `LINEAR_GET_PROJECTS` - List projects
 - `LINEAR_GET_ISSUES` - List issues
-- `LINEAR_IMPORT_ISSUES` - Import issues as tasks
+- `LINEAR_IMPORT_ISSUES` - Import issues as cases
 - `LINEAR_CHECK_CONNECTION` - Test connection
 
 #### `env-handlers.ts` (16KB)

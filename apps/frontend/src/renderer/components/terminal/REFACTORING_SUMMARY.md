@@ -56,20 +56,20 @@ terminal/
    - Title display
    - Claude invocation button
    - Close button
-   - Task selector integration
+   - Case selector integration
 
 2. **TerminalTitle.tsx** (111 lines)
    - Inline editing with double-click
-   - Tooltip with task description
+   - Tooltip with case description
    - Keyboard shortcuts (Enter/Escape)
    - Auto-sizing input field
 
 3. **TaskSelector.tsx** (168 lines)
-   - Task dropdown with backlog filtering
+   - Case dropdown with backlog filtering
    - Phase indicator with status colors
    - Animated loading states
-   - Task switching and clearing
-   - New task creation integration
+   - Case switching and clearing
+   - New case creation integration
 
 ### Custom Hooks (360 lines total)
 
@@ -164,7 +164,7 @@ The refactored component maintains 100% backward compatibility:
 1. `/terminal/types.ts` - Type definitions and constants
 2. `/terminal/TerminalHeader.tsx` - Header component
 3. `/terminal/TerminalTitle.tsx` - Title editing component
-4. `/terminal/TaskSelector.tsx` - Task selection component
+4. `/terminal/TaskSelector.tsx` - Case selection component
 5. `/terminal/useXterm.ts` - Xterm initialization hook
 6. `/terminal/usePtyProcess.ts` - PTY management hook
 7. `/terminal/useTerminalEvents.ts` - Event handling hook

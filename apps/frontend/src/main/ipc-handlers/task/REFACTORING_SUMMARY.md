@@ -1,4 +1,4 @@
-# Task Handlers Refactoring Summary
+# Case Handlers Refactoring Summary
 
 ## Overview
 
@@ -49,7 +49,7 @@ task/
 ## Key Improvements
 
 ### 1. Code Organization
-- **Clear Domains**: Each module handles one aspect of task management
+- **Clear Domains**: Each module handles one aspect of case management
 - **Single Responsibility**: Modules have focused, well-defined purposes
 - **Logical Grouping**: Related functionality lives together
 
@@ -95,7 +95,7 @@ export function registerTaskHandlers(
 ```
 
 ### Shared Utilities
-- `findTaskAndProject()` - Used across multiple modules to locate tasks
+- `findTaskAndProject()` - Used across multiple modules to locate cases
 - Centralized in `shared.ts` for consistency
 - Single source of truth for common operations
 
@@ -194,7 +194,7 @@ The refactoring successfully transformed a monolithic 1,885-line file into a wel
 ---
 
 **Refactoring Date**: December 16, 2024
-**Original File**: task-handlers.ts (1,885 lines)
-**New Structure**: 8 files in task/ module
+**Original File**: case-handlers.ts (1,885 lines)
+**New Structure**: 8 files in case/ module
 **Lines of Code**: ~1,914 total (including new docs)
 **Status**: ✅ Complete and verified

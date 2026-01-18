@@ -36,14 +36,14 @@ changelog/
 - ~340 lines
 
 #### `parser.ts` (Parsing & Extraction)
-- Extract spec overviews
+- Extract case spec overviews
 - Extract changelog from AI output
 - Parse existing changelog files
 - Parse git log output into structured data
 - ~160 lines
 
 #### `formatter.ts` (Prompt Building)
-- Build prompts for task-based changelogs
+- Build prompts for case-based changelogs
 - Build prompts for git-based changelogs
 - Format templates (keep-a-changelog, simple-list, github-release)
 - Audience-specific instructions (technical, user-facing, marketing)

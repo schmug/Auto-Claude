@@ -32,7 +32,7 @@ settings/
 - Main entry point for project settings
 - Handles project selection and empty states
 - Orchestrates hook state and section rendering
-- Manages Linear task import modal
+- Manages Linear case import modal
 
 ### Common Components
 
@@ -58,7 +58,7 @@ settings/
   - Enable/disable toggle
   - API key input with visibility control
   - Connection status display
-  - Task import functionality
+  - Case import functionality
   - Real-time sync configuration
   - Team/Project ID settings
 - Sub-components:

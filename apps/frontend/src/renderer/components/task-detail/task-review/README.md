@@ -1,4 +1,4 @@
-# Task Review Module
+# Case Review Module
 
 This directory contains the refactored components for the TaskReview functionality. The original 681-line monolithic component has been broken down into smaller, focused, and reusable components.
 
@@ -28,7 +28,7 @@ The most complex component handling the active workspace display including:
 - Discard functionality
 
 **Props:**
-- `task`: Current task information
+- `task`: Current case information
 - `worktreeStatus`: Workspace status data
 - `workspaceError`: Error message if workspace operation failed
 - `stageOnly`: Whether to stage changes only

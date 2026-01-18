@@ -66,12 +66,12 @@ settings/
 - **Features**:
   - API key management with visibility toggle
   - Connection status display
-  - Task import prompt
+  - Case import prompt
   - Real-time sync configuration
   - Team/Project ID inputs
 - **Sub-components**:
   - `ConnectionStatus` - Shows Linear connection state
-  - `ImportTasksPrompt` - Prompts for task import
+  - `ImportTasksPrompt` - Prompts for case import
   - `RealtimeSyncToggle` - Real-time sync control
   - `RealtimeSyncWarning` - Warning about auto-import
   - `TeamProjectIds` - Team/Project ID configuration

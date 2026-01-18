@@ -1,6 +1,6 @@
-# Linear Task Import Module
+# Linear Case Import Module
 
-This directory contains the refactored Linear task import functionality, structured for better code quality, maintainability, and reusability.
+This directory contains the refactored Linear case import functionality, structured for better code quality, maintainability, and reusability.
 
 ## Directory Structure
 

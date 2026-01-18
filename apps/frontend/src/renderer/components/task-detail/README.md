@@ -30,8 +30,8 @@ task-detail/
 - Provides tab navigation (Overview, Subtasks, Logs)
 
 ### `TaskHeader`
-- Task title with overflow tooltip
-- Spec ID badge
+- Case title with overflow tooltip
+- Case spec ID badge
 - Status badges (Running, Stuck, Incomplete, etc.)
 - Edit and close buttons
 
@@ -50,12 +50,12 @@ task-detail/
 
 ### `TaskActions`
 - Primary action button (Start/Stop/Resume/Recover)
-- Task completion indicator
+- Case completion indicator
 - Delete button with confirmation dialog
 
 ### `TaskWarnings`
-- Stuck task warning with recovery button
-- Incomplete task warning with resume button
+- Stuck case warning with recovery button
+- Incomplete case warning with resume button
 
 ### `TaskSubtasks`
 - List of implementation subtasks

@@ -11,9 +11,9 @@ The mock system is organized into separate modules by functional domain, making 
 ```
 mocks/
 ├── index.ts                    # Central export point
-├── mock-data.ts               # Sample data (projects, tasks, sessions)
+├── mock-data.ts               # Sample data (projects, cases, sessions)
 ├── project-mock.ts            # Project CRUD and initialization
-├── task-mock.ts               # Task operations and lifecycle
+├── task-mock.ts               # Case operations and lifecycle
 ├── workspace-mock.ts          # Git worktree management
 ├── terminal-mock.ts           # Terminal and session management
 ├── claude-profile-mock.ts     # Claude profile and rate limiting
@@ -78,7 +78,7 @@ const browserMockAPI: ElectronAPI = {
 
 Sample data is centralized in `mock-data.ts` and includes:
 - `mockProjects` - Sample project entries
-- `mockTasks` - Sample tasks with various statuses
+- `mockTasks` - Sample cases with various statuses
 - `mockInsightsSessions` - Sample conversation sessions
 
 This data can be imported and used by any mock module.

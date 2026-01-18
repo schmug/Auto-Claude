@@ -39,7 +39,7 @@ Terminal (main component - 196 lines, down from 767)
 - Main entry point that composes all sub-components and hooks
 - Handles drag-and-drop for file insertion
 - Manages terminal activation and focus
-- Coordinates task selection and context passing
+- Coordinates case selection and context passing
 - Reduced from 767 lines to 196 lines (74% reduction)
 
 ### UI Components
@@ -47,21 +47,21 @@ Terminal (main component - 196 lines, down from 767)
 **TerminalHeader.tsx** (94 lines)
 - Renders terminal header with status indicator
 - Contains Claude invocation button
-- Integrates title editing and task selection
+- Integrates title editing and case selection
 - Handles terminal close action
 
 **TerminalTitle.tsx** (111 lines)
 - Inline editable title with double-click to edit
-- Shows task description in tooltip when task is associated
+- Shows case description in tooltip when case is associated
 - Handles keyboard shortcuts (Enter to save, Escape to cancel)
 - Auto-sizes input field based on content
 
 **TaskSelector.tsx** (168 lines)
-- Dropdown for selecting tasks from backlog
-- Shows current task status with phase indicator
+- Dropdown for selecting cases from backlog
+- Shows current case status with phase indicator
 - Animated loading states for active phases
-- Supports task switching and clearing
-- Integrates with task creation flow
+- Supports case switching and clearing
+- Integrates with case creation flow
 
 ### Type Definitions
 

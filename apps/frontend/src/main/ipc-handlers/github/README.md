@@ -37,10 +37,10 @@ github/
 - `githubFetch()` - Wrapper for GitHub API requests with authentication
 
 **spec-utils.ts** (169 lines)
-- `createSpecForIssue()` - Create spec directory and initial files
+- `createSpecForIssue()` - Create case spec directory and initial files
 - `buildIssueContext()` - Build context string from issue data
-- `buildInvestigationTask()` - Generate task description for AI
-- Helper functions for spec numbering and slug generation
+- `buildInvestigationTask()` - Generate case description for AI
+- Helper functions for case spec numbering and slug generation
 
 ### Handler Modules
 
@@ -56,12 +56,12 @@ github/
 **investigation-handlers.ts** (211 lines)
 - `GITHUB_INVESTIGATE_ISSUE` - AI-powered issue investigation
 - Progress tracking and event emission
-- Integration with AgentManager for task creation
+- Integration with AgentManager for case creation
 
 **import-handlers.ts** (107 lines)
 - `GITHUB_IMPORT_ISSUES` - Bulk import of multiple issues
 - Error handling and progress tracking
-- Task creation for each imported issue
+- Case creation for each imported issue
 
 **release-handlers.ts** (126 lines)
 - `GITHUB_CREATE_RELEASE` - Create GitHub releases via gh CLI
