@@ -18,7 +18,7 @@
     "view": "Voir les détails",
     "viewPR": "Voir la PR",
     "moveTo": "Déplacer vers",
-    "taskActions": "Actions de la tâche"
+    "taskActions": "Actions de la case"
   },
   "labels": {
     "running": "En cours",
@@ -38,18 +38,18 @@
     "approvePlan": "Approuver le plan"
   },
   "tooltips": {
-    "archiveTask": "Archiver la tâche",
-    "archiveAllDone": "Archiver toutes les tâches terminées",
+    "archiveTask": "Archiver la case",
+    "archiveAllDone": "Archiver toutes les cases terminees",
     "viewPR": "Ouvrir la pull request dans le navigateur"
   },
   "creation": {
-    "title": "Créer une nouvelle tâche",
-    "description": "Décrivez ce que vous voulez construire",
-    "placeholder": "Décrivez votre tâche..."
+    "title": "Creer une nouvelle case",
+    "description": "Decrivez ce que vous voulez investiguer",
+    "placeholder": "Decrivez votre case..."
   },
   "empty": {
-    "title": "Aucune tâche",
-    "description": "Créez votre première tâche pour commencer"
+    "title": "Aucune case",
+    "description": "Creez votre premiere case pour commencer"
   },
   "columns": {
     "backlog": "Planification",
@@ -60,26 +60,26 @@
     "pr_created": "PR créée"
   },
   "kanban": {
-    "emptyBacklog": "Aucune tâche planifiée",
-    "emptyBacklogHint": "Ajoutez une tâche pour commencer",
+    "emptyBacklog": "Aucune case planifiee",
+    "emptyBacklogHint": "Ajoutez une case pour commencer",
     "emptyInProgress": "Rien en cours",
-    "emptyInProgressHint": "Démarrez une tâche depuis le Backlog",
-    "emptyAiReview": "Aucune tâche en révision",
-    "emptyAiReviewHint": "L'IA révisera les tâches terminées",
+    "emptyInProgressHint": "Demarrez une case depuis le Backlog",
+    "emptyAiReview": "Aucune case en revision",
+    "emptyAiReviewHint": "L'IA revisera les cases terminees",
     "emptyHumanReview": "Rien à réviser",
-    "emptyHumanReviewHint": "Les tâches attendent votre approbation ici",
-    "emptyDone": "Aucune tâche terminée",
-    "emptyDoneHint": "Les tâches approuvées apparaissent ici",
-    "emptyDefault": "Aucune tâche",
+    "emptyHumanReviewHint": "Les cases attendent votre approbation ici",
+    "emptyDone": "Aucune case terminee",
+    "emptyDoneHint": "Les cases approuvees apparaissent ici",
+    "emptyDefault": "Aucune case",
     "dropHere": "Déposer ici",
     "showArchived": "Afficher les archivées",
-    "addTaskAriaLabel": "Ajouter une nouvelle tâche au backlog",
-    "closeTaskDetailsAriaLabel": "Fermer les détails de la tâche",
-    "editTask": "Modifier la tâche",
+    "addTaskAriaLabel": "Ajouter une nouvelle case au backlog",
+    "closeTaskDetailsAriaLabel": "Fermer les details de la case",
+    "editTask": "Modifier la case",
     "cannotEditWhileRunning": "Impossible de modifier pendant l'exécution",
     "worktreeCleanupTitle": "Nettoyage du Worktree",
-    "worktreeCleanupStaged": "Cette tâche a été préparée et possède un worktree. Voulez-vous nettoyer le worktree ?",
-    "worktreeCleanupNotStaged": "Cette tâche possède un worktree avec des changements non fusionnés. Supprimez le worktree pour marquer comme terminé, ou annulez pour réviser les changements d'abord.",
+    "worktreeCleanupStaged": "Cette case a ete preparee et possede un worktree. Voulez-vous nettoyer le worktree ?",
+    "worktreeCleanupNotStaged": "Cette case possede un worktree avec des changements non fusionnes. Supprimez le worktree pour marquer comme termine, ou annulez pour reviser les changements d'abord.",
     "keepWorktree": "Garder le Worktree",
     "deleteWorktree": "Supprimer le Worktree & Marquer Terminé"
   },
@@ -127,45 +127,45 @@
     "pasteHint": "Astuce : Collez des captures d'écran directement avec {{shortcut}} pour ajouter des images de référence."
   },
   "notifications": {
-    "backgroundTaskTitle": "La tâche continue en arrière-plan",
-    "backgroundTaskDescription": "La tâche est toujours en cours. Vous pouvez rouvrir cette boîte de dialogue pour suivre la progression."
+    "backgroundTaskTitle": "La case continue en arriere-plan",
+    "backgroundTaskDescription": "La case est toujours en cours. Vous pouvez rouvrir cette boite de dialogue pour suivre la progression."
   },
   "wizard": {
-    "createTitle": "Créer une nouvelle tâche",
-    "createDescription": "Décrivez ce que vous voulez construire. L'IA analysera votre demande et créera une spécification détaillée.",
+    "createTitle": "Creer une nouvelle case",
+    "createDescription": "Decrivez ce que vous voulez investiguer. L'IA analysera votre demande et creera un brief detaille.",
     "descriptionPlaceholder": "Décrivez le cas, l'incident ou l'amélioration que vous souhaitez investiguer. Soyez aussi précis que possible sur les exigences et les contraintes. Tapez @ pour référencer des éléments de preuve.",
     "draftRestored": "Brouillon restauré",
     "startFresh": "Recommencer",
     "hideFiles": "Masquer les fichiers",
     "browseFiles": "Parcourir les fichiers",
     "creating": "Création...",
-    "createTask": "Créer la tâche",
+    "createTask": "Creer la case",
     "gitOptions": {
       "title": "Options Git (optionnel)",
       "baseBranchLabel": "Branche de base (optionnel)",
       "useProjectDefault": "Utiliser la branche par défaut du projet",
       "useProjectDefaultWithBranch": "Utiliser la branche par défaut du projet ({{branch}})",
-      "helpText": "Remplacez la branche à partir de laquelle le worktree de cette tâche sera créé. Laissez vide pour utiliser la branche par défaut configurée du projet.",
+      "helpText": "Remplacez la branche a partir de laquelle le worktree de cette case sera cree. Laissez vide pour utiliser la branche par defaut configuree du projet.",
       "useWorktreeLabel": "Utiliser un espace de travail isolé (recommandé)",
       "useWorktreeDescription": "Crée les changements dans un worktree git séparé pour une révision sécurisée avant la fusion. Désactivez pour travailler directement dans votre projet (plus rapide mais risqué)."
     },
     "errors": {
-      "createFailed": "Échec de la création de la tâche. Veuillez réessayer."
+      "createFailed": "Echec de la creation de la case. Veuillez reessayer."
     }
   },
   "edit": {
-    "title": "Modifier la tâche",
-    "description": "Mettez à jour les détails de la tâche, y compris le titre, la description, la classification, les images et les paramètres. Les modifications seront enregistrées dans les fichiers de spécification.",
+    "title": "Modifier la case",
+    "description": "Mettez a jour les details de la case, y compris le titre, la description, la classification, les images et les parametres. Les modifications seront enregistrees dans les fichiers de dossier.",
     "saveChanges": "Enregistrer les modifications",
     "errors": {
-      "updateFailed": "Échec de la mise à jour de la tâche. Veuillez réessayer."
+      "updateFailed": "Echec de la mise a jour de la case. Veuillez reessayer."
     }
   },
   "form": {
     "description": "Description",
     "descriptionPlaceholder": "Décrivez l'incident de sécurité, les sources de preuve disponibles et les objectifs d'investigation. Soyez aussi précis que possible sur la portée, la chronologie et les systèmes affectés.",
     "imageAddedSuccess": "Image ajoutée avec succès !",
-    "taskTitle": "Titre de la tâche",
+    "taskTitle": "Titre de la case",
     "titlePlaceholder": "Laissez vide pour générer automatiquement à partir de la description",
     "titleHelpText": "Un titre court et descriptif sera généré automatiquement s'il est laissé vide.",
     "classificationOptional": "Classification (optionnel)",
@@ -187,7 +187,7 @@
       "selectComplexity": "Sélectionner une complexité",
       "impact": "Impact",
       "selectImpact": "Sélectionner un impact",
-      "helpText": "Ces étiquettes aident à organiser et à prioriser les tâches. Elles sont optionnelles mais utiles pour le filtrage.",
+      "helpText": "Ces etiquettes aident a organiser et a prioriser les cases. Elles sont optionnelles mais utiles pour le filtrage.",
       "values": {
         "category": {
           "feature": "Malware",

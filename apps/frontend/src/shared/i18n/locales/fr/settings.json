@@ -193,8 +193,8 @@
     "agentFrameworkAutoClaude": "Auto Sleuth",
     "aiTerminalNaming": "Nommage IA des terminaux",
     "aiTerminalNamingDescription": "Nommer automatiquement les terminaux en fonction des commandes (utilise Haiku)",
-    "featureModelSettings": "Paramètres du modèle d'outils",
-    "featureModelSettingsDescription": "Modèle et niveau de réflexion pour Insights, Idéation et Roadmap",
+    "featureModelSettings": "Parametres du modele d'outils",
+    "featureModelSettingsDescription": "Modele et niveau de reflexion pour Insights, Ideation et Roadmap",
     "model": "Modèle",
     "thinkingLevel": "Niveau de réflexion",
     "paths": "Chemins",
@@ -370,7 +370,7 @@
     "phaseConfigNote": "Ces paramètres seront utilisés par défaut lors de la création de nouvelles tâches avec ce profil. Vous pouvez les modifier par tâche dans l'assistant de création.",
     "phases": {
       "spec": {
-        "label": "Création de spec",
+        "label": "Brief de case",
         "description": "Découverte, exigences, collecte de contexte"
       },
       "planning": {

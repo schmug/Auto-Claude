@@ -6,7 +6,7 @@
   },
   "pr": {
     "title": "Créer une Pull Request",
-    "description": "Pousser la branche et créer une pull request pour \"{{taskTitle}}\"",
+    "description": "Pousser la branche et creer une pull request pour \"{{taskTitle}}\"",
     "errors": {
       "unknown": "Une erreur inconnue s'est produite lors de la création de la pull request",
       "invalidBranchName": "Le nom de branche contient des caractères invalides. Utilisez uniquement des lettres, chiffres, tirets (-), underscores (_) et barres obliques (/).",

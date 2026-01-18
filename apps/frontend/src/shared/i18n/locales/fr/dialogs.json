@@ -3,7 +3,7 @@
     "title": "Initialiser Auto Sleuth",
     "description": "Ce projet n'a pas Auto Sleuth initialisé. Voulez-vous le configurer maintenant ?",
     "willDo": "Ceci va :",
-    "createFolder": "Créer un dossier .auto-claude dans votre projet",
+    "createFolder": "Creer un dossier .auto-sleuth dans votre projet",
     "copyFramework": "Copier les fichiers du framework Auto Sleuth",
     "setupSpecs": "Configurer le répertoire des spécifications pour vos tâches",
     "sourcePathNotConfigured": "Chemin source non configuré",
@@ -57,9 +57,9 @@
     "deleteDescription": "Ceci supprimera définitivement le worktree et toutes les modifications non committées. Cette action est irréversible."
   },
   "worktreeCleanup": {
-    "title": "Terminer la tâche",
-    "hasWorktree": "La tâche <strong>\"{{taskTitle}}\"</strong> a encore un espace de travail isolé (worktree).",
-    "willDelete": "Pour marquer cette tâche comme terminée, le worktree et sa branche associée seront supprimés.",
+    "title": "Cloturer la case",
+    "hasWorktree": "La case <strong>\"{{taskTitle}}\"</strong> a encore un espace de travail isole (worktree).",
+    "willDelete": "Pour cloturer cette case, le worktree et sa branche associee seront supprimes.",
     "warning": "Assurez-vous d'avoir fusionné ou sauvegardé les modifications que vous souhaitez conserver avant de continuer.",
     "confirm": "Supprimer le worktree et terminer",
     "completing": "Finalisation...",

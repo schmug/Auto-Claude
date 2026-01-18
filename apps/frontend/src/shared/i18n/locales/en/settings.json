@@ -189,7 +189,7 @@
     "otherAgentSettings": "Other Agent Settings",
     "otherAgentSettingsDescription": "Additional agent configuration options",
     "agentFramework": "Agent Framework",
-    "agentFrameworkDescription": "The coding framework used for autonomous tasks",
+    "agentFrameworkDescription": "The DFIR framework used for autonomous cases",
     "agentFrameworkAutoClaude": "Auto Sleuth",
     "aiTerminalNaming": "AI Terminal Naming",
     "aiTerminalNamingDescription": "Automatically name terminals based on commands (uses Haiku)",
@@ -294,9 +294,9 @@
     "title": "Notifications",
     "description": "Configure default notification preferences",
     "onTaskComplete": "On Task Complete",
-    "onTaskCompleteDescription": "Notify when a task finishes successfully",
+    "onTaskCompleteDescription": "Notify when a case finishes successfully",
     "onTaskFailed": "On Task Failed",
-    "onTaskFailedDescription": "Notify when a task encounters an error",
+    "onTaskFailedDescription": "Notify when a case encounters an error",
     "onReviewNeeded": "On Review Needed",
     "onReviewNeededDescription": "Notify when QA requires your review",
     "sound": "Sound",
@@ -322,7 +322,7 @@
       "title": "Linear",
       "description": "Linear integration",
       "integrationTitle": "Linear Integration",
-      "integrationDescription": "Connect to Linear for issue tracking and task import",
+      "integrationDescription": "Connect to Linear for issue tracking and case import",
       "syncDescription": "Sync with Linear for issue tracking"
     },
     "github": {
@@ -351,7 +351,7 @@
     "label": "Agent Profile",
     "title": "Default Agent Profile",
     "sectionDescription": "Select a preset configuration for model and thinking level",
-    "profilesInfo": "Agent profiles provide preset configurations for Claude model and thinking level. When you create a new task, these settings will be used as defaults. You can always override them in the task creation wizard.",
+    "profilesInfo": "Agent profiles provide preset configurations for Claude model and thinking level. When you create a new case, these settings will be used as defaults. You can always override them in the case creation wizard.",
     "custom": "Custom",
     "customConfiguration": "Custom Configuration",
     "customDescription": "Choose model & thinking level",
@@ -367,10 +367,10 @@
     "resetToDefaults": "Reset to defaults",
     "resetToProfileDefaults": "Reset to {{profile}} defaults",
     "customized": "Customized",
-    "phaseConfigNote": "These settings will be used as defaults when creating new tasks with this profile. You can override them per-task in the task creation wizard.",
+    "phaseConfigNote": "These settings will be used as defaults when creating new cases with this profile. You can override them per-case in the case creation wizard.",
     "phases": {
       "spec": {
-        "label": "Spec Creation",
+        "label": "Case Brief",
         "description": "Discovery, requirements, context gathering"
       },
       "planning": {

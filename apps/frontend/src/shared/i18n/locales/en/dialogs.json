@@ -1,11 +1,11 @@
 {
   "initialize": {
     "title": "Initialize Auto Sleuth",
-    "description": "Auto Sleuth needs to initialize this directory to track investigations and evidence. This will create a .auto-claude directory.",
+    "description": "Auto Sleuth needs to initialize this directory to track investigations and evidence. This will create a .auto-sleuth directory.",
     "button": "Initialize Case",
-    "createFolder": "Create a .auto-claude folder in your project",
+    "createFolder": "Create a .auto-sleuth folder in your project",
     "copyFramework": "Copy the Auto Sleuth framework files",
-    "setupSpecs": "Set up the specs directory for your tasks",
+    "setupSpecs": "Set up the case files directory for your investigations",
     "sourcePathNotConfigured": "Source path not configured",
     "sourcePathNotConfiguredDescription": "Please set the Auto Sleuth source path in App Settings before initializing.",
     "initFailed": "Initialization Failed",
@@ -62,9 +62,9 @@
     "deleteDescription": "This will permanently delete the workspace and all uncommitted findings. This action cannot be undone."
   },
   "worktreeCleanup": {
-    "title": "Complete Task",
-    "hasWorktree": "The task <strong>\"{{taskTitle}}\"</strong> still has an isolated workspace (worktree).",
-    "willDelete": "To mark this task as complete, the worktree and its associated branch will be deleted.",
+    "title": "Complete Case",
+    "hasWorktree": "The case <strong>\"{{taskTitle}}\"</strong> still has an isolated workspace (worktree).",
+    "willDelete": "To mark this case as complete, the worktree and its associated branch will be deleted.",
     "warning": "Make sure you have merged or saved any changes you want to keep before proceeding.",
     "confirm": "Delete Worktree & Complete",
     "completing": "Completing...",
