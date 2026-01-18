@@ -31,8 +31,8 @@ from qa.report import (
 )
 
 from qa.criteria import (
-    load_implementation_plan,
-    save_implementation_plan,
+    load_investigation_plan,
+    save_investigation_plan,
 )
 
 
@@ -69,7 +69,7 @@ class TestGetIterationHistory:
     def test_plan_without_history_key(self, spec_dir: Path) -> None:
         """Test getting history when plan exists but no history key."""
         plan = {"spec_name": "test"}
-        save_implementation_plan(spec_dir, plan)
+        save_investigation_plan(spec_dir, plan)
 
         history = get_iteration_history(spec_dir)
         assert history == []
@@ -83,7 +83,7 @@ class TestGetIterationHistory:
                 {"iteration": 2, "status": "approved", "issues": []},
             ]
         }
-        save_implementation_plan(spec_dir, plan)
+        save_investigation_plan(spec_dir, plan)
 
         history = get_iteration_history(spec_dir)
         assert len(history) == 2
@@ -125,7 +125,7 @@ class TestRecordIteration:
         record_iteration(spec_with_plan, 1, "rejected", [{"title": "Error", "type": "error"}])
         record_iteration(spec_with_plan, 2, "rejected", [{"title": "Warning", "type": "warning"}])
 
-        plan = load_implementation_plan(spec_with_plan)
+        plan = load_investigation_plan(spec_with_plan)
         stats = plan.get("qa_stats", {})
 
         assert stats["total_iterations"] == 2
@@ -147,7 +147,7 @@ class TestRecordIteration:
         result = record_iteration(spec_dir, 1, "rejected", [])
 
         assert result is True
-        plan = load_implementation_plan(spec_dir)
+        plan = load_investigation_plan(spec_dir)
         assert "qa_iteration_history" in plan
 
     def test_rounds_duration(self, spec_with_plan: Path) -> None:
@@ -174,7 +174,7 @@ class TestRecordIteration:
             {"title": "Warning 1", "type": "warning"},
         ])
 
-        plan = load_implementation_plan(spec_with_plan)
+        plan = load_investigation_plan(spec_with_plan)
         assert plan["qa_stats"]["issues_by_type"]["error"] == 2
         assert plan["qa_stats"]["issues_by_type"]["warning"] == 1
 
@@ -184,5 +184,5 @@ class TestRecordIteration:
             {"title": "Issue without type"},
         ])
 
-        plan = load_implementation_plan(spec_with_plan)
+        plan = load_investigation_plan(spec_with_plan)
         assert plan["qa_stats"]["issues_by_type"]["unknown"] == 1

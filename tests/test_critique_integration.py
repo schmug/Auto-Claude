@@ -22,7 +22,9 @@ from critique import (
     format_critique_summary,
     CritiqueResult,
 )
-from implementation_plan import Chunk, ChunkStatus, Verification, VerificationType
+from investigation_plan.enums import SubtaskStatus as ChunkStatus
+from investigation_plan.subtask import Subtask as Chunk
+from investigation_plan.verification import Verification, VerificationType
 
 
 def test_critique_data_structures():

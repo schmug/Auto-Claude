@@ -17,7 +17,7 @@ from review.state import ReviewState
 
 @pytest.fixture
 def review_spec_dir(tmp_path: Path) -> Path:
-    """Create a spec directory with spec.md and implementation_plan.json."""
+    """Create a spec directory with spec.md and investigation_plan.json."""
     spec_dir = tmp_path / "spec"
     spec_dir.mkdir(parents=True)
 
@@ -55,21 +55,22 @@ The task is complete when:
 """
     (spec_dir / "spec.md").write_text(spec_content)
 
-    # Create implementation_plan.json
+    # Create investigation_plan.json
     plan = {
-        "feature": "Test Feature",
-        "workflow_type": "feature",
-        "services_involved": ["backend", "frontend"],
+        "case_id": "case-001",
+        "case_name": "Test Feature",
+        "investigation_type": "feature",
+        "evidence_sources": ["backend", "frontend"],
         "phases": [
             {
                 "phase": 1,
                 "name": "Backend Foundation",
-                "type": "setup",
-                "chunks": [
+                "type": "analysis",
+                "analysis_tasks": [
                     {
                         "id": "chunk-1-1",
                         "description": "Add new endpoint",
-                        "service": "backend",
+                        "evidence_source": "backend",
                         "status": "pending",
                     },
                 ],
@@ -78,10 +79,10 @@ The task is complete when:
         "final_acceptance": ["Feature works correctly"],
         "summary": {
             "total_phases": 1,
-            "total_chunks": 1,
+            "total_tasks": 1,
         },
     }
-    (spec_dir / "implementation_plan.json").write_text(json.dumps(plan, indent=2))
+    (spec_dir / "investigation_plan.json").write_text(json.dumps(plan, indent=2))
 
     return spec_dir
 
@@ -162,32 +163,33 @@ The task is complete when:
 """
     (spec_dir / "spec.md").write_text(spec_content)
 
-    # Create a realistic implementation_plan.json
+    # Create a realistic investigation_plan.json
     plan = {
-        "feature": "Test Feature Implementation",
-        "workflow_type": "feature",
-        "services_involved": ["backend", "frontend"],
+        "case_id": "case-002",
+        "case_name": "Test Feature Implementation",
+        "investigation_type": "feature",
+        "evidence_sources": ["backend", "frontend"],
         "phases": [
             {
                 "phase": 1,
                 "name": "Backend Foundation",
-                "type": "setup",
+                "type": "analysis",
                 "depends_on": [],
                 "parallel_safe": True,
-                "chunks": [
+                "analysis_tasks": [
                     {
                         "id": "chunk-1-1",
                         "description": "Create API endpoint handler",
-                        "service": "backend",
-                        "files_to_create": ["app/api/handlers/new_feature.py"],
-                        "files_to_modify": ["app/api/routes.py"],
+                        "evidence_source": "backend",
+                        "artifacts_to_produce": ["app/api/handlers/new_feature.py"],
+                        "artifacts_to_analyze": ["app/api/routes.py"],
                         "status": "pending",
                     },
                     {
                         "id": "chunk-1-2",
                         "description": "Add business logic",
-                        "service": "backend",
-                        "files_to_modify": ["app/services/processor.py"],
+                        "evidence_source": "backend",
+                        "artifacts_to_analyze": ["app/services/processor.py"],
                         "status": "pending",
                     },
                 ],
@@ -195,16 +197,16 @@ The task is complete when:
             {
                 "phase": 2,
                 "name": "Frontend Implementation",
-                "type": "implementation",
+                "type": "analysis",
                 "depends_on": [1],
                 "parallel_safe": False,
-                "chunks": [
+                "analysis_tasks": [
                     {
                         "id": "chunk-2-1",
                         "description": "Create form component",
-                        "service": "frontend",
-                        "files_to_create": ["src/components/NewFeature/index.tsx"],
-                        "files_to_modify": ["src/components/Form.tsx"],
+                        "evidence_source": "frontend",
+                        "artifacts_to_produce": ["src/components/NewFeature/index.tsx"],
+                        "artifacts_to_analyze": ["src/components/Form.tsx"],
                         "status": "pending",
                     },
                 ],
@@ -212,15 +214,15 @@ The task is complete when:
             {
                 "phase": 3,
                 "name": "Testing",
-                "type": "testing",
+                "type": "validation",
                 "depends_on": [1, 2],
                 "parallel_safe": True,
-                "chunks": [
+                "analysis_tasks": [
                     {
                         "id": "chunk-3-1",
                         "description": "Add unit tests",
-                        "service": "backend",
-                        "files_to_create": ["tests/test_new_feature.py"],
+                        "evidence_source": "backend",
+                        "artifacts_to_produce": ["tests/test_new_feature.py"],
                         "status": "pending",
                     },
                 ],
@@ -233,8 +235,8 @@ The task is complete when:
         ],
         "summary": {
             "total_phases": 3,
-            "total_chunks": 4,
-            "services_involved": ["backend", "frontend"],
+            "total_tasks": 4,
+            "evidence_sources": ["backend", "frontend"],
             "parallelism": {
                 "max_parallel_phases": 1,
                 "recommended_workers": 2,
@@ -243,7 +245,7 @@ The task is complete when:
         "created_at": "2024-01-01T00:00:00",
         "updated_at": "2024-01-01T00:00:00",
     }
-    (spec_dir / "implementation_plan.json").write_text(json.dumps(plan, indent=2))
+    (spec_dir / "investigation_plan.json").write_text(json.dumps(plan, indent=2))
 
     return spec_dir
 

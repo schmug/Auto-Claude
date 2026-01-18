@@ -225,10 +225,10 @@ class TestFullReviewWorkflowIntegration:
         assert state.is_approval_valid(complete_spec_dir)
 
         # Test 2: Plan modification should invalidate
-        plan_file = complete_spec_dir / "implementation_plan.json"
+        plan_file = complete_spec_dir / "investigation_plan.json"
         plan_content = plan_file.read_text()
         plan = json.loads(plan_content)
-        plan["phases"][0]["chunks"][0]["status"] = "completed"
+        plan["phases"][0]["analysis_tasks"][0]["status"] = "completed"
         plan_file.write_text(json.dumps(plan, indent=2))
         assert not state.is_approval_valid(complete_spec_dir)
 

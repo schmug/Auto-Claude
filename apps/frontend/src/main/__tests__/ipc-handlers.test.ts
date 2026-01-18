@@ -383,20 +383,21 @@ describe('IPC Handlers', { timeout: 15000 }, () => {
       // Create a spec directory with implementation plan in .auto-claude/specs
       const specDir = path.join(TEST_PROJECT_PATH, '.auto-claude', 'specs', '001-test-feature');
       mkdirSync(specDir, { recursive: true });
-      writeFileSync(path.join(specDir, 'implementation_plan.json'), JSON.stringify({
-        feature: 'Test Feature',
-        workflow_type: 'feature',
-        services_involved: [],
+      writeFileSync(path.join(specDir, 'investigation_plan.json'), JSON.stringify({
+        case_id: '001-test-feature',
+        case_name: 'Test Feature',
+        investigation_type: 'incident_response',
+        evidence_sources: [],
         phases: [{
           phase: 1,
           name: 'Test Phase',
           type: 'implementation',
-          subtasks: [{ id: 'subtask-1', description: 'Test subtask', status: 'pending' }]
+          analysis_tasks: [{ id: 'subtask-1', description: 'Test subtask', status: 'pending' }]
         }],
         final_acceptance: [],
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-        spec_file: ''
+        case_file: 'case.md'
       }));
 
       const result = await ipcMain.invokeHandler('task:list', {}, projectId);
@@ -546,11 +547,11 @@ describe('IPC Handlers', { timeout: 15000 }, () => {
       // Add project first
       await ipcMain.invokeHandler('project:add', {}, TEST_PROJECT_PATH);
 
-      // Create a spec/task directory with implementation_plan.json
+      // Create a spec/task directory with investigation_plan.json
       const specDir = path.join(TEST_PROJECT_PATH, '.auto-claude', 'specs', 'task-1');
       mkdirSync(specDir, { recursive: true });
       writeFileSync(
-        path.join(specDir, 'implementation_plan.json'),
+        path.join(specDir, 'investigation_plan.json'),
         JSON.stringify({ feature: 'Test Task', status: 'in_progress' })
       );
 

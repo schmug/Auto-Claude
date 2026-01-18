@@ -529,7 +529,7 @@ class TestAnalyze:
         """Uses requirements data when provided."""
         analyzer = ComplexityAnalyzer()
         requirements = {
-            "services_involved": ["backend", "frontend", "worker"],
+            "evidence_sources": ["backend", "frontend", "worker"],
         }
         result = analyzer.analyze("add feature", requirements=requirements)
 
@@ -682,8 +682,8 @@ class TestRunAIComplexityAssessment:
         # Create requirements file
         requirements = {
             "task_description": "Test task from requirements",
-            "workflow_type": "feature",
-            "services_involved": ["backend", "frontend"],
+            "investigation_type": "feature",
+            "evidence_sources": ["backend", "frontend"],
             "user_requirements": ["req1"],
             "acceptance_criteria": ["crit1"],
             "constraints": ["const1"],

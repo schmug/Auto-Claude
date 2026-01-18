@@ -117,7 +117,7 @@ class TestPhaseResult:
         result = PhaseResult(
             phase="spec_writing",
             success=True,
-            output_files=["spec.md", "implementation_plan.json"],
+            output_files=["spec.md", "investigation_plan.json"],
             errors=[],
             retries=0,
         )
@@ -477,7 +477,15 @@ class TestPhaseQuickSpec:
     ):
         """Quick spec phase returns early if files exist."""
         (spec_dir / "spec.md").write_text("# Test Spec")
-        (spec_dir / "implementation_plan.json").write_text(json.dumps({"phases": []}))
+        (spec_dir / "investigation_plan.json").write_text(
+            json.dumps(
+                {
+                    "case_id": "case-quick-spec",
+                    "case_name": "Quick Spec",
+                    "phases": [],
+                }
+            )
+        )
 
         executor = PhaseExecutor(
             project_dir=temp_dir,
@@ -757,9 +765,15 @@ class TestPhasePlanning:
         mock_spec_validator,
     ):
         """Planning phase returns early if valid plan exists."""
-        (spec_dir / "implementation_plan.json").write_text(json.dumps({
-            "phases": [{"phase": 1, "subtasks": []}]
-        }))
+        (spec_dir / "investigation_plan.json").write_text(
+            json.dumps(
+                {
+                    "case_id": "case-plan",
+                    "case_name": "Plan Phase",
+                    "phases": [{"phase": 1, "analysis_tasks": []}],
+                }
+            )
+        )
 
         executor = PhaseExecutor(
             project_dir=temp_dir,

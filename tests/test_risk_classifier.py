@@ -70,7 +70,7 @@ def create_assessment_file(
 
 SIMPLE_ASSESSMENT = {
     "complexity": "simple",
-    "workflow_type": "simple",
+    "investigation_type": "simple",
     "confidence": 0.95,
     "reasoning": "Single file UI change with no dependencies.",
     "analysis": {
@@ -120,7 +120,7 @@ SIMPLE_ASSESSMENT = {
 
 COMPLEX_ASSESSMENT = {
     "complexity": "complex",
-    "workflow_type": "feature",
+    "investigation_type": "feature",
     "confidence": 0.90,
     "reasoning": "Multiple integrations with infrastructure changes.",
     "analysis": {
@@ -181,7 +181,7 @@ COMPLEX_ASSESSMENT = {
 
 TRIVIAL_ASSESSMENT = {
     "complexity": "simple",
-    "workflow_type": "simple",
+    "investigation_type": "simple",
     "confidence": 0.98,
     "reasoning": "Documentation-only change.",
     "analysis": {
@@ -225,7 +225,7 @@ TRIVIAL_ASSESSMENT = {
 # Assessment without validation_recommendations (backward compatibility)
 LEGACY_ASSESSMENT = {
     "complexity": "standard",
-    "workflow_type": "feature",
+    "investigation_type": "feature",
     "confidence": 0.85,
     "reasoning": "New API endpoint.",
     "analysis": {
@@ -286,7 +286,7 @@ class TestLoadAssessment:
 
         assert assessment is not None
         assert assessment.complexity == "simple"
-        assert assessment.workflow_type == "simple"
+        assert assessment.investigation_type == "simple"
         assert assessment.confidence == 0.95
 
     def test_load_nonexistent_file(self, temp_spec_dir, classifier):
@@ -417,7 +417,7 @@ class TestBackwardCompatibility:
         """Handles assessments with missing optional sections."""
         minimal_assessment = {
             "complexity": "simple",
-            "workflow_type": "simple",
+            "investigation_type": "simple",
             "confidence": 0.9,
         }
         create_assessment_file(temp_spec_dir, minimal_assessment)

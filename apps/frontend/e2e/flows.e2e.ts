@@ -38,33 +38,34 @@ function createTestSpec(specId: string, status: 'pending' | 'in_progress' | 'com
   const specDir = path.join(TEST_PROJECT_DIR, 'auto-claude', 'specs', specId);
   mkdirSync(specDir, { recursive: true });
 
-  const chunkStatus = status === 'completed' ? 'completed' : status === 'in_progress' ? 'in_progress' : 'pending';
+  const taskStatus = status === 'completed' ? 'completed' : status === 'in_progress' ? 'in_progress' : 'pending';
 
   writeFileSync(
-    path.join(specDir, 'implementation_plan.json'),
+    path.join(specDir, 'investigation_plan.json'),
     JSON.stringify({
-      feature: `Test Feature ${specId}`,
-      workflow_type: 'feature',
-      services_involved: [],
+      case_id: specId,
+      case_name: `Test Feature ${specId}`,
+      investigation_type: 'incident_response',
+      evidence_sources: [],
       phases: [
         {
           phase: 1,
           name: 'Implementation',
           type: 'implementation',
-          chunks: [
-            { id: 'chunk-1', description: 'Implement feature', status: chunkStatus }
+          analysis_tasks: [
+            { id: 'task-1', description: 'Implement feature', status: taskStatus }
           ]
         }
       ],
       final_acceptance: ['Tests pass'],
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-      spec_file: 'spec.md'
+      case_file: 'case.md'
     })
   );
 
   writeFileSync(
-    path.join(specDir, 'spec.md'),
+    path.join(specDir, 'case.md'),
     `# ${specId}\n\n## Overview\n\nThis is a test feature.\n`
   );
 }
@@ -201,8 +202,8 @@ test.describe('E2E Test Infrastructure', () => {
 
     const specDir = path.join(TEST_PROJECT_DIR, 'auto-claude', 'specs', '001-test-spec');
     expect(existsSync(specDir)).toBe(true);
-    expect(existsSync(path.join(specDir, 'implementation_plan.json'))).toBe(true);
-    expect(existsSync(path.join(specDir, 'spec.md'))).toBe(true);
+    expect(existsSync(path.join(specDir, 'investigation_plan.json'))).toBe(true);
+    expect(existsSync(path.join(specDir, 'case.md'))).toBe(true);
 
     cleanupTestEnvironment();
   });
@@ -247,16 +248,16 @@ test.describe('E2E Flow Verification (Mock-based)', () => {
     const specDir = path.join(TEST_PROJECT_DIR, 'auto-claude', 'specs', specId);
     mkdirSync(specDir, { recursive: true });
 
-    // Write spec file
-    writeFileSync(path.join(specDir, 'spec.md'), '# New Task Spec\n');
+    // Write case file
+    writeFileSync(path.join(specDir, 'case.md'), '# New Task Spec\n');
 
     expect(existsSync(specDir)).toBe(true);
-    expect(existsSync(path.join(specDir, 'spec.md'))).toBe(true);
+    expect(existsSync(path.join(specDir, 'case.md'))).toBe(true);
 
     cleanupTestEnvironment();
   });
 
-  test('Start Task flow should update implementation plan status', async () => {
+  test('Start Task flow should update investigation plan status', async () => {
     setupTestEnvironment();
     createTestSpec('001-task', 'pending');
 
@@ -266,17 +267,17 @@ test.describe('E2E Flow Verification (Mock-based)', () => {
       'auto-claude',
       'specs',
       '001-task',
-      'implementation_plan.json'
+      'investigation_plan.json'
     );
 
     const plan = JSON.parse(readFileSync(planPath, 'utf-8'));
-    plan.phases[0].chunks[0].status = 'in_progress';
+    plan.phases[0].analysis_tasks[0].status = 'in_progress';
 
     writeFileSync(planPath, JSON.stringify(plan, null, 2));
 
     // Verify update
     const updatedPlan = JSON.parse(readFileSync(planPath, 'utf-8'));
-    expect(updatedPlan.phases[0].chunks[0].status).toBe('in_progress');
+    expect(updatedPlan.phases[0].analysis_tasks[0].status).toBe('in_progress');
 
     cleanupTestEnvironment();
   });

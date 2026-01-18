@@ -37,8 +37,8 @@ from qa_loop import (
     RECURRING_ISSUE_THRESHOLD,
     ISSUE_SIMILARITY_THRESHOLD,
     # Implementation plan helpers
-    load_implementation_plan,
-    save_implementation_plan,
+    load_investigation_plan,
+    save_investigation_plan,
 )
 
 
@@ -80,7 +80,7 @@ def spec_with_plan(spec_dir):
             "qa_session": 0,
         }
     }
-    plan_file = spec_dir / "implementation_plan.json"
+    plan_file = spec_dir / "investigation_plan.json"
     with open(plan_file, "w") as f:
         json.dump(plan, f)
     return spec_dir
@@ -135,7 +135,7 @@ class TestIterationTracking:
         record_iteration(spec_with_plan, 1, "rejected", [{"title": "Error", "type": "error"}])
         record_iteration(spec_with_plan, 2, "rejected", [{"title": "Warning", "type": "warning"}])
 
-        plan = load_implementation_plan(spec_with_plan)
+        plan = load_investigation_plan(spec_with_plan)
         stats = plan.get("qa_stats", {})
 
         assert stats["total_iterations"] == 2
@@ -524,7 +524,7 @@ class TestEdgeCases:
         result = record_iteration(spec_dir, 1, "rejected", [])
 
         assert result is True
-        plan = load_implementation_plan(spec_dir)
+        plan = load_investigation_plan(spec_dir)
         assert "qa_iteration_history" in plan
 
     def test_issue_with_none_values(self):

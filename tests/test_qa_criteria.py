@@ -105,8 +105,8 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "Apps" / "backend"))
 # Import criteria functions directly to avoid going through qa/__init__.py
 # which imports reviewer and fixer that need the SDK
 from qa.criteria import (
-    load_implementation_plan,
-    save_implementation_plan,
+    load_investigation_plan,
+    save_investigation_plan,
     get_qa_signoff_status,
     is_qa_approved,
     is_qa_rejected,
@@ -189,14 +189,14 @@ def qa_signoff_rejected():
 def sample_implementation_plan():
     """Return a sample implementation plan structure."""
     return {
-        "feature": "User Avatar Upload",
-        "workflow_type": "feature",
-        "services_involved": ["backend", "worker", "frontend"],
+        "case_name": "User Avatar Upload",
+        "investigation_type": "feature",
+        "evidence_sources": ["backend", "worker", "frontend"],
         "phases": [
             {
                 "phase": 1,
                 "name": "Backend Foundation",
-                "subtasks": [
+                "analysis_tasks": [
                     {"id": "subtask-1-1", "description": "Add avatar fields", "status": "completed"},
                 ],
             },
@@ -207,76 +207,76 @@ def sample_implementation_plan():
 class TestImplementationPlanIO:
     """Tests for implementation plan loading/saving."""
 
-    def test_load_implementation_plan(self, spec_dir: Path, sample_implementation_plan: dict):
+    def test_load_investigation_plan(self, spec_dir: Path, sample_implementation_plan: dict):
         """Loads implementation plan from JSON."""
-        plan_file = spec_dir / "implementation_plan.json"
+        plan_file = spec_dir / "investigation_plan.json"
         plan_file.write_text(json.dumps(sample_implementation_plan))
 
-        plan = load_implementation_plan(spec_dir)
+        plan = load_investigation_plan(spec_dir)
 
         assert plan is not None
-        assert plan["feature"] == "User Avatar Upload"
+        assert plan["case_name"] == "User Avatar Upload"
 
     def test_load_missing_plan_returns_none(self, spec_dir: Path):
         """Returns None when plan file doesn't exist."""
-        plan = load_implementation_plan(spec_dir)
+        plan = load_investigation_plan(spec_dir)
         assert plan is None
 
     def test_load_invalid_json_returns_none(self, spec_dir: Path):
         """Returns None for invalid JSON."""
-        plan_file = spec_dir / "implementation_plan.json"
+        plan_file = spec_dir / "investigation_plan.json"
         plan_file.write_text("{ invalid json }")
 
-        plan = load_implementation_plan(spec_dir)
+        plan = load_investigation_plan(spec_dir)
         assert plan is None
 
     def test_load_empty_file_returns_none(self, spec_dir: Path):
         """Returns None for empty file."""
-        plan_file = spec_dir / "implementation_plan.json"
+        plan_file = spec_dir / "investigation_plan.json"
         plan_file.write_text("")
 
-        plan = load_implementation_plan(spec_dir)
+        plan = load_investigation_plan(spec_dir)
         assert plan is None
 
-    def test_save_implementation_plan(self, spec_dir: Path):
+    def test_save_investigation_plan(self, spec_dir: Path):
         """Saves implementation plan to JSON."""
-        plan = {"feature": "Test", "phases": []}
+        plan = {"case_name": "Test", "phases": []}
 
-        result = save_implementation_plan(spec_dir, plan)
+        result = save_investigation_plan(spec_dir, plan)
 
         assert result is True
-        assert (spec_dir / "implementation_plan.json").exists()
+        assert (spec_dir / "investigation_plan.json").exists()
 
-        loaded = json.loads((spec_dir / "implementation_plan.json").read_text())
-        assert loaded["feature"] == "Test"
+        loaded = json.loads((spec_dir / "investigation_plan.json").read_text())
+        assert loaded["case_name"] == "Test"
 
-    def test_save_implementation_plan_creates_file(self, spec_dir: Path):
+    def test_save_investigation_plan_creates_file(self, spec_dir: Path):
         """Creates the file if it doesn't exist."""
-        plan = {"feature": "New Feature", "phases": []}
+        plan = {"case_name": "New Feature", "phases": []}
 
-        result = save_implementation_plan(spec_dir, plan)
+        result = save_investigation_plan(spec_dir, plan)
 
         assert result is True
-        assert (spec_dir / "implementation_plan.json").exists()
+        assert (spec_dir / "investigation_plan.json").exists()
 
-    def test_save_implementation_plan_overwrites(self, spec_dir: Path):
+    def test_save_investigation_plan_overwrites(self, spec_dir: Path):
         """Overwrites existing plan file."""
-        plan_file = spec_dir / "implementation_plan.json"
-        plan_file.write_text('{"feature": "Old"}')
+        plan_file = spec_dir / "investigation_plan.json"
+        plan_file.write_text('{"case_name": "Old"}')
 
-        new_plan = {"feature": "New", "phases": []}
-        save_implementation_plan(spec_dir, new_plan)
+        new_plan = {"case_name": "New", "phases": []}
+        save_investigation_plan(spec_dir, new_plan)
 
         loaded = json.loads(plan_file.read_text())
-        assert loaded["feature"] == "New"
+        assert loaded["case_name"] == "New"
 
-    def test_save_implementation_plan_with_indentation(self, spec_dir: Path):
+    def test_save_investigation_plan_with_indentation(self, spec_dir: Path):
         """Saves with proper JSON indentation."""
-        plan = {"feature": "Test", "phases": [{"name": "Phase 1"}]}
+        plan = {"case_name": "Test", "phases": [{"name": "Phase 1"}]}
 
-        save_implementation_plan(spec_dir, plan)
+        save_investigation_plan(spec_dir, plan)
 
-        content = (spec_dir / "implementation_plan.json").read_text()
+        content = (spec_dir / "investigation_plan.json").read_text()
         # Check for indentation (2 spaces as per json.dump with indent=2)
         assert "  " in content
 
@@ -287,14 +287,14 @@ class TestGetQASignoffStatus:
     def test_get_qa_signoff_status(self, spec_dir: Path):
         """Gets QA signoff status from plan."""
         plan = {
-            "feature": "Test",
+            "case_name": "Test",
             "qa_signoff": {
                 "status": "approved",
                 "qa_session": 1,
                 "timestamp": "2024-01-01T12:00:00",
             },
         }
-        save_implementation_plan(spec_dir, plan)
+        save_investigation_plan(spec_dir, plan)
 
         status = get_qa_signoff_status(spec_dir)
 
@@ -303,8 +303,8 @@ class TestGetQASignoffStatus:
 
     def test_get_qa_signoff_status_none(self, spec_dir: Path):
         """Returns None when no signoff status."""
-        plan = {"feature": "Test"}
-        save_implementation_plan(spec_dir, plan)
+        plan = {"case_name": "Test"}
+        save_investigation_plan(spec_dir, plan)
 
         status = get_qa_signoff_status(spec_dir)
         assert status is None
@@ -316,8 +316,8 @@ class TestGetQASignoffStatus:
 
     def test_get_qa_signoff_status_empty_signoff(self, spec_dir: Path):
         """Returns empty dict when qa_signoff is empty."""
-        plan = {"feature": "Test", "qa_signoff": {}}
-        save_implementation_plan(spec_dir, plan)
+        plan = {"case_name": "Test", "qa_signoff": {}}
+        save_investigation_plan(spec_dir, plan)
 
         status = get_qa_signoff_status(spec_dir)
         assert status == {}
@@ -328,22 +328,22 @@ class TestIsQAApproved:
 
     def test_is_qa_approved_true(self, spec_dir: Path, qa_signoff_approved: dict):
         """is_qa_approved returns True when approved."""
-        plan = {"feature": "Test", "qa_signoff": qa_signoff_approved}
-        save_implementation_plan(spec_dir, plan)
+        plan = {"case_name": "Test", "qa_signoff": qa_signoff_approved}
+        save_investigation_plan(spec_dir, plan)
 
         assert is_qa_approved(spec_dir) is True
 
     def test_is_qa_approved_false_when_rejected(self, spec_dir: Path, qa_signoff_rejected: dict):
         """is_qa_approved returns False when rejected."""
-        plan = {"feature": "Test", "qa_signoff": qa_signoff_rejected}
-        save_implementation_plan(spec_dir, plan)
+        plan = {"case_name": "Test", "qa_signoff": qa_signoff_rejected}
+        save_investigation_plan(spec_dir, plan)
 
         assert is_qa_approved(spec_dir) is False
 
     def test_is_qa_approved_no_signoff(self, spec_dir: Path):
         """is_qa_approved returns False when no signoff."""
-        plan = {"feature": "Test"}
-        save_implementation_plan(spec_dir, plan)
+        plan = {"case_name": "Test"}
+        save_investigation_plan(spec_dir, plan)
 
         assert is_qa_approved(spec_dir) is False
 
@@ -354,10 +354,10 @@ class TestIsQAApproved:
     def test_is_qa_approved_other_status(self, spec_dir: Path):
         """is_qa_approved returns False for other status values."""
         plan = {
-            "feature": "Test",
+            "case_name": "Test",
             "qa_signoff": {"status": "in_progress"},
         }
-        save_implementation_plan(spec_dir, plan)
+        save_investigation_plan(spec_dir, plan)
 
         assert is_qa_approved(spec_dir) is False
 
@@ -367,22 +367,22 @@ class TestIsQARejected:
 
     def test_is_qa_rejected_true(self, spec_dir: Path, qa_signoff_rejected: dict):
         """is_qa_rejected returns True when rejected."""
-        plan = {"feature": "Test", "qa_signoff": qa_signoff_rejected}
-        save_implementation_plan(spec_dir, plan)
+        plan = {"case_name": "Test", "qa_signoff": qa_signoff_rejected}
+        save_investigation_plan(spec_dir, plan)
 
         assert is_qa_rejected(spec_dir) is True
 
     def test_is_qa_rejected_false_when_approved(self, spec_dir: Path, qa_signoff_approved: dict):
         """is_qa_rejected returns False when approved."""
-        plan = {"feature": "Test", "qa_signoff": qa_signoff_approved}
-        save_implementation_plan(spec_dir, plan)
+        plan = {"case_name": "Test", "qa_signoff": qa_signoff_approved}
+        save_investigation_plan(spec_dir, plan)
 
         assert is_qa_rejected(spec_dir) is False
 
     def test_is_qa_rejected_no_signoff(self, spec_dir: Path):
         """is_qa_rejected returns False when no signoff."""
-        plan = {"feature": "Test"}
-        save_implementation_plan(spec_dir, plan)
+        plan = {"case_name": "Test"}
+        save_investigation_plan(spec_dir, plan)
 
         assert is_qa_rejected(spec_dir) is False
 
@@ -393,10 +393,10 @@ class TestIsQARejected:
     def test_is_qa_rejected_fixes_applied(self, spec_dir: Path):
         """is_qa_rejected returns False when status is fixes_applied."""
         plan = {
-            "feature": "Test",
+            "case_name": "Test",
             "qa_signoff": {"status": "fixes_applied"},
         }
-        save_implementation_plan(spec_dir, plan)
+        save_investigation_plan(spec_dir, plan)
 
         assert is_qa_rejected(spec_dir) is False
 
@@ -407,58 +407,58 @@ class TestIsFixesApplied:
     def test_is_fixes_applied_true(self, spec_dir: Path):
         """is_fixes_applied returns True when status is fixes_applied and ready."""
         plan = {
-            "feature": "Test",
+            "case_name": "Test",
             "qa_signoff": {
                 "status": "fixes_applied",
                 "ready_for_qa_revalidation": True,
             },
         }
-        save_implementation_plan(spec_dir, plan)
+        save_investigation_plan(spec_dir, plan)
 
         assert is_fixes_applied(spec_dir) is True
 
     def test_is_fixes_applied_not_ready(self, spec_dir: Path):
         """is_fixes_applied returns False when not ready for revalidation."""
         plan = {
-            "feature": "Test",
+            "case_name": "Test",
             "qa_signoff": {
                 "status": "fixes_applied",
                 "ready_for_qa_revalidation": False,
             },
         }
-        save_implementation_plan(spec_dir, plan)
+        save_investigation_plan(spec_dir, plan)
 
         assert is_fixes_applied(spec_dir) is False
 
     def test_is_fixes_applied_missing_ready_flag(self, spec_dir: Path):
         """is_fixes_applied returns False when ready flag is missing."""
         plan = {
-            "feature": "Test",
+            "case_name": "Test",
             "qa_signoff": {
                 "status": "fixes_applied",
             },
         }
-        save_implementation_plan(spec_dir, plan)
+        save_investigation_plan(spec_dir, plan)
 
         assert is_fixes_applied(spec_dir) is False
 
     def test_is_fixes_applied_wrong_status(self, spec_dir: Path):
         """is_fixes_applied returns False when status is not fixes_applied."""
         plan = {
-            "feature": "Test",
+            "case_name": "Test",
             "qa_signoff": {
                 "status": "rejected",
                 "ready_for_qa_revalidation": True,
             },
         }
-        save_implementation_plan(spec_dir, plan)
+        save_investigation_plan(spec_dir, plan)
 
         assert is_fixes_applied(spec_dir) is False
 
     def test_is_fixes_applied_no_signoff(self, spec_dir: Path):
         """is_fixes_applied returns False when no signoff."""
-        plan = {"feature": "Test"}
-        save_implementation_plan(spec_dir, plan)
+        plan = {"case_name": "Test"}
+        save_investigation_plan(spec_dir, plan)
 
         assert is_fixes_applied(spec_dir) is False
 
@@ -469,21 +469,21 @@ class TestGetQAIterationCount:
     def test_get_qa_iteration_count(self, spec_dir: Path):
         """Gets QA iteration count from signoff."""
         plan = {
-            "feature": "Test",
+            "case_name": "Test",
             "qa_signoff": {
                 "status": "rejected",
                 "qa_session": 3,
             },
         }
-        save_implementation_plan(spec_dir, plan)
+        save_investigation_plan(spec_dir, plan)
 
         count = get_qa_iteration_count(spec_dir)
         assert count == 3
 
     def test_get_qa_iteration_count_zero(self, spec_dir: Path):
         """Returns 0 when no QA sessions."""
-        plan = {"feature": "Test"}
-        save_implementation_plan(spec_dir, plan)
+        plan = {"case_name": "Test"}
+        save_investigation_plan(spec_dir, plan)
 
         count = get_qa_iteration_count(spec_dir)
         assert count == 0
@@ -496,10 +496,10 @@ class TestGetQAIterationCount:
     def test_get_qa_iteration_count_missing_session(self, spec_dir: Path):
         """Returns 0 when qa_session is missing from signoff."""
         plan = {
-            "feature": "Test",
+            "case_name": "Test",
             "qa_signoff": {"status": "rejected"},
         }
-        save_implementation_plan(spec_dir, plan)
+        save_investigation_plan(spec_dir, plan)
 
         count = get_qa_iteration_count(spec_dir)
         assert count == 0
@@ -507,13 +507,13 @@ class TestGetQAIterationCount:
     def test_get_qa_iteration_count_high_value(self, spec_dir: Path):
         """Handles high iteration count."""
         plan = {
-            "feature": "Test",
+            "case_name": "Test",
             "qa_signoff": {
                 "status": "rejected",
                 "qa_session": 25,
             },
         }
-        save_implementation_plan(spec_dir, plan)
+        save_investigation_plan(spec_dir, plan)
 
         count = get_qa_iteration_count(spec_dir)
         assert count == 25
@@ -527,8 +527,8 @@ class TestShouldRunQA:
         # Set up mock to return build not complete
         mock_progress.is_build_complete.return_value = False
 
-        plan = {"feature": "Test", "phases": []}
-        save_implementation_plan(spec_dir, plan)
+        plan = {"case_name": "Test", "phases": []}
+        save_investigation_plan(spec_dir, plan)
 
         result = should_run_qa(spec_dir)
         assert result is False
@@ -540,8 +540,8 @@ class TestShouldRunQA:
         """Returns False when already approved."""
         mock_progress.is_build_complete.return_value = True
 
-        plan = {"feature": "Test", "qa_signoff": qa_signoff_approved}
-        save_implementation_plan(spec_dir, plan)
+        plan = {"case_name": "Test", "qa_signoff": qa_signoff_approved}
+        save_investigation_plan(spec_dir, plan)
 
         result = should_run_qa(spec_dir)
         assert result is False
@@ -550,8 +550,8 @@ class TestShouldRunQA:
         """Returns True when build complete but not approved."""
         mock_progress.is_build_complete.return_value = True
 
-        plan = {"feature": "Test", "phases": []}
-        save_implementation_plan(spec_dir, plan)
+        plan = {"case_name": "Test", "phases": []}
+        save_investigation_plan(spec_dir, plan)
 
         result = should_run_qa(spec_dir)
         assert result is True
@@ -560,8 +560,8 @@ class TestShouldRunQA:
         """Returns True when rejected (needs re-review after fixes)."""
         mock_progress.is_build_complete.return_value = True
 
-        plan = {"feature": "Test", "qa_signoff": qa_signoff_rejected}
-        save_implementation_plan(spec_dir, plan)
+        plan = {"case_name": "Test", "qa_signoff": qa_signoff_rejected}
+        save_investigation_plan(spec_dir, plan)
 
         result = should_run_qa(spec_dir)
         assert result is True
@@ -584,8 +584,8 @@ class TestShouldRunFixes:
         """Returns True when QA rejected and under max iterations."""
         # Ensure qa_session is below MAX_QA_ITERATIONS
         qa_signoff_rejected["qa_session"] = 1
-        plan = {"feature": "Test", "qa_signoff": qa_signoff_rejected}
-        save_implementation_plan(spec_dir, plan)
+        plan = {"case_name": "Test", "qa_signoff": qa_signoff_rejected}
+        save_investigation_plan(spec_dir, plan)
 
         result = should_run_fixes(spec_dir)
         assert result is True
@@ -593,13 +593,13 @@ class TestShouldRunFixes:
     def test_should_run_fixes_max_iterations(self, spec_dir: Path):
         """Returns False when max iterations reached."""
         plan = {
-            "feature": "Test",
+            "case_name": "Test",
             "qa_signoff": {
                 "status": "rejected",
                 "qa_session": 50,  # MAX_QA_ITERATIONS
             },
         }
-        save_implementation_plan(spec_dir, plan)
+        save_investigation_plan(spec_dir, plan)
 
         result = should_run_fixes(spec_dir)
         assert result is False
@@ -607,29 +607,29 @@ class TestShouldRunFixes:
     def test_should_run_fixes_over_max_iterations(self, spec_dir: Path):
         """Returns False when over max iterations."""
         plan = {
-            "feature": "Test",
+            "case_name": "Test",
             "qa_signoff": {
                 "status": "rejected",
                 "qa_session": 100,
             },
         }
-        save_implementation_plan(spec_dir, plan)
+        save_investigation_plan(spec_dir, plan)
 
         result = should_run_fixes(spec_dir)
         assert result is False
 
     def test_should_run_fixes_not_rejected(self, spec_dir: Path, qa_signoff_approved: dict):
         """Returns False when not rejected."""
-        plan = {"feature": "Test", "qa_signoff": qa_signoff_approved}
-        save_implementation_plan(spec_dir, plan)
+        plan = {"case_name": "Test", "qa_signoff": qa_signoff_approved}
+        save_investigation_plan(spec_dir, plan)
 
         result = should_run_fixes(spec_dir)
         assert result is False
 
     def test_should_run_fixes_no_signoff(self, spec_dir: Path):
         """Returns False when no signoff exists."""
-        plan = {"feature": "Test"}
-        save_implementation_plan(spec_dir, plan)
+        plan = {"case_name": "Test"}
+        save_investigation_plan(spec_dir, plan)
 
         result = should_run_fixes(spec_dir)
         assert result is False
@@ -637,13 +637,13 @@ class TestShouldRunFixes:
     def test_should_run_fixes_fixes_applied_status(self, spec_dir: Path):
         """Returns False when status is fixes_applied (not rejected)."""
         plan = {
-            "feature": "Test",
+            "case_name": "Test",
             "qa_signoff": {
                 "status": "fixes_applied",
                 "qa_session": 1,
             },
         }
-        save_implementation_plan(spec_dir, plan)
+        save_investigation_plan(spec_dir, plan)
 
         result = should_run_fixes(spec_dir)
         assert result is False
@@ -654,8 +654,8 @@ class TestPrintQAStatus:
 
     def test_print_qa_status_not_started(self, spec_dir: Path, capsys):
         """Prints 'Not started' when no signoff exists."""
-        plan = {"feature": "Test"}
-        save_implementation_plan(spec_dir, plan)
+        plan = {"case_name": "Test"}
+        save_investigation_plan(spec_dir, plan)
 
         # Mock the report module functions
         mock_report.get_iteration_history.return_value = []
@@ -667,8 +667,8 @@ class TestPrintQAStatus:
 
     def test_print_qa_status_approved(self, spec_dir: Path, qa_signoff_approved: dict, capsys):
         """Prints approved status with test results."""
-        plan = {"feature": "Test", "qa_signoff": qa_signoff_approved}
-        save_implementation_plan(spec_dir, plan)
+        plan = {"case_name": "Test", "qa_signoff": qa_signoff_approved}
+        save_investigation_plan(spec_dir, plan)
 
         mock_report.get_iteration_history.return_value = []
 
@@ -680,8 +680,8 @@ class TestPrintQAStatus:
 
     def test_print_qa_status_rejected(self, spec_dir: Path, qa_signoff_rejected: dict, capsys):
         """Prints rejected status with issues found."""
-        plan = {"feature": "Test", "qa_signoff": qa_signoff_rejected}
-        save_implementation_plan(spec_dir, plan)
+        plan = {"case_name": "Test", "qa_signoff": qa_signoff_rejected}
+        save_investigation_plan(spec_dir, plan)
 
         mock_report.get_iteration_history.return_value = []
 
@@ -695,8 +695,8 @@ class TestPrintQAStatus:
         """Prints iteration history summary when available."""
         from unittest.mock import patch
 
-        plan = {"feature": "Test", "qa_signoff": qa_signoff_rejected}
-        save_implementation_plan(spec_dir, plan)
+        plan = {"case_name": "Test", "qa_signoff": qa_signoff_rejected}
+        save_investigation_plan(spec_dir, plan)
 
         # Mock iteration history using patch for the actual import location
         import qa.report as report_module
@@ -726,14 +726,14 @@ class TestPrintQAStatus:
     def test_print_qa_status_shows_qa_sessions(self, spec_dir: Path, capsys):
         """Prints QA session count."""
         plan = {
-            "feature": "Test",
+            "case_name": "Test",
             "qa_signoff": {
                 "status": "rejected",
                 "qa_session": 5,
                 "timestamp": "2024-01-01T12:00:00",
             },
         }
-        save_implementation_plan(spec_dir, plan)
+        save_investigation_plan(spec_dir, plan)
 
         mock_report.get_iteration_history.return_value = []
 
@@ -745,14 +745,14 @@ class TestPrintQAStatus:
     def test_print_qa_status_shows_timestamp(self, spec_dir: Path, capsys):
         """Prints last updated timestamp."""
         plan = {
-            "feature": "Test",
+            "case_name": "Test",
             "qa_signoff": {
                 "status": "approved",
                 "qa_session": 1,
                 "timestamp": "2024-01-15T10:30:00",
             },
         }
-        save_implementation_plan(spec_dir, plan)
+        save_investigation_plan(spec_dir, plan)
 
         mock_report.get_iteration_history.return_value = []
 
@@ -764,7 +764,7 @@ class TestPrintQAStatus:
     def test_print_qa_status_truncates_issues(self, spec_dir: Path, capsys):
         """Shows only first 3 issues and indicates more."""
         plan = {
-            "feature": "Test",
+            "case_name": "Test",
             "qa_signoff": {
                 "status": "rejected",
                 "qa_session": 1,
@@ -777,7 +777,7 @@ class TestPrintQAStatus:
                 ],
             },
         }
-        save_implementation_plan(spec_dir, plan)
+        save_investigation_plan(spec_dir, plan)
 
         mock_report.get_iteration_history.return_value = []
 
@@ -794,13 +794,13 @@ class TestPrintQAStatus:
         from unittest.mock import patch
 
         plan = {
-            "feature": "Test",
+            "case_name": "Test",
             "qa_signoff": {
                 "status": "rejected",
                 "qa_session": 3,
             },
         }
-        save_implementation_plan(spec_dir, plan)
+        save_investigation_plan(spec_dir, plan)
 
         # Mock iteration history using patch for the actual import location
         import qa.report as report_module
@@ -828,25 +828,25 @@ class TestQAStateMachine:
     def test_pending_to_rejected(self, spec_dir: Path):
         """Can transition from no signoff to rejected."""
         # Start with no signoff
-        plan = {"feature": "Test", "phases": []}
-        save_implementation_plan(spec_dir, plan)
+        plan = {"case_name": "Test", "phases": []}
+        save_investigation_plan(spec_dir, plan)
 
         assert is_qa_approved(spec_dir) is False
         assert is_qa_rejected(spec_dir) is False
 
         # Transition to rejected
         plan["qa_signoff"] = {"status": "rejected", "qa_session": 1}
-        save_implementation_plan(spec_dir, plan)
+        save_investigation_plan(spec_dir, plan)
 
         assert is_qa_rejected(spec_dir) is True
 
     def test_rejected_to_fixes_applied(self, spec_dir: Path):
         """Can transition from rejected to fixes_applied."""
         plan = {
-            "feature": "Test",
+            "case_name": "Test",
             "qa_signoff": {"status": "rejected", "qa_session": 1},
         }
-        save_implementation_plan(spec_dir, plan)
+        save_investigation_plan(spec_dir, plan)
 
         assert is_qa_rejected(spec_dir) is True
 
@@ -856,7 +856,7 @@ class TestQAStateMachine:
             "ready_for_qa_revalidation": True,
             "qa_session": 1,
         }
-        save_implementation_plan(spec_dir, plan)
+        save_investigation_plan(spec_dir, plan)
 
         assert is_fixes_applied(spec_dir) is True
         assert is_qa_rejected(spec_dir) is False
@@ -864,33 +864,33 @@ class TestQAStateMachine:
     def test_fixes_applied_to_approved(self, spec_dir: Path):
         """Can transition from fixes_applied to approved."""
         plan = {
-            "feature": "Test",
+            "case_name": "Test",
             "qa_signoff": {
                 "status": "fixes_applied",
                 "ready_for_qa_revalidation": True,
             },
         }
-        save_implementation_plan(spec_dir, plan)
+        save_investigation_plan(spec_dir, plan)
 
         # Transition to approved
         plan["qa_signoff"] = {"status": "approved", "qa_session": 2}
-        save_implementation_plan(spec_dir, plan)
+        save_investigation_plan(spec_dir, plan)
 
         assert is_qa_approved(spec_dir) is True
         assert is_fixes_applied(spec_dir) is False
 
     def test_iteration_count_increments(self, spec_dir: Path):
         """QA session counter increments through iterations."""
-        plan = {"feature": "Test", "qa_signoff": {"status": "rejected", "qa_session": 1}}
-        save_implementation_plan(spec_dir, plan)
+        plan = {"case_name": "Test", "qa_signoff": {"status": "rejected", "qa_session": 1}}
+        save_investigation_plan(spec_dir, plan)
         assert get_qa_iteration_count(spec_dir) == 1
 
         plan["qa_signoff"]["qa_session"] = 2
-        save_implementation_plan(spec_dir, plan)
+        save_investigation_plan(spec_dir, plan)
         assert get_qa_iteration_count(spec_dir) == 2
 
         plan["qa_signoff"]["qa_session"] = 3
-        save_implementation_plan(spec_dir, plan)
+        save_investigation_plan(spec_dir, plan)
         assert get_qa_iteration_count(spec_dir) == 3
 
 
@@ -902,8 +902,8 @@ class TestQAIntegration:
         mock_progress.is_build_complete.return_value = True
 
         # Build complete
-        plan = {"feature": "Test Feature", "phases": []}
-        save_implementation_plan(spec_dir, plan)
+        plan = {"case_name": "Test Feature", "phases": []}
+        save_investigation_plan(spec_dir, plan)
 
         # Should run QA
         assert should_run_qa(spec_dir) is True
@@ -914,7 +914,7 @@ class TestQAIntegration:
             "qa_session": 1,
             "tests_passed": {"unit": True, "integration": True, "e2e": True},
         }
-        save_implementation_plan(spec_dir, plan)
+        save_investigation_plan(spec_dir, plan)
 
         # Should not run QA again or fixes
         assert should_run_qa(spec_dir) is False
@@ -926,8 +926,8 @@ class TestQAIntegration:
         mock_progress.is_build_complete.return_value = True
 
         # Build complete
-        plan = {"feature": "Test Feature", "phases": []}
-        save_implementation_plan(spec_dir, plan)
+        plan = {"case_name": "Test Feature", "phases": []}
+        save_investigation_plan(spec_dir, plan)
 
         # Should run QA
         assert should_run_qa(spec_dir) is True
@@ -938,7 +938,7 @@ class TestQAIntegration:
             "qa_session": 1,
             "issues_found": [{"title": "Missing test", "type": "unit_test"}],
         }
-        save_implementation_plan(spec_dir, plan)
+        save_investigation_plan(spec_dir, plan)
 
         assert should_run_fixes(spec_dir) is True
         assert is_qa_rejected(spec_dir) is True
@@ -946,7 +946,7 @@ class TestQAIntegration:
         # Fixes applied
         plan["qa_signoff"]["status"] = "fixes_applied"
         plan["qa_signoff"]["ready_for_qa_revalidation"] = True
-        save_implementation_plan(spec_dir, plan)
+        save_investigation_plan(spec_dir, plan)
 
         assert is_fixes_applied(spec_dir) is True
 
@@ -956,7 +956,7 @@ class TestQAIntegration:
             "qa_session": 2,
             "tests_passed": {"unit": True, "integration": True, "e2e": True},
         }
-        save_implementation_plan(spec_dir, plan)
+        save_investigation_plan(spec_dir, plan)
 
         assert is_qa_approved(spec_dir) is True
         assert get_qa_iteration_count(spec_dir) == 2
@@ -966,13 +966,13 @@ class TestQAIntegration:
         mock_progress.is_build_complete.return_value = True
 
         plan = {
-            "feature": "Test",
+            "case_name": "Test",
             "qa_signoff": {
                 "status": "rejected",
                 "qa_session": 50,
             },
         }
-        save_implementation_plan(spec_dir, plan)
+        save_investigation_plan(spec_dir, plan)
 
         # Should not run more fixes after max iterations
         assert should_run_fixes(spec_dir) is False

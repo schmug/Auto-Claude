@@ -5,7 +5,7 @@ Tests for Spec Hash Validation
 
 Tests for hash computation and spec change detection:
 - File hash computation
-- Spec hash computation (spec.md + implementation_plan.json)
+- Spec hash computation (spec.md + investigation_plan.json)
 - Approval validation based on hash comparison
 """
 
@@ -86,8 +86,8 @@ class TestSpecHashValidation:
         """_compute_spec_hash() changes when plan is modified."""
         hash_before = _compute_spec_hash(review_spec_dir)
 
-        # Modify implementation_plan.json
-        plan_file = review_spec_dir / "implementation_plan.json"
+        # Modify investigation_plan.json
+        plan_file = review_spec_dir / "investigation_plan.json"
         plan_file.write_text('{"modified": true}')
 
         hash_after = _compute_spec_hash(review_spec_dir)
@@ -148,10 +148,10 @@ class TestSpecHashValidation:
 
         # Test 2: Plan modification should invalidate
         import json
-        plan_file = review_spec_dir / "implementation_plan.json"
+        plan_file = review_spec_dir / "investigation_plan.json"
         plan_content = plan_file.read_text()
         plan = json.loads(plan_content)
-        plan["phases"][0]["chunks"][0]["status"] = "completed"
+        plan["phases"][0]["analysis_tasks"][0]["status"] = "completed"
         plan_file.write_text(json.dumps(plan, indent=2))
         assert not state.is_approval_valid(review_spec_dir)
 

@@ -368,29 +368,30 @@ CMD ["python", "main.py"]
 def sample_implementation_plan() -> dict:
     """Return a sample implementation plan structure."""
     return {
-        "feature": "User Avatar Upload",
-        "workflow_type": "feature",
-        "services_involved": ["backend", "worker", "frontend"],
+        "case_id": "001-user-avatar-upload",
+        "case_name": "User Avatar Upload",
+        "investigation_type": "feature",
+        "evidence_sources": ["backend", "worker", "frontend"],
         "phases": [
             {
                 "phase": 1,
                 "name": "Backend Foundation",
-                "type": "setup",
-                "chunks": [
+                "type": "analysis",
+                "analysis_tasks": [
                     {
                         "id": "chunk-1-1",
                         "description": "Add avatar fields to User model",
-                        "service": "backend",
+                        "evidence_source": "backend",
                         "status": "completed",
-                        "files_to_modify": ["app/models/user.py"],
-                        "files_to_create": ["migrations/add_avatar.py"],
+                        "artifacts_to_analyze": ["app/models/user.py"],
+                        "artifacts_to_produce": ["migrations/add_avatar.py"],
                     },
                     {
                         "id": "chunk-1-2",
                         "description": "POST /api/users/avatar endpoint",
-                        "service": "backend",
+                        "evidence_source": "backend",
                         "status": "pending",
-                        "files_to_modify": ["app/routes/users.py"],
+                        "artifacts_to_analyze": ["app/routes/users.py"],
                     },
                 ],
                 "depends_on": [],
@@ -398,14 +399,14 @@ def sample_implementation_plan() -> dict:
             {
                 "phase": 2,
                 "name": "Worker Pipeline",
-                "type": "implementation",
-                "chunks": [
+                "type": "analysis",
+                "analysis_tasks": [
                     {
                         "id": "chunk-2-1",
                         "description": "Image processing task",
-                        "service": "worker",
+                        "evidence_source": "worker",
                         "status": "pending",
-                        "files_to_create": ["app/tasks/images.py"],
+                        "artifacts_to_produce": ["app/tasks/images.py"],
                     },
                 ],
                 "depends_on": [1],
@@ -413,14 +414,14 @@ def sample_implementation_plan() -> dict:
             {
                 "phase": 3,
                 "name": "Frontend",
-                "type": "implementation",
-                "chunks": [
+                "type": "analysis",
+                "analysis_tasks": [
                     {
                         "id": "chunk-3-1",
                         "description": "AvatarUpload component",
-                        "service": "frontend",
+                        "evidence_source": "frontend",
                         "status": "pending",
-                        "files_to_create": ["src/components/AvatarUpload.tsx"],
+                        "artifacts_to_produce": ["src/components/AvatarUpload.tsx"],
                     },
                 ],
                 "depends_on": [1],
@@ -435,8 +436,8 @@ def sample_implementation_plan() -> dict:
 
 @pytest.fixture
 def implementation_plan_file(spec_dir: Path, sample_implementation_plan: dict) -> Path:
-    """Create an implementation_plan.json file in the spec directory."""
-    plan_file = spec_dir / "implementation_plan.json"
+    """Create an investigation_plan.json file in the spec directory."""
+    plan_file = spec_dir / "investigation_plan.json"
     plan_file.write_text(json.dumps(sample_implementation_plan, indent=2))
     return plan_file
 
@@ -526,7 +527,7 @@ def spec_with_plan(spec_dir: Path) -> Path:
             "qa_session": 0,
         }
     }
-    plan_file = spec_dir / "implementation_plan.json"
+    plan_file = spec_dir / "investigation_plan.json"
     with open(plan_file, "w") as f:
         json.dump(plan, f)
     return spec_dir
@@ -717,13 +718,13 @@ def mock_spec_validator():
         )
         validator.validate_spec_document = MagicMock(return_value=spec_result)
 
-        # validate_implementation_plan
+        # validate_investigation_plan
         plan_result = MockValidationResult(
             valid=plan_valid,
-            checkpoint="implementation_plan",
+            checkpoint="investigation_plan",
             errors=[] if plan_valid else ["Plan validation failed"],
         )
-        validator.validate_implementation_plan = MagicMock(return_value=plan_result)
+        validator.validate_investigation_plan = MagicMock(return_value=plan_result)
 
         # validate_context
         context_result = MockValidationResult(
@@ -766,8 +767,8 @@ def sample_requirements_json() -> dict:
     """
     return {
         "task_description": "Add user authentication using OAuth2 with Google provider",
-        "workflow_type": "feature",
-        "services_involved": ["backend", "frontend"],
+        "investigation_type": "feature",
+        "evidence_sources": ["backend", "frontend"],
         "user_requirements": [
             "Users should be able to sign in with Google",
             "Session should persist across page refreshes",
@@ -840,7 +841,7 @@ def sample_context_json() -> dict:
     """
     return {
         "task_description": "Add user authentication using OAuth2",
-        "services_involved": ["backend", "frontend"],
+        "scoped_services": ["backend", "frontend"],
         "files_to_modify": [
             {
                 "path": "backend/app/routes/auth.py",

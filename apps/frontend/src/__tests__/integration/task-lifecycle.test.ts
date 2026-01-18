@@ -36,54 +36,70 @@ vi.mock('electron', () => ({
   contextBridge: mockContextBridge
 }));
 
-// Sample implementation plan with subtasks
+// Sample investigation plan with analysis tasks
 function createTestPlan(overrides: Record<string, unknown> = {}): object {
-  return {
-    feature: 'Test Feature',
-    workflow_type: 'feature',
-    services_involved: ['frontend'],
+  const basePlan = {
+    case_id: 'case-001',
+    case_name: 'Test Feature',
+    investigation_type: 'feature',
+    evidence_sources: ['frontend'],
     phases: [
       {
         id: 'phase-1',
         name: 'Implementation Phase',
-        type: 'implementation',
-        subtasks: [
+        type: 'analysis',
+        analysis_tasks: [
           {
             id: 'subtask-1-1',
             description: 'Implement feature A',
             status: 'pending',
-            files_to_modify: ['file1.ts'],
-            files_to_create: [],
-            service: 'frontend'
+            artifacts_to_analyze: ['file1.ts'],
+            artifacts_to_produce: [],
+            evidence_source: 'frontend'
           },
           {
             id: 'subtask-1-2',
             description: 'Add unit tests for feature A',
             status: 'pending',
-            files_to_modify: [],
-            files_to_create: ['file1.test.ts'],
-            service: 'frontend'
+            artifacts_to_analyze: [],
+            artifacts_to_produce: ['file1.test.ts'],
+            evidence_source: 'frontend'
           }
         ]
       }
     ],
     status: 'in_progress',
-    planStatus: 'in_progress',
+    plan_status: 'in_progress',
     created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    ...overrides
+    updated_at: new Date().toISOString()
   };
+
+  const merged = { ...basePlan, ...overrides } as Record<string, unknown>;
+  if (typeof merged.feature === 'string' && !merged.case_name) {
+    merged.case_name = merged.feature;
+  }
+  if (typeof merged.workflow_type === 'string' && !merged.investigation_type) {
+    merged.investigation_type = merged.workflow_type;
+  }
+  if (Array.isArray(merged.services_involved) && !merged.evidence_sources) {
+    merged.evidence_sources = merged.services_involved;
+  }
+  if (typeof merged.planStatus === 'string' && !merged.plan_status) {
+    merged.plan_status = merged.planStatus;
+  }
+  return merged;
 }
 
 // Sample implementation plan with empty phases (incomplete state)
 function createIncompletePlan(): object {
   return {
-    feature: 'Test Feature',
-    workflow_type: 'feature',
-    services_involved: ['frontend'],
+    case_id: 'case-001',
+    case_name: 'Test Feature',
+    investigation_type: 'feature',
+    evidence_sources: ['frontend'],
     phases: [],
     status: 'planning',
-    planStatus: 'planning',
+    plan_status: 'planning',
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString()
   };
@@ -120,9 +136,9 @@ describe('Task Lifecycle Integration', () => {
   });
 
   describe('Spec completion to subtask loading', () => {
-    it('should load subtasks from implementation_plan.json after spec completion', async () => {
-      // Create implementation_plan.json with full subtask data
-      const planPath = path.join(TEST_SPEC_DIR, 'implementation_plan.json');
+    it('should load analysis tasks from investigation_plan.json after spec completion', async () => {
+      // Create investigation_plan.json with full analysis task data
+      const planPath = path.join(TEST_SPEC_DIR, 'investigation_plan.json');
       const plan = createTestPlan();
       writeFileSync(planPath, JSON.stringify(plan, null, 2));
 
@@ -130,7 +146,7 @@ describe('Task Lifecycle Integration', () => {
       await import('../../preload/index');
       const electronAPI = exposedApis['electronAPI'] as Record<string, unknown>;
 
-      // Mock IPC response for getTasks (loads implementation_plan.json)
+      // Mock IPC response for getTasks (loads investigation_plan.json)
       mockIpcRenderer.invoke.mockResolvedValueOnce({
         success: true,
         data: [
@@ -151,7 +167,7 @@ describe('Task Lifecycle Integration', () => {
       // Verify IPC invocation
       expect(mockIpcRenderer.invoke).toHaveBeenCalledWith('task:list', 'project-id');
 
-      // Verify task data includes plan with subtasks
+      // Verify task data includes plan with analysis tasks
       expect(result).toMatchObject({
         success: true,
         data: expect.arrayContaining([
@@ -159,7 +175,7 @@ describe('Task Lifecycle Integration', () => {
             plan: expect.objectContaining({
               phases: expect.arrayContaining([
                 expect.objectContaining({
-                  subtasks: expect.arrayContaining([
+                  analysis_tasks: expect.arrayContaining([
                     expect.objectContaining({
                       id: 'subtask-1-1',
                       description: 'Implement feature A',
@@ -180,8 +196,8 @@ describe('Task Lifecycle Integration', () => {
     });
 
     it('should handle incomplete plan data with empty phases array', async () => {
-      // Create implementation_plan.json with incomplete data (empty phases)
-      const planPath = path.join(TEST_SPEC_DIR, 'implementation_plan.json');
+      // Create investigation_plan.json with incomplete data (empty phases)
+      const planPath = path.join(TEST_SPEC_DIR, 'investigation_plan.json');
       const incompletePlan = createIncompletePlan();
       writeFileSync(planPath, JSON.stringify(incompletePlan, null, 2));
 
@@ -282,7 +298,7 @@ describe('Task Lifecycle Integration', () => {
         expect.objectContaining({
           phases: expect.arrayContaining([
             expect.objectContaining({
-              subtasks: expect.any(Array)
+              analysis_tasks: expect.any(Array)
             })
           ])
         }),
@@ -291,8 +307,8 @@ describe('Task Lifecycle Integration', () => {
     });
 
     it('should handle task resume by reloading implementation plan', async () => {
-      // Create implementation_plan.json
-      const planPath = path.join(TEST_SPEC_DIR, 'implementation_plan.json');
+      // Create investigation_plan.json
+      const planPath = path.join(TEST_SPEC_DIR, 'investigation_plan.json');
       const plan = createTestPlan();
       writeFileSync(planPath, JSON.stringify(plan, null, 2));
 

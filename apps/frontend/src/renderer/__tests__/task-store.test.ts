@@ -4,7 +4,7 @@
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { useTaskStore } from '../stores/task-store';
-import type { Task, TaskStatus, ImplementationPlan } from '../../shared/types';
+import type { Task, TaskStatus, InvestigationPlan } from '../../shared/types';
 
 // Helper to create test tasks
 function createTestTask(overrides: Partial<Task> = {}): Task {
@@ -15,7 +15,7 @@ function createTestTask(overrides: Partial<Task> = {}): Task {
     title: 'Test Task',
     description: 'Test description',
     status: 'backlog' as TaskStatus,
-    subtasks: [],
+    analysis_tasks: [],
     logs: [],
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -23,18 +23,19 @@ function createTestTask(overrides: Partial<Task> = {}): Task {
   };
 }
 
-// Helper to create test implementation plan
-function createTestPlan(overrides: Partial<ImplementationPlan> = {}): ImplementationPlan {
-  return {
-    feature: 'Test Feature',
-    workflow_type: 'feature',
-    services_involved: [],
+// Helper to create test investigation plan
+function createTestPlan(overrides: Record<string, unknown> = {}): InvestigationPlan {
+  const basePlan: InvestigationPlan = {
+    case_id: 'case-001',
+    case_name: 'Test Feature',
+    investigation_type: 'feature',
+    evidence_sources: [],
     phases: [
       {
         phase: 1,
         name: 'Test Phase',
-        type: 'implementation',
-        subtasks: [
+        type: 'analysis',
+        analysis_tasks: [
           { id: 'subtask-1', description: 'First subtask', status: 'pending' },
           { id: 'subtask-2', description: 'Second subtask', status: 'pending' }
         ]
@@ -43,9 +44,42 @@ function createTestPlan(overrides: Partial<ImplementationPlan> = {}): Implementa
     final_acceptance: ['Tests pass'],
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
-    spec_file: 'spec.md',
-    ...overrides
+    case_file: 'case.md'
   };
+
+  const merged = { ...basePlan, ...overrides } as InvestigationPlan & {
+    feature?: string;
+    workflow_type?: string;
+    services_involved?: string[];
+    planStatus?: string;
+    phases?: Array<Record<string, unknown>>;
+  };
+
+  if (merged.feature && !merged.case_name) {
+    merged.case_name = merged.feature;
+  }
+  if (merged.workflow_type && !merged.investigation_type) {
+    merged.investigation_type = merged.workflow_type;
+  }
+  if (merged.services_involved && !merged.evidence_sources) {
+    merged.evidence_sources = merged.services_involved;
+  }
+  if (merged.planStatus && !merged.plan_status) {
+    merged.plan_status = merged.planStatus;
+  }
+
+  if (Array.isArray(merged.phases)) {
+    merged.phases = merged.phases.map((phase) => {
+      const phaseRecord = phase as Record<string, unknown>;
+      const analysisTasks = phaseRecord.analysis_tasks;
+      if (!Array.isArray(analysisTasks) && Array.isArray(phaseRecord.subtasks)) {
+        return { ...phaseRecord, analysis_tasks: phaseRecord.subtasks };
+      }
+      return phaseRecord;
+    }) as InvestigationPlan['phases'];
+  }
+
+  return merged;
 }
 
 describe('Task Store', () => {
@@ -206,7 +240,7 @@ describe('Task Store', () => {
             phase: 1,
             name: 'Phase 1',
             type: 'implementation',
-            subtasks: [
+            analysis_tasks: [
               { id: 'c1', description: 'Subtask 1', status: 'completed' },
               { id: 'c2', description: 'Subtask 2', status: 'pending' }
             ]
@@ -232,13 +266,13 @@ describe('Task Store', () => {
             phase: 1,
             name: 'Phase 1',
             type: 'implementation',
-            subtasks: [{ id: 'c1', description: 'Subtask 1', status: 'completed' }]
+            analysis_tasks: [{ id: 'c1', description: 'Subtask 1', status: 'completed' }]
           },
           {
             phase: 2,
             name: 'Phase 2',
             type: 'cleanup',
-            subtasks: [{ id: 'c2', description: 'Subtask 2', status: 'pending' }]
+            analysis_tasks: [{ id: 'c2', description: 'Subtask 2', status: 'pending' }]
           }
         ]
       });
@@ -259,7 +293,7 @@ describe('Task Store', () => {
             phase: 1,
             name: 'Phase 1',
             type: 'implementation',
-            subtasks: [
+            analysis_tasks: [
               { id: 'c1', description: 'Subtask 1', status: 'completed' },
               { id: 'c2', description: 'Subtask 2', status: 'completed' }
             ]
@@ -283,7 +317,7 @@ describe('Task Store', () => {
             phase: 1,
             name: 'Phase 1',
             type: 'implementation',
-            subtasks: [
+            analysis_tasks: [
               { id: 'c1', description: 'Subtask 1', status: 'completed' },
               { id: 'c2', description: 'Subtask 2', status: 'failed' }
             ]
@@ -307,7 +341,7 @@ describe('Task Store', () => {
             phase: 1,
             name: 'Phase 1',
             type: 'implementation',
-            subtasks: [
+            analysis_tasks: [
               { id: 'c1', description: 'Subtask 1', status: 'completed' },
               { id: 'c2', description: 'Subtask 2', status: 'in_progress' }
             ]
@@ -320,12 +354,12 @@ describe('Task Store', () => {
       expect(useTaskStore.getState().tasks[0].status).toBe('in_progress');
     });
 
-    it('should update title from plan feature', () => {
+    it('should update title from plan case_name', () => {
       useTaskStore.setState({
         tasks: [createTestTask({ id: 'task-1', title: 'Original Title' })]
       });
 
-      const plan = createTestPlan({ feature: 'New Feature Name' });
+      const plan = createTestPlan({ case_name: 'New Case Name' });
 
       useTaskStore.getState().updateTaskFromPlan('task-1', plan);
 
@@ -347,7 +381,7 @@ describe('Task Store', () => {
             phase: 1,
             name: 'Phase 1',
             type: 'implementation',
-            subtasks: [
+            analysis_tasks: [
               { id: 'c1', description: 'Subtask 1', status: 'completed' },
               { id: 'c2', description: 'Subtask 2', status: 'completed' }
             ]
@@ -376,7 +410,7 @@ describe('Task Store', () => {
             phase: 1,
             name: 'Phase 1',
             type: 'implementation',
-            subtasks: [
+            analysis_tasks: [
               { id: 'c1', description: 'Subtask 1', status: 'completed' },
               { id: 'c2', description: 'Subtask 2', status: 'completed' }
             ]
@@ -404,7 +438,7 @@ describe('Task Store', () => {
             phase: 1,
             name: 'Phase 1',
             type: 'implementation',
-            subtasks: [
+            analysis_tasks: [
               { id: 'c1', description: 'Subtask 1', status: 'completed' },
               { id: 'c2', description: 'Subtask 2', status: 'completed' }
             ]
@@ -432,7 +466,7 @@ describe('Task Store', () => {
             phase: 1,
             name: 'Phase 1',
             type: 'implementation',
-            subtasks: [
+            analysis_tasks: [
               { id: 'c1', description: 'Subtask 1', status: 'completed' },
               { id: 'c2', description: 'Subtask 2', status: 'completed' }
             ]
@@ -644,7 +678,7 @@ describe('Task Store', () => {
           tasks: [createTestTask({ id: 'task-1', subtasks: [] })]
         });
 
-        const invalidPlan = { feature: 'Test' } as any;
+        const invalidPlan = { case_name: 'Test Case' } as any;
 
         useTaskStore.getState().updateTaskFromPlan('task-1', invalidPlan);
 
@@ -661,7 +695,7 @@ describe('Task Store', () => {
         });
 
         const invalidPlan = {
-          feature: 'Test',
+          case_name: 'Test Case',
           phases: null
         } as any;
 
@@ -673,19 +707,19 @@ describe('Task Store', () => {
         );
       });
 
-      it('should reject plan with phase missing subtasks array', () => {
+      it('should reject plan with phase missing analysis_tasks array', () => {
         useTaskStore.setState({
           tasks: [createTestTask({ id: 'task-1', subtasks: [] })]
         });
 
         const invalidPlan = {
-          feature: 'Test',
+          case_name: 'Test Case',
           phases: [
             {
               phase: 1,
               name: 'Phase 1',
               type: 'implementation'
-              // Missing subtasks
+              // Missing analysis_tasks
             }
           ]
         } as any;
@@ -694,23 +728,23 @@ describe('Task Store', () => {
 
         expect(useTaskStore.getState().tasks[0].subtasks).toHaveLength(0);
         expect(console.warn).toHaveBeenCalledWith(
-          expect.stringContaining('Invalid phase 0: missing or invalid subtasks array')
+          expect.stringContaining('Invalid phase 0: missing or invalid analysis_tasks array')
         );
       });
 
-      it('should reject plan with phase having subtasks not as array', () => {
+      it('should reject plan with phase having analysis_tasks not as array', () => {
         useTaskStore.setState({
           tasks: [createTestTask({ id: 'task-1', subtasks: [] })]
         });
 
         const invalidPlan = {
-          feature: 'Test',
+          case_name: 'Test Case',
           phases: [
             {
               phase: 1,
               name: 'Phase 1',
               type: 'implementation',
-              subtasks: 'not-an-array'
+              analysis_tasks: 'not-an-array'
             }
           ]
         } as any;
@@ -719,7 +753,7 @@ describe('Task Store', () => {
 
         expect(useTaskStore.getState().tasks[0].subtasks).toHaveLength(0);
         expect(console.warn).toHaveBeenCalledWith(
-          expect.stringContaining('Invalid phase 0: missing or invalid subtasks array')
+          expect.stringContaining('Invalid phase 0: missing or invalid analysis_tasks array')
         );
       });
 
@@ -729,13 +763,13 @@ describe('Task Store', () => {
         });
 
         const invalidPlan = {
-          feature: 'Test',
+          case_name: 'Test Case',
           phases: [
             {
               phase: 1,
               name: 'Phase 1',
               type: 'implementation',
-              subtasks: ['not-an-object', 'also-not-an-object']
+              analysis_tasks: ['not-an-object', 'also-not-an-object']
             }
           ]
         } as any;
@@ -754,13 +788,13 @@ describe('Task Store', () => {
         });
 
         const invalidPlan = {
-          feature: 'Test',
+          case_name: 'Test Case',
           phases: [
             {
               phase: 1,
               name: 'Phase 1',
               type: 'implementation',
-              subtasks: [
+              analysis_tasks: [
                 { id: 'subtask-1', status: 'pending' } // Missing description
               ]
             }
@@ -781,13 +815,13 @@ describe('Task Store', () => {
         });
 
         const invalidPlan = {
-          feature: 'Test',
+          case_name: 'Test Case',
           phases: [
             {
               phase: 1,
               name: 'Phase 1',
               type: 'implementation',
-              subtasks: [
+              analysis_tasks: [
                 { id: 'subtask-1', description: '', status: 'pending' }
               ]
             }
@@ -808,13 +842,13 @@ describe('Task Store', () => {
         });
 
         const invalidPlan = {
-          feature: 'Test',
+          case_name: 'Test Case',
           phases: [
             {
               phase: 1,
               name: 'Phase 1',
               type: 'implementation',
-              subtasks: [
+              analysis_tasks: [
                 { id: 'subtask-1', description: '   ', status: 'pending' }
               ]
             }
@@ -840,7 +874,7 @@ describe('Task Store', () => {
               phase: 1,
               name: 'Phase 1',
               type: 'implementation',
-              subtasks: [
+              analysis_tasks: [
                 { id: 'subtask-1', description: 'Valid subtask', status: 'pending' }
               ]
             }
@@ -866,7 +900,7 @@ describe('Task Store', () => {
               phase: 1,
               name: 'Phase 1',
               type: 'implementation',
-              subtasks: [
+              analysis_tasks: [
                 { description: 'Subtask without id', status: 'pending' } as any
               ]
             }
@@ -892,7 +926,7 @@ describe('Task Store', () => {
               phase: 1,
               name: 'Phase 1',
               type: 'implementation',
-              subtasks: [
+              analysis_tasks: [
                 { id: 'subtask-1', description: 'Test Description', status: 'pending' }
               ]
             }
@@ -917,7 +951,7 @@ describe('Task Store', () => {
               phase: 1,
               name: 'Phase 1',
               type: 'implementation',
-              subtasks: [
+              analysis_tasks: [
                 { id: 'subtask-1', description: 'Pending subtask', status: 'pending' },
                 { id: 'subtask-2', description: 'In progress subtask', status: 'in_progress' },
                 { id: 'subtask-3', description: 'Completed subtask', status: 'completed' },
@@ -947,7 +981,7 @@ describe('Task Store', () => {
               phase: 1,
               name: 'Phase 1',
               type: 'implementation',
-              subtasks: [
+              analysis_tasks: [
                 { id: 'subtask-1', description: 'Test subtask' } as any
               ]
             }
@@ -971,7 +1005,7 @@ describe('Task Store', () => {
               phase: 1,
               name: 'Phase 1',
               type: 'implementation',
-              subtasks: [
+              analysis_tasks: [
                 { id: 'subtask-1', description: 'Test subtask', status: 'pending' }
               ]
             }
@@ -995,7 +1029,7 @@ describe('Task Store', () => {
               phase: 1,
               name: 'Phase 1',
               type: 'implementation',
-              subtasks: [
+              analysis_tasks: [
                 {
                   id: 'subtask-1',
                   description: 'Test subtask',
@@ -1024,7 +1058,7 @@ describe('Task Store', () => {
               phase: 1,
               name: 'Phase 1',
               type: 'implementation',
-              subtasks: [
+              analysis_tasks: [
                 {
                   id: 'subtask-1',
                   description: 'Test subtask',
@@ -1053,7 +1087,7 @@ describe('Task Store', () => {
               phase: 1,
               name: 'Phase 1',
               type: 'implementation',
-              subtasks: [
+              analysis_tasks: [
                 { id: 'p1-s1', description: 'Phase 1 Subtask 1', status: 'pending' },
                 { id: 'p1-s2', description: 'Phase 1 Subtask 2', status: 'pending' }
               ]
@@ -1062,7 +1096,7 @@ describe('Task Store', () => {
               phase: 2,
               name: 'Phase 2',
               type: 'testing',
-              subtasks: [
+              analysis_tasks: [
                 { id: 'p2-s1', description: 'Phase 2 Subtask 1', status: 'pending' },
                 { id: 'p2-s2', description: 'Phase 2 Subtask 2', status: 'pending' }
               ]
@@ -1071,7 +1105,7 @@ describe('Task Store', () => {
               phase: 3,
               name: 'Phase 3',
               type: 'cleanup',
-              subtasks: [
+              analysis_tasks: [
                 { id: 'p3-s1', description: 'Phase 3 Subtask 1', status: 'pending' }
               ]
             }
@@ -1100,7 +1134,7 @@ describe('Task Store', () => {
               phase: 1,
               name: 'Phase 1',
               type: 'implementation',
-              subtasks: [
+              analysis_tasks: [
                 { id: 'subtask-1', description: 'Valid subtask', status: 'pending' }
               ]
             },
@@ -1108,13 +1142,13 @@ describe('Task Store', () => {
               phase: 2,
               name: 'Phase 2',
               type: 'testing',
-              subtasks: [] // Empty array
+              analysis_tasks: [] // Empty array
             },
             {
               phase: 3,
               name: 'Phase 3',
               type: 'cleanup',
-              subtasks: [
+              analysis_tasks: [
                 { id: 'subtask-2', description: 'Another valid subtask', status: 'pending' }
               ]
             }
@@ -1147,7 +1181,7 @@ describe('Task Store', () => {
               phase: 1,
               name: 'Phase 1',
               type: 'implementation',
-              subtasks: [
+              analysis_tasks: [
                 { id: 'c1', description: 'Subtask 1', status: 'completed' },
                 { id: 'c2', description: 'Subtask 2', status: 'completed' }
               ]
@@ -1176,7 +1210,7 @@ describe('Task Store', () => {
               phase: 1,
               name: 'Phase 1',
               type: 'implementation',
-              subtasks: [
+              analysis_tasks: [
                 { id: 'c1', description: 'Subtask 1', status: 'completed' },
                 { id: 'c2', description: 'Subtask 2', status: 'failed' }
               ]
@@ -1210,7 +1244,7 @@ describe('Task Store', () => {
                 phase: 1,
                 name: 'Phase 1',
                 type: 'implementation',
-                subtasks: [
+                analysis_tasks: [
                   { id: 'c1', description: 'Subtask 1', status: 'completed' },
                   { id: 'c2', description: 'Subtask 2', status: 'completed' }
                 ]
@@ -1242,7 +1276,7 @@ describe('Task Store', () => {
               phase: 1,
               name: 'Phase 1',
               type: 'implementation',
-              subtasks: [
+              analysis_tasks: [
                 { id: 'c1', description: 'Subtask 1', status: 'completed' },
                 { id: 'c2', description: 'Subtask 2', status: 'completed' }
               ]
@@ -1274,7 +1308,7 @@ describe('Task Store', () => {
               phase: 1,
               name: 'Phase 1',
               type: 'implementation',
-              subtasks: [
+              analysis_tasks: [
                 { id: 'c1', description: 'Subtask 1', status: 'completed' },
                 { id: 'c2', description: 'Subtask 2', status: 'completed' }
               ]
@@ -1303,7 +1337,7 @@ describe('Task Store', () => {
               phase: 1,
               name: 'Phase 1',
               type: 'implementation',
-              subtasks: [
+              analysis_tasks: [
                 { id: 'c1', description: 'Subtask 1', status: 'completed' },
                 { id: 'c2', description: 'Subtask 2', status: 'completed' }
               ]
@@ -1332,7 +1366,7 @@ describe('Task Store', () => {
               phase: 1,
               name: 'Phase 1',
               type: 'implementation',
-              subtasks: [
+              analysis_tasks: [
                 { id: 'c1', description: 'Subtask 1', status: 'completed' },
                 { id: 'c2', description: 'Subtask 2', status: 'completed' }
               ]

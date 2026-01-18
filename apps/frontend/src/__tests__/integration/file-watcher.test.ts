@@ -25,18 +25,19 @@ vi.mock('chokidar', () => ({
   watch: vi.fn(() => mockWatcher)
 }));
 
-// Sample implementation plan
+// Sample investigation plan
 function createTestPlan(overrides: Record<string, unknown> = {}): object {
-  return {
-    feature: 'Test Feature',
-    workflow_type: 'feature',
-    services_involved: [],
+  const basePlan = {
+    case_id: 'case-001',
+    case_name: 'Test Feature',
+    investigation_type: 'feature',
+    evidence_sources: [],
     phases: [
       {
         phase: 1,
         name: 'Test Phase',
-        type: 'implementation',
-        subtasks: [
+        type: 'analysis',
+        analysis_tasks: [
           { id: 'subtask-1', description: 'Subtask 1', status: 'pending' }
         ]
       }
@@ -44,9 +45,23 @@ function createTestPlan(overrides: Record<string, unknown> = {}): object {
     final_acceptance: [],
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
-    spec_file: 'spec.md',
-    ...overrides
+    case_file: 'case.md'
   };
+
+  const merged = { ...basePlan, ...overrides } as Record<string, unknown>;
+  if (typeof merged.feature === 'string' && !merged.case_name) {
+    merged.case_name = merged.feature;
+  }
+  if (typeof merged.workflow_type === 'string' && !merged.investigation_type) {
+    merged.investigation_type = merged.workflow_type;
+  }
+  if (Array.isArray(merged.services_involved) && !merged.evidence_sources) {
+    merged.evidence_sources = merged.services_involved;
+  }
+  if (typeof merged.planStatus === 'string' && !merged.plan_status) {
+    merged.plan_status = merged.planStatus;
+  }
+  return merged;
 }
 
 // Setup test directories
@@ -93,7 +108,7 @@ describe('File Watcher Integration', () => {
 
     it('should start watching existing plan file', async () => {
       // Create plan file first
-      const planPath = path.join(TEST_SPEC_DIR, 'implementation_plan.json');
+      const planPath = path.join(TEST_SPEC_DIR, 'investigation_plan.json');
       writeFileSync(planPath, JSON.stringify(createTestPlan()));
 
       const chokidar = await import('chokidar');
@@ -117,7 +132,7 @@ describe('File Watcher Integration', () => {
 
     it('should emit initial progress after starting watch', async () => {
       const plan = createTestPlan();
-      const planPath = path.join(TEST_SPEC_DIR, 'implementation_plan.json');
+      const planPath = path.join(TEST_SPEC_DIR, 'investigation_plan.json');
       writeFileSync(planPath, JSON.stringify(plan));
 
       const { FileWatcher } = await import('../../main/file-watcher');
@@ -129,12 +144,12 @@ describe('File Watcher Integration', () => {
       await watcher.watch('task-1', TEST_SPEC_DIR);
 
       expect(progressHandler).toHaveBeenCalledWith('task-1', expect.objectContaining({
-        feature: 'Test Feature'
+        case_name: 'Test Feature'
       }));
     });
 
     it('should emit progress on file change', async () => {
-      const planPath = path.join(TEST_SPEC_DIR, 'implementation_plan.json');
+      const planPath = path.join(TEST_SPEC_DIR, 'investigation_plan.json');
       writeFileSync(planPath, JSON.stringify(createTestPlan()));
 
       const { FileWatcher } = await import('../../main/file-watcher');
@@ -153,7 +168,7 @@ describe('File Watcher Integration', () => {
             phase: 1,
             name: 'Test Phase',
             type: 'implementation',
-            subtasks: [
+            analysis_tasks: [
               { id: 'subtask-1', description: 'Subtask 1', status: 'completed' }
             ]
           }
@@ -167,7 +182,7 @@ describe('File Watcher Integration', () => {
       expect(progressHandler).toHaveBeenCalledWith('task-1', expect.objectContaining({
         phases: expect.arrayContaining([
           expect.objectContaining({
-            subtasks: expect.arrayContaining([
+            analysis_tasks: expect.arrayContaining([
               expect.objectContaining({ status: 'completed' })
             ])
           })
@@ -176,7 +191,7 @@ describe('File Watcher Integration', () => {
     });
 
     it('should handle file parse errors gracefully', async () => {
-      const planPath = path.join(TEST_SPEC_DIR, 'implementation_plan.json');
+      const planPath = path.join(TEST_SPEC_DIR, 'investigation_plan.json');
       writeFileSync(planPath, JSON.stringify(createTestPlan()));
 
       const { FileWatcher } = await import('../../main/file-watcher');
@@ -201,7 +216,7 @@ describe('File Watcher Integration', () => {
     });
 
     it('should forward watcher errors', async () => {
-      const planPath = path.join(TEST_SPEC_DIR, 'implementation_plan.json');
+      const planPath = path.join(TEST_SPEC_DIR, 'investigation_plan.json');
       writeFileSync(planPath, JSON.stringify(createTestPlan()));
 
       const { FileWatcher } = await import('../../main/file-watcher');
@@ -219,7 +234,7 @@ describe('File Watcher Integration', () => {
     });
 
     it('should stop watching task when unwatched', async () => {
-      const planPath = path.join(TEST_SPEC_DIR, 'implementation_plan.json');
+      const planPath = path.join(TEST_SPEC_DIR, 'investigation_plan.json');
       writeFileSync(planPath, JSON.stringify(createTestPlan()));
 
       const { FileWatcher } = await import('../../main/file-watcher');
@@ -235,7 +250,7 @@ describe('File Watcher Integration', () => {
     });
 
     it('should stop watching when same task is watched again', async () => {
-      const planPath = path.join(TEST_SPEC_DIR, 'implementation_plan.json');
+      const planPath = path.join(TEST_SPEC_DIR, 'investigation_plan.json');
       writeFileSync(planPath, JSON.stringify(createTestPlan()));
 
       const { FileWatcher } = await import('../../main/file-watcher');
@@ -249,13 +264,13 @@ describe('File Watcher Integration', () => {
     });
 
     it('should track multiple watched tasks', async () => {
-      const planPath = path.join(TEST_SPEC_DIR, 'implementation_plan.json');
+      const planPath = path.join(TEST_SPEC_DIR, 'investigation_plan.json');
       writeFileSync(planPath, JSON.stringify(createTestPlan()));
 
       const spec2Dir = path.join(TEST_DIR, 'test-spec-2');
       mkdirSync(spec2Dir, { recursive: true });
-      const plan2Path = path.join(spec2Dir, 'implementation_plan.json');
-      writeFileSync(plan2Path, JSON.stringify(createTestPlan({ feature: 'Feature 2' })));
+      const plan2Path = path.join(spec2Dir, 'investigation_plan.json');
+      writeFileSync(plan2Path, JSON.stringify(createTestPlan({ case_id: 'case-002', case_name: 'Feature 2' })));
 
       const { FileWatcher } = await import('../../main/file-watcher');
       const watcher = new FileWatcher();
@@ -268,7 +283,7 @@ describe('File Watcher Integration', () => {
     });
 
     it('should unwatchAll and clear all watchers', async () => {
-      const planPath = path.join(TEST_SPEC_DIR, 'implementation_plan.json');
+      const planPath = path.join(TEST_SPEC_DIR, 'investigation_plan.json');
       writeFileSync(planPath, JSON.stringify(createTestPlan()));
 
       const { FileWatcher } = await import('../../main/file-watcher');
@@ -282,7 +297,7 @@ describe('File Watcher Integration', () => {
 
     it('should get current plan for watched task', async () => {
       const plan = createTestPlan();
-      const planPath = path.join(TEST_SPEC_DIR, 'implementation_plan.json');
+      const planPath = path.join(TEST_SPEC_DIR, 'investigation_plan.json');
       writeFileSync(planPath, JSON.stringify(plan));
 
       const { FileWatcher } = await import('../../main/file-watcher');
@@ -293,7 +308,7 @@ describe('File Watcher Integration', () => {
       const currentPlan = watcher.getCurrentPlan('task-1');
 
       expect(currentPlan).toMatchObject({
-        feature: 'Test Feature'
+        case_name: 'Test Feature'
       });
     });
 

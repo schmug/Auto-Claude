@@ -283,15 +283,16 @@ describe('ProjectStore', () => {
       mkdirSync(specsDir, { recursive: true });
 
       const plan = {
-        feature: 'Test Feature',
-        workflow_type: 'feature',
-        services_involved: [],
+        case_id: '001-test-feature',
+        case_name: 'Test Feature',
+        investigation_type: 'incident_response',
+        evidence_sources: [],
         phases: [
           {
             phase: 1,
             name: 'Phase 1',
             type: 'implementation',
-            subtasks: [
+            analysis_tasks: [
               { id: 'subtask-1', description: 'First subtask', status: 'completed' },
               { id: 'subtask-2', description: 'Second subtask', status: 'pending' }
             ]
@@ -300,16 +301,16 @@ describe('ProjectStore', () => {
         final_acceptance: ['Test passes'],
         created_at: '2024-01-01T00:00:00Z',
         updated_at: '2024-01-02T00:00:00Z',
-        spec_file: 'spec.md'
+        case_file: 'case.md'
       };
 
       writeFileSync(
-        path.join(specsDir, 'implementation_plan.json'),
+        path.join(specsDir, 'investigation_plan.json'),
         JSON.stringify(plan)
       );
 
       const specContent = `# Test Feature\n\n## Overview\n\nThis is a test feature description.\n`;
-      writeFileSync(path.join(specsDir, 'spec.md'), specContent);
+      writeFileSync(path.join(specsDir, 'case.md'), specContent);
 
       const { ProjectStore } = await import('../project-store');
       const store = new ProjectStore();
@@ -329,15 +330,16 @@ describe('ProjectStore', () => {
       mkdirSync(specsDir, { recursive: true });
 
       const plan = {
-        feature: 'Pending Feature',
-        workflow_type: 'feature',
-        services_involved: [],
+        case_id: '002-pending',
+        case_name: 'Pending Feature',
+        investigation_type: 'incident_response',
+        evidence_sources: [],
         phases: [
           {
             phase: 1,
             name: 'Phase 1',
             type: 'implementation',
-            subtasks: [
+            analysis_tasks: [
               { id: 'subtask-1', description: 'Subtask 1', status: 'pending' },
               { id: 'subtask-2', description: 'Subtask 2', status: 'pending' }
             ]
@@ -346,11 +348,11 @@ describe('ProjectStore', () => {
         final_acceptance: [],
         created_at: '2024-01-01T00:00:00Z',
         updated_at: '2024-01-01T00:00:00Z',
-        spec_file: 'spec.md'
+        case_file: 'case.md'
       };
 
       writeFileSync(
-        path.join(specsDir, 'implementation_plan.json'),
+        path.join(specsDir, 'investigation_plan.json'),
         JSON.stringify(plan)
       );
 
@@ -368,15 +370,16 @@ describe('ProjectStore', () => {
       mkdirSync(specsDir, { recursive: true });
 
       const plan = {
-        feature: 'Complete Feature',
-        workflow_type: 'feature',
-        services_involved: [],
+        case_id: '003-complete',
+        case_name: 'Complete Feature',
+        investigation_type: 'incident_response',
+        evidence_sources: [],
         phases: [
           {
             phase: 1,
             name: 'Phase 1',
             type: 'implementation',
-            subtasks: [
+            analysis_tasks: [
               { id: 'subtask-1', description: 'Subtask 1', status: 'completed' },
               { id: 'subtask-2', description: 'Subtask 2', status: 'completed' }
             ]
@@ -385,11 +388,11 @@ describe('ProjectStore', () => {
         final_acceptance: [],
         created_at: '2024-01-01T00:00:00Z',
         updated_at: '2024-01-01T00:00:00Z',
-        spec_file: 'spec.md'
+        case_file: 'case.md'
       };
 
       writeFileSync(
-        path.join(specsDir, 'implementation_plan.json'),
+        path.join(specsDir, 'investigation_plan.json'),
         JSON.stringify(plan)
       );
 
@@ -407,15 +410,16 @@ describe('ProjectStore', () => {
       mkdirSync(specsDir, { recursive: true });
 
       const plan = {
-        feature: 'Rejected Feature',
-        workflow_type: 'feature',
-        services_involved: [],
+        case_id: '004-rejected',
+        case_name: 'Rejected Feature',
+        investigation_type: 'incident_response',
+        evidence_sources: [],
         phases: [
           {
             phase: 1,
             name: 'Phase 1',
             type: 'implementation',
-            subtasks: [
+            analysis_tasks: [
               { id: 'subtask-1', description: 'Subtask 1', status: 'completed' }
             ]
           }
@@ -423,11 +427,11 @@ describe('ProjectStore', () => {
         final_acceptance: [],
         created_at: '2024-01-01T00:00:00Z',
         updated_at: '2024-01-01T00:00:00Z',
-        spec_file: 'spec.md'
+        case_file: 'case.md'
       };
 
       writeFileSync(
-        path.join(specsDir, 'implementation_plan.json'),
+        path.join(specsDir, 'investigation_plan.json'),
         JSON.stringify(plan)
       );
 
@@ -451,15 +455,16 @@ describe('ProjectStore', () => {
       mkdirSync(specsDir, { recursive: true });
 
       const plan = {
-        feature: 'Approved Feature',
-        workflow_type: 'feature',
-        services_involved: [],
+        case_id: '005-approved',
+        case_name: 'Approved Feature',
+        investigation_type: 'incident_response',
+        evidence_sources: [],
         phases: [
           {
             phase: 1,
             name: 'Phase 1',
             type: 'implementation',
-            subtasks: [
+            analysis_tasks: [
               { id: 'subtask-1', description: 'Subtask 1', status: 'completed' }
             ]
           }
@@ -467,11 +472,11 @@ describe('ProjectStore', () => {
         final_acceptance: [],
         created_at: '2024-01-01T00:00:00Z',
         updated_at: '2024-01-01T00:00:00Z',
-        spec_file: 'spec.md'
+        case_file: 'case.md'
       };
 
       writeFileSync(
-        path.join(specsDir, 'implementation_plan.json'),
+        path.join(specsDir, 'investigation_plan.json'),
         JSON.stringify(plan)
       );
 
@@ -496,16 +501,17 @@ describe('ProjectStore', () => {
       mkdirSync(specsDir, { recursive: true });
 
       const plan = {
-        feature: 'Done Feature',
-        workflow_type: 'feature',
-        services_involved: [],
+        case_id: '006-done',
+        case_name: 'Done Feature',
+        investigation_type: 'incident_response',
+        evidence_sources: [],
         status: 'done', // Explicitly set by user
         phases: [
           {
             phase: 1,
             name: 'Phase 1',
             type: 'implementation',
-            subtasks: [
+            analysis_tasks: [
               { id: 'subtask-1', description: 'Subtask 1', status: 'completed' }
             ]
           }
@@ -513,11 +519,11 @@ describe('ProjectStore', () => {
         final_acceptance: [],
         created_at: '2024-01-01T00:00:00Z',
         updated_at: '2024-01-01T00:00:00Z',
-        spec_file: 'spec.md'
+        case_file: 'case.md'
       };
 
       writeFileSync(
-        path.join(specsDir, 'implementation_plan.json'),
+        path.join(specsDir, 'investigation_plan.json'),
         JSON.stringify(plan)
       );
 
