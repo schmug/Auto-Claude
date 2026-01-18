@@ -188,5 +188,5 @@ def print_cases_list(project_dir: Path, auto_create: bool = True) -> None:
     print("-" * 70)
     print("\nTo run a case:")
     print("  python auto-sleuth/run.py --case 001")
-    print("  python auto-sleuth/run.py --case 001-feature-name")
+    print("  python auto-sleuth/run.py --case 001-case-name")
     print()

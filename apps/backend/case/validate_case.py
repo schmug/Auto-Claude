@@ -7,11 +7,11 @@ Validates case outputs at each checkpoint to ensure reliability.
 This is the enforcement layer that catches errors before they propagate.
 
 Usage:
-    python auto-sleuth/validate_case.py --case-dir auto-sleuth/cases/001-feature/ --checkpoint prereqs
-    python auto-sleuth/validate_case.py --case-dir auto-sleuth/cases/001-feature/ --checkpoint context
-    python auto-sleuth/validate_case.py --case-dir auto-sleuth/cases/001-feature/ --checkpoint case
-    python auto-sleuth/validate_case.py --case-dir auto-sleuth/cases/001-feature/ --checkpoint plan
-    python auto-sleuth/validate_case.py --case-dir auto-sleuth/cases/001-feature/ --checkpoint all
+    python auto-sleuth/validate_case.py --case-dir auto-sleuth/cases/001-case-name/ --checkpoint prereqs
+    python auto-sleuth/validate_case.py --case-dir auto-sleuth/cases/001-case-name/ --checkpoint context
+    python auto-sleuth/validate_case.py --case-dir auto-sleuth/cases/001-case-name/ --checkpoint case
+    python auto-sleuth/validate_case.py --case-dir auto-sleuth/cases/001-case-name/ --checkpoint plan
+    python auto-sleuth/validate_case.py --case-dir auto-sleuth/cases/001-case-name/ --checkpoint all
 """
 
 import argparse

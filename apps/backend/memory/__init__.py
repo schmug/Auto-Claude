@@ -28,7 +28,7 @@ Architecture Decision:
     This ensures memory is ALWAYS saved, regardless of configuration.
 
 Each case has its own memory directory:
-    auto-sleuth/cases/001-feature/memory/
+    auto-sleuth/cases/001-case-name/memory/
         ├── codebase_map.json      # Key files and their purposes
         ├── patterns.md            # Code patterns to follow
         ├── gotchas.md             # Pitfalls to avoid

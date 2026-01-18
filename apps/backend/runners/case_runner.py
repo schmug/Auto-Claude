@@ -28,7 +28,7 @@ The AI considers:
 Usage:
     python runners/case_runner.py --task "Add user authentication"
     python runners/case_runner.py --interactive
-    python runners/case_runner.py --continue 001-feature
+    python runners/case_runner.py --continue 001-case-name
     python runners/case_runner.py --task "Fix button color" --complexity simple
     python runners/case_runner.py --task "Simple fix" --no-ai-assessment
 """

@@ -27,7 +27,7 @@ class BugPredictor:
         Initialize the bug predictor.
 
         Args:
-            case_dir: Path to the case directory (e.g., auto-sleuth/cases/001-feature/)
+            case_dir: Path to the case directory (e.g., auto-sleuth/cases/001-case-name/)
         """
         self.case_dir = Path(case_dir)
         self.memory_dir = self.case_dir / "memory"

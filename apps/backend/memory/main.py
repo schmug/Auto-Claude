@@ -97,7 +97,7 @@ if __name__ == "__main__":
         "--case-dir",
         type=Path,
         required=True,
-        help="Path to case directory (e.g., auto-sleuth/cases/001-feature)",
+        help="Path to case directory (e.g., auto-sleuth/cases/001-case-name)",
     )
     parser.add_argument(
         "--action",

@@ -14,7 +14,7 @@ def get_memory_dir(case_dir: Path) -> Path:
     Get the memory directory for a case, creating it if needed.
 
     Args:
-        case_dir: Path to case directory (e.g., .auto-sleuth/cases/001-feature/)
+        case_dir: Path to case directory (e.g., .auto-sleuth/cases/001-case-name/)
 
     Returns:
         Path to memory directory

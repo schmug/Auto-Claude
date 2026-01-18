@@ -94,7 +94,7 @@ Environment Variables:
         "--case",
         type=str,
         default=None,
-        help="Case to run (e.g., '001' or '001-feature-name')",
+        help="Case to run (e.g., '001' or '001-case-name')",
     )
 
     parser.add_argument(

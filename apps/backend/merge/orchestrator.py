@@ -103,7 +103,7 @@ class MergeOrchestrator:
         orchestrator = MergeOrchestrator(project_dir)
 
         # Merge a single task
-        result = orchestrator.merge_task("task-001-feature")
+        result = orchestrator.merge_task("task-001-case-name")
 
         # Merge multiple tasks
         report = orchestrator.merge_tasks([

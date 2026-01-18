@@ -100,7 +100,7 @@ def find_case(project_dir: Path, case_identifier: str) -> Path | None:
 
     Args:
         project_dir: Project root directory
-        case_identifier: Either "001" or "001-feature-name"
+        case_identifier: Either "001" or "001-case-name"
 
     Returns:
         Path to case folder, or None if not found

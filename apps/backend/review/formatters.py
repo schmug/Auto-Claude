@@ -153,7 +153,7 @@ def display_plan_summary(case_dir: Path) -> None:
     # Build summary content
     summary_lines = []
 
-    case_title = plan.get("case_name") or plan.get("case_id") or plan.get("feature", "Investigation Plan")
+    case_title = plan.get("case_name") or plan.get("case_id") or "Investigation Plan"
     summary_lines.append(bold(f"{icon(Icons.GEAR)} {case_title}"))
     summary_lines.append("")
 
@@ -176,12 +176,12 @@ def display_plan_summary(case_dir: Path) -> None:
         f"{muted('Tasks:')} {completed_subtasks}/{total_subtasks} completed"
     )
     if services:
-        summary_lines.append(f"{muted('Services:')} {', '.join(services)}")
+        summary_lines.append(f"{muted('Evidence Sources:')} {', '.join(services)}")
 
     # Phases breakdown
     if phases:
         summary_lines.append("")
-        summary_lines.append(highlight("Implementation Phases:"))
+        summary_lines.append(highlight("Investigation Phases:"))
 
         for phase in phases:
             phase_num = phase.get("phase", "?")

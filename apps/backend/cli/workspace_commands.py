@@ -1015,7 +1015,7 @@ def handle_create_pr_command(
 
     Args:
         project_dir: Path to the project directory
-        case_name: Name of the case (e.g., "001-feature-name")
+        case_name: Name of the case (e.g., "001-case-name")
         target_branch: Target branch for PR (defaults to base branch)
         title: Custom PR title (defaults to case name)
         draft: Whether to create as draft PR

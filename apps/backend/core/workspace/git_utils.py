@@ -272,7 +272,7 @@ def get_existing_build_worktree(project_dir: Path, case_name: str) -> Path | Non
 
     Args:
         project_dir: The main project directory
-        case_name: The case folder name (e.g., "001-feature-name")
+        case_name: The case folder name (e.g., "001-case-name")
 
     Returns:
         Path to the worktree if it exists for this case, None otherwise

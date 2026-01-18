@@ -150,9 +150,9 @@ class ContextLoader:
         explicit_type_patterns = [
             r"investigation\s*type:\s*(\w+)",
             r"\*\*investigation\s*type\*\*:\s*(\w+)",
-            r"\*\*type\*\*:\s*(\w+)",  # **Type**: feature
-            r"type:\s*(\w+)",  # Type: feature
-            r"workflow\s*type:\s*(\w+)",  # Workflow Type: feature
+            r"\*\*type\*\*:\s*(\w+)",  # **Type**: triage
+            r"type:\s*(\w+)",  # Type: triage
+            r"workflow\s*type:\s*(\w+)",  # Workflow Type: triage
         ]
 
         for pattern in explicit_type_patterns:

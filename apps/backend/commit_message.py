@@ -259,7 +259,7 @@ def generate_commit_message_sync(
 
     Args:
         project_dir: Project root directory
-        case_name: Case identifier (e.g., "001-add-feature")
+        case_name: Case identifier (e.g., "001-case-name")
         diff_summary: Git diff stat or summary
         files_changed: List of changed file paths
         github_issue: GitHub issue number if linked (overrides case metadata)
@@ -336,7 +336,7 @@ async def generate_commit_message(
 
     Args:
         project_dir: Project root directory
-        case_name: Case identifier (e.g., "001-add-feature")
+        case_name: Case identifier (e.g., "001-case-name")
         diff_summary: Git diff stat or summary
         files_changed: List of changed file paths
         github_issue: GitHub issue number if linked (overrides case metadata)

@@ -33,7 +33,7 @@ Usage:
         state = run_review_checkpoint(case_dir)
 
     # CLI use (for manual review)
-    python auto-sleuth/review.py --case-dir auto-sleuth/cases/001-feature
+    python auto-sleuth/review.py --case-dir auto-sleuth/cases/001-case-name
 """
 
 import sys

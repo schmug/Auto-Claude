@@ -231,7 +231,7 @@ def setup_workspace(
 
     Args:
         project_dir: The project directory
-        case_name: Name of the case being built (e.g., "001-feature-name")
+        case_name: Name of the case being built (e.g., "001-case-name")
         mode: The workspace mode to use
         source_case_dir: Optional source case directory to copy to worktree
         base_branch: Base branch for worktree creation (default: current branch)

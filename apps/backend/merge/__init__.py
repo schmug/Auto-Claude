@@ -20,7 +20,7 @@ Usage:
     from merge import MergeOrchestrator
 
     orchestrator = MergeOrchestrator(project_dir)
-    result = orchestrator.merge_task("task-001-feature")
+    result = orchestrator.merge_task("task-001-case-name")
 """
 
 from .ai_resolver import AIResolver, create_claude_resolver
