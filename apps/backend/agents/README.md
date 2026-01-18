@@ -42,7 +42,7 @@ auto-sleuth/agents/
 - Recovery manager integration
 
 ### `planner.py` (5.4 KB)
-- `run_followup_planner()` - Add new subtasks to completed specs
+- `run_followup_planner()` - Add new subtasks to completed case specs
 - Follow-up planning workflow
 - Plan validation and status updates
 

@@ -61,13 +61,13 @@ Validates investigation_plan.json:
 - Contains required top-level fields
 - Valid investigation_type
 - Phases have correct structure
-- Analysis tasks/steps have correct structure
+- Analysis cases/steps have correct structure
 - No circular dependencies
 
 ### Auto-Fix (`auto_fix.py`)
 Automated fixes for common issues:
 - Adds missing required fields to investigation_plan.json
-- Fixes missing phase/task IDs
+- Fixes missing phase/case IDs
 - Sets default status values
 
 ### Main Validator (`spec_validator.py`)

@@ -51,7 +51,7 @@ auto-sleuth/case/
 - `phase_research()` - External integration validation
 
 ### `case_phases.py` (CasePhaseMixin)
-- `phase_quick_case()` - Simple task case creation
+- `phase_quick_case()` - Simple case creation
 - `phase_case_writing()` - Full case.md document creation
 - `phase_self_critique()` - AI-powered case validation
 

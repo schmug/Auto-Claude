@@ -43,8 +43,8 @@ python run.py --case 001
 
 | Command | Description |
 |---------|-------------|
-| `--list` | List all specs |
-| `--spec 001` | Run spec 001 |
+| `--list` | List all case specs |
+| `--spec 001` | Run case spec 001 |
 | `--spec 001 --isolated` | Run in isolated workspace |
 | `--spec 001 --direct` | Run directly in repo |
 | `--spec 001 --merge` | Merge completed build |

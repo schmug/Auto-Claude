@@ -1,6 +1,6 @@
-# Task Logger Package
+# Case Logger Package
 
-A modular, well-organized logging system for Auto Claude tasks with persistent storage and real-time UI updates.
+A modular, well-organized logging system for Auto Sleuth cases with persistent storage and real-time UI updates.
 
 ## Package Structure
 
@@ -27,12 +27,12 @@ Contains the core data models:
 
 ### logger.py
 Main logging implementation:
-- `TaskLogger`: Primary class for task logging with phase management, tool tracking, and event logging
+- `TaskLogger`: Primary class for case logging with phase management, tool tracking, and event logging
 
 ### storage.py
 Persistent storage functionality:
 - `LogStorage`: Handles JSON file storage and retrieval
-- `load_task_logs()`: Load logs from a spec directory
+- `load_task_logs()`: Load logs from a case spec directory
 - `get_active_phase()`: Get currently active phase
 
 ### streaming.py
