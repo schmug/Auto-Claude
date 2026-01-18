@@ -20,7 +20,7 @@ export const DEFAULT_APP_SETTINGS = {
   theme: 'system' as const,
   colorTheme: 'default' as const,
   defaultModel: 'opus',
-  agentFramework: 'auto-claude',
+  agentFramework: 'auto-sleuth',
   pythonPath: undefined as string | undefined,
   gitPath: undefined as string | undefined,
   githubCLIPath: undefined as string | undefined,
@@ -79,11 +79,11 @@ export const DEFAULT_PROJECT_SETTINGS = {
 // ============================================
 
 // File paths relative to project
-// IMPORTANT: All paths use .auto-claude/ (the installed instance), NOT auto-claude/ (source code)
+// IMPORTANT: All paths use .auto-sleuth/ (the installed instance), NOT auto-sleuth/ (source code)
 export const AUTO_BUILD_PATHS = {
-  SPECS_DIR: '.auto-claude/specs',
-  ROADMAP_DIR: '.auto-claude/roadmap',
-  IDEATION_DIR: '.auto-claude/ideation',
+  SPECS_DIR: '.auto-sleuth/cases',
+  ROADMAP_DIR: '.auto-sleuth/roadmap',
+  IDEATION_DIR: '.auto-sleuth/ideation',
   INVESTIGATION_PLAN: 'investigation_plan.json',
   CASE_FILE: 'case.md',
   SPEC_FILE: 'spec.md',
@@ -96,15 +96,15 @@ export const AUTO_BUILD_PATHS = {
   COMPETITOR_ANALYSIS: 'competitor_analysis.json',
   IDEATION_FILE: 'ideation.json',
   IDEATION_CONTEXT: 'ideation_context.json',
-  PROJECT_INDEX: '.auto-claude/project_index.json',
+  PROJECT_INDEX: '.auto-sleuth/project_index.json',
   GRAPHITI_STATE: '.graphiti_state.json'
 } as const;
 
 /**
- * Get the specs directory path.
- * All specs go to .auto-claude/specs/ (the project's data directory).
+ * Get the case files directory path.
+ * All case files go to .auto-sleuth/cases/ (the project's data directory).
  */
 export function getSpecsDir(autoBuildPath: string | undefined): string {
-  const basePath = autoBuildPath || '.auto-claude';
-  return `${basePath}/specs`;
+  const basePath = autoBuildPath || '.auto-sleuth';
+  return `${basePath}/cases`;
 }

@@ -143,7 +143,7 @@ export function GeneralSettings({ settings, onSettingsChange, section }: General
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="auto-claude">{t('general.agentFrameworkAutoClaude')}</SelectItem>
+                  <SelectItem value="auto-sleuth">{t('general.agentFrameworkAutoClaude')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>

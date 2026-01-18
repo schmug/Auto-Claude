@@ -90,7 +90,7 @@ export const GIT_HISTORY_TYPE_DESCRIPTIONS: Record<string, string> = {
 // ============================================
 
 export const CHANGELOG_STAGE_LABELS: Record<string, string> = {
-  'loading_specs': 'Loading spec files...',
+  'loading_specs': 'Loading case files...',
   'loading_commits': 'Loading commits...',
   'generating': 'Generating changelog...',
   'formatting': 'Formatting output...',

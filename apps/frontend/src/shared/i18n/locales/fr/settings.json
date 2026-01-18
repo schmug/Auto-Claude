@@ -189,7 +189,7 @@
     "otherAgentSettings": "Autres paramètres de l'agent",
     "otherAgentSettingsDescription": "Options de configuration supplémentaires de l'agent",
     "agentFramework": "Framework de l'agent",
-    "agentFrameworkDescription": "Le framework de codage utilisé pour les tâches autonomes",
+    "agentFrameworkDescription": "Le framework DFIR utilise pour les cases autonomes",
     "agentFrameworkAutoClaude": "Auto Sleuth",
     "aiTerminalNaming": "Nommage IA des terminaux",
     "aiTerminalNamingDescription": "Nommer automatiquement les terminaux en fonction des commandes (utilise Haiku)",
