@@ -316,7 +316,7 @@ def setup_workspace(
     print_status(f"Workspace ready: {worktree_info.path.name}", "success")
     print()
 
-    # Initialize FileTimelineTracker for this task
+    # Initialize FileTimelineTracker for this case
     initialize_timeline_tracking(
         project_dir=project_dir,
         case_name=case_name,
@@ -379,15 +379,15 @@ def initialize_timeline_tracking(
     source_case_dir: Path | None = None,
 ) -> None:
     """
-    Initialize FileTimelineTracker for a new task.
+    Initialize FileTimelineTracker for a new case.
 
-    This registers the task's branch point and the files it intends to modify,
+    This registers the case's branch point and the files it intends to modify,
     enabling intent-aware merge conflict resolution later.
     """
     try:
         tracker = FileTimelineTracker(project_dir)
 
-        # Get task intent from implementation plan
+        # Get case intent from implementation plan
         task_intent = ""
         task_title = case_name
         files_to_modify = []
@@ -425,7 +425,7 @@ def initialize_timeline_tracking(
         branch_point = result.stdout.strip() if result.returncode == 0 else None
 
         if files_to_modify and branch_point:
-            # Register the task with known files
+            # Register the case with known files
             tracker.on_task_start(
                 task_id=case_name,
                 files_to_modify=list(set(files_to_modify)),  # Dedupe

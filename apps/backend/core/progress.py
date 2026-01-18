@@ -2,8 +2,8 @@
 Progress Tracking Utilities
 ===========================
 
-Functions for tracking and displaying progress of the autonomous coding agent.
-Uses task-based investigation plans (investigation_plan.json).
+Functions for tracking and displaying progress of the autonomous DFIR agent.
+Uses analysis-task-based investigation plans (investigation_plan.json).
 
 Enhanced with colored output, icons, and better visual formatting.
 """
@@ -27,7 +27,7 @@ from ui import (
 
 
 def _get_phase_tasks(phase: dict) -> list[dict]:
-    """Return the list of tasks for a phase."""
+    """Return the list of analysis tasks for a phase."""
     tasks = phase.get("analysis_tasks")
     if isinstance(tasks, list):
         return tasks
@@ -37,7 +37,7 @@ def _get_phase_tasks(phase: dict) -> list[dict]:
 
 def count_subtasks(case_dir: Path) -> tuple[int, int]:
     """
-    Count completed and total tasks in investigation_plan.json.
+    Count completed and total analysis tasks in investigation_plan.json.
 
     Args:
         case_dir: Directory containing investigation_plan.json
@@ -70,7 +70,7 @@ def count_subtasks(case_dir: Path) -> tuple[int, int]:
 
 def count_subtasks_detailed(case_dir: Path) -> dict:
     """
-    Count tasks by status.
+    Count analysis tasks by status.
 
     Returns:
         Dict with completed, in_progress, pending, failed counts
@@ -108,7 +108,7 @@ def count_subtasks_detailed(case_dir: Path) -> dict:
 
 def is_build_complete(case_dir: Path) -> bool:
     """
-    Check if all tasks are completed.
+    Check if all analysis tasks are completed.
 
     Args:
         case_dir: Directory containing investigation_plan.json
@@ -128,7 +128,7 @@ def get_progress_percentage(case_dir: Path) -> float:
         case_dir: Directory containing investigation_plan.json
 
     Returns:
-    Percentage of tasks completed (0-100)
+    Percentage of analysis tasks completed (0-100)
     """
     completed, total = count_subtasks(case_dir)
     if total == 0:
@@ -183,10 +183,10 @@ def print_progress_summary(case_dir: Path, show_next: bool = True) -> None:
 
         # Status message
         if completed == total:
-            print_status("BUILD COMPLETE - All tasks completed!", "success")
+            print_status("INVESTIGATION COMPLETE - All analysis tasks completed!", "success")
         else:
             remaining = total - completed
-            print_status(f"{remaining} tasks remaining", "info")
+            print_status(f"{remaining} analysis tasks remaining", "info")
 
         # Phase summary
         try:
@@ -248,9 +248,9 @@ def print_progress_summary(case_dir: Path, show_next: bool = True) -> None:
 def print_build_complete_banner(case_dir: Path) -> None:
     """Print a completion banner."""
     content = [
-        success(f"{icon(Icons.SUCCESS)} BUILD COMPLETE!"),
+        success(f"{icon(Icons.SUCCESS)} INVESTIGATION COMPLETE!"),
         "",
-        "All tasks have been implemented successfully.",
+        "All analysis tasks have been completed successfully.",
         "",
         muted("Next steps:"),
         f"  1. Review the {highlight('auto-sleuth/*')} branch",
@@ -274,7 +274,7 @@ def print_paused_banner(
     content = [
         warning(f"{icon(Icons.PAUSE)} BUILD PAUSED"),
         "",
-        f"Progress saved: {completed}/{total} tasks complete",
+        f"Progress saved: {completed}/{total} analysis tasks complete",
     ]
 
     if has_worktree:
@@ -430,7 +430,7 @@ def get_current_phase(case_dir: Path) -> dict | None:
 
 def get_next_subtask(case_dir: Path) -> dict | None:
     """
-    Find the next task to work on, recaseting phase dependencies.
+    Find the next analysis task to work on, recaseting phase dependencies.
 
     Args:
         case_dir: Directory containing investigation_plan.json

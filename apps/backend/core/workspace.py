@@ -157,7 +157,7 @@ def merge_existing_build(
     Called when user runs: python auto-sleuth/run.py --case X --merge
 
     This uses the MergeOrchestrator to:
-    1. Analyze semantic changes from the task
+    1. Analyze semantic changes from the case
     2. Detect potential conflicts with main branch
     3. Auto-merge compatible changes
     4. Use AI for ambiguous conflicts (if enabled)
@@ -168,7 +168,7 @@ def merge_existing_build(
         case_name: Name of the case
         no_commit: If True, merge changes but don't commit (stage only for review in IDE)
         use_smart_merge: If True, use intent-aware merge (default True)
-        base_branch: The branch the task was created from (for comparison). If None, auto-detect.
+        base_branch: The branch the case was created from (for comparison). If None, auto-detect.
 
     Returns:
         True if merge succeeded
@@ -347,13 +347,13 @@ def _try_smart_merge(
     """
     Try to use the intent-aware merge system.
 
-    This handles both semantic conflicts (parallel tasks) and git conflicts
+    This handles both semantic conflicts (parallel cases) and git conflicts
     (branch divergence) by using AI to intelligently merge files.
 
     Uses a lock file to prevent concurrent merges for the same case.
 
     Args:
-        task_source_branch: The branch the task was created from (for comparison).
+        task_source_branch: The branch the case was created from (for comparison).
                            If None, auto-detect.
 
     Returns:
@@ -421,7 +421,7 @@ def _try_smart_merge_inner(
         )
 
         # Refresh evolution data from the worktree
-        # Use task_source_branch (where task branched from) for comparing what files changed
+        # Use task_source_branch (where case branched from) for comparing what files changed
         # If not provided, auto-detection will find main/master
         debug(
             MODULE,
@@ -1538,14 +1538,14 @@ BASE (common ancestor):
         worktree_content = worktree_content[:15000] + "\n... (truncated)"
 
     prompt = f"""Perform a 3-way merge for file: {file_path}
-Task being merged: {case_name}
+Case being merged: {case_name}
 {base_section}
 OURS (current main branch):
 ```{language}
 {main_content}
 ```
 
-THEIRS (changes from task worktree):
+THEIRS (changes from case worktree):
 ```{language}
 {worktree_content}
 ```

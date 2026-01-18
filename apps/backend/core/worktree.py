@@ -168,7 +168,7 @@ class WorktreeManager:
     """
     Manages per-case Git worktrees.
 
-    Each case gets its own worktree in .auto-sleuth/worktrees/tasks/{case-name}/ with
+Each case gets its own worktree stored under .auto-sleuth/worktrees/tasks/{case-name}/ with
     a corresponding branch auto-sleuth/{case-name}.
     """
 

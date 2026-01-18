@@ -12,7 +12,7 @@ Controlled via environment variables:
 Usage:
     from debug import debug, debug_detailed, debug_verbose, is_debug_enabled
 
-    debug("run.py", "Starting task execution", task_id="001")
+    debug("run.py", "Starting case execution", task_id="001")
     debug_detailed("agent", "Agent response received", response_length=1234)
     debug_verbose("client", "Full request payload", payload=data)
 """

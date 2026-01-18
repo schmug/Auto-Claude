@@ -559,7 +559,7 @@ def create_client(
     # This handles case worktrees, PR review worktrees, and legacy worktrees
     # Note: Windows paths are normalized to forward slashes before comparison
     worktree_markers = [
-        "/.auto-sleuth/worktrees/tasks/",  # Case/task worktrees
+        "/.auto-sleuth/worktrees/tasks/",  # Case worktrees
         "/.auto-sleuth/github/pr/worktrees/",  # PR review worktrees
         "/.worktrees/",  # Legacy worktree location
     ]

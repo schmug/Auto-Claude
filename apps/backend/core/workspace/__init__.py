@@ -4,7 +4,7 @@ Workspace Management Package
 =============================
 
 Handles workspace isolation through Git worktrees, where each case
-gets its own isolated worktree in .auto-sleuth/worktrees/tasks/{case-name}/.
+gets its own isolated worktree stored under .auto-sleuth/worktrees/tasks/{case-name}/.
 
 This package provides:
 - Workspace setup and configuration
