@@ -112,7 +112,7 @@ export function SortableFeatureCard({
                     </Badge>
                   </TooltipTrigger>
                   <TooltipContent>
-                    This feature addresses competitor pain points
+                    This objective is informed by external insights
                   </TooltipContent>
                 </Tooltip>
               )}
@@ -131,7 +131,7 @@ export function SortableFeatureCard({
                 }}
               >
                 <ExternalLink className="h-3 w-3 mr-1" />
-                Task
+                Case
               </Button>
             ) : (
               feature.status !== 'done' &&
@@ -146,7 +146,7 @@ export function SortableFeatureCard({
                   }}
                 >
                   <Play className="h-3 w-3 mr-1" />
-                  Build
+                  Investigate
                 </Button>
               )
             )}

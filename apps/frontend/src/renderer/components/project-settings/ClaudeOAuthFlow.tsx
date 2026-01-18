@@ -128,8 +128,8 @@ export function ClaudeOAuthFlow({ onSuccess, onCancel }: ClaudeOAuthFlowProps) {
                     Authenticate with Claude
                   </h3>
                   <p className="text-sm text-muted-foreground">
-                    Auto Claude requires Claude AI authentication for AI-powered features like
-                    Roadmap generation, Task automation, and Ideation.
+                    Auto Sleuth requires Claude AI authentication for AI-powered capabilities like
+                    Roadmap generation, Case automation, and Ideation.
                   </p>
                   <p className="text-sm text-muted-foreground">
                     This will open a browser window to authenticate with your Claude account.
@@ -176,7 +176,7 @@ export function ClaudeOAuthFlow({ onSuccess, onCancel }: ClaudeOAuthFlowProps) {
                       <li>Your browser should open to authenticate with Claude</li>
                       <li>Complete the OAuth flow in your browser</li>
                       <li>The terminal will display your token (starts with sk-ant-oat01-...)</li>
-                      <li>Auto Claude will automatically detect and save it</li>
+                      <li>Auto Sleuth will automatically detect and save it</li>
                     </ol>
                   </div>
                 </div>
@@ -201,7 +201,7 @@ export function ClaudeOAuthFlow({ onSuccess, onCancel }: ClaudeOAuthFlowProps) {
                 </p>
                 <div className="flex items-center gap-2 mt-3 text-xs text-success/70">
                   <Sparkles className="h-3 w-3" />
-                  <span>You can now use all Auto Claude AI features</span>
+                  <span>You can now use all Auto Sleuth AI capabilities</span>
                 </div>
               </div>
             </div>

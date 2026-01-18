@@ -43,10 +43,10 @@ export function FeatureCard({
                 <TooltipTrigger asChild>
                   <Badge variant="outline" className="text-xs text-primary border-primary/50">
                     <TrendingUp className="h-3 w-3 mr-1" />
-                    Competitor Insight
+                    External Insight
                   </Badge>
                 </TooltipTrigger>
-                <TooltipContent>This feature addresses competitor pain points</TooltipContent>
+                <TooltipContent>This objective is informed by external insights</TooltipContent>
               </Tooltip>
             )}
           </div>
@@ -63,7 +63,7 @@ export function FeatureCard({
             }}
           >
             <ExternalLink className="h-3 w-3 mr-1" />
-            Go to Task
+            View Case
           </Button>
         ) : (
           feature.status !== 'done' && (
@@ -76,7 +76,7 @@ export function FeatureCard({
               }}
             >
               <Play className="h-3 w-3 mr-1" />
-              Build
+              Investigate
             </Button>
           )
         )}

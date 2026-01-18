@@ -237,7 +237,7 @@ export function DevToolsStep({ onNext, onBack }: DevToolsStepProps) {
             Developer Tools
           </h1>
           <p className="mt-2 text-muted-foreground">
-            Choose your preferred IDE and terminal for working with Auto Claude worktrees
+            Choose your preferred IDE and terminal for working with Auto Sleuth worktrees
           </p>
         </div>
 
@@ -271,8 +271,8 @@ export function DevToolsStep({ onNext, onBack }: DevToolsStepProps) {
                       Why configure these?
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      When Auto Claude builds features in isolated worktrees, you can open them
-                      directly in your preferred IDE or terminal to test and review changes.
+                      When Auto Sleuth builds cases in isolated worktrees, you can open them
+                      directly in your preferred IDE or terminal to validate and review changes.
                     </p>
                   </div>
                 </div>
@@ -320,7 +320,7 @@ export function DevToolsStep({ onNext, onBack }: DevToolsStepProps) {
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground">
-                Auto Claude will open worktrees in this editor
+                Auto Sleuth will open worktrees in this editor
               </p>
 
               {/* Custom IDE Path */}
@@ -369,7 +369,7 @@ export function DevToolsStep({ onNext, onBack }: DevToolsStepProps) {
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground">
-                Auto Claude will open terminal sessions here
+                Auto Sleuth will open terminal sessions here
               </p>
 
               {/* Custom Terminal Path */}

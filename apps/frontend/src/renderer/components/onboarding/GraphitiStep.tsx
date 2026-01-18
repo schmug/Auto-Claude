@@ -769,7 +769,7 @@ export function GraphitiStep({ onNext, onBack, onSkip }: GraphitiStepProps) {
                         Graphiti configured successfully
                       </h3>
                       <p className="mt-1 text-sm text-success/80">
-                        Memory features are enabled. Auto Claude will maintain context
+                        Memory capabilities are enabled. Auto Sleuth will maintain context
                         across sessions for improved code understanding.
                       </p>
                     </div>
@@ -817,7 +817,7 @@ export function GraphitiStep({ onNext, onBack, onSkip }: GraphitiStepProps) {
                           </p>
                           <p className="text-sm text-info/80 mt-1">
                             LadybugDB uses an embedded database - no Docker required.
-                            The database will be created when you first use memory features.
+                            The database will be created when you first use memory capabilities.
                           </p>
                         </div>
                       </div>
@@ -835,7 +835,7 @@ export function GraphitiStep({ onNext, onBack, onSkip }: GraphitiStepProps) {
                           What is Graphiti?
                         </p>
                         <p className="text-sm text-muted-foreground">
-                          Graphiti is an intelligent memory layer that helps Auto Claude remember
+                          Graphiti is an intelligent memory layer that helps Auto Sleuth remember
                           context across sessions. It uses a knowledge graph to store discoveries,
                           patterns, and insights about your codebase.
                         </p>

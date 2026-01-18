@@ -296,7 +296,7 @@ export function OAuthStep({ onNext, onBack, onSkip }: OAuthStepProps) {
             Configure Claude Authentication
           </h1>
           <p className="mt-2 text-muted-foreground">
-            Add your Claude accounts to enable AI features
+            Add your Claude accounts to enable AI capabilities
           </p>
         </div>
 

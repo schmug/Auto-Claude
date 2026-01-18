@@ -734,7 +734,7 @@ export function GitHubSetupModal({
                 Select Base Branch
               </DialogTitle>
               <DialogDescription>
-                Choose which branch Auto Claude should use as the base for creating task branches.
+                Choose which branch Auto Sleuth should use as the base for creating case branches.
               </DialogDescription>
             </DialogHeader>
 
@@ -786,7 +786,7 @@ export function GitHubSetupModal({
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-muted-foreground">
-                  All tasks will be created from branches like{' '}
+                  All cases will be created from branches like{' '}
                   <code className="px-1 bg-muted rounded">auto-claude/task-name</code>
                   {selectedBranch && (
                     <> based on <code className="px-1 bg-muted rounded">{selectedBranch}</code></>
@@ -801,8 +801,8 @@ export function GitHubSetupModal({
                   <div className="text-xs text-muted-foreground">
                     <p className="font-medium text-foreground">Why select a branch?</p>
                     <p className="mt-1">
-                      Auto Claude creates isolated workspaces for each task. Selecting the right base branch ensures
-                      your tasks start with the latest code from your main development line.
+                      Auto Sleuth creates isolated workspaces for each case. Selecting the right base branch ensures
+                      your cases start with the latest code from your main development line.
                     </p>
                   </div>
                 </div>
@@ -847,7 +847,7 @@ export function GitHubSetupModal({
                 <CheckCircle2 className="h-8 w-8 text-success" />
               </div>
               <p className="text-sm text-muted-foreground text-center">
-                Auto Claude is ready to use! You can now create tasks that will be
+                Auto Sleuth is ready to use! You can now create cases that will be
                 automatically based on <code className="px-1 bg-muted rounded">{selectedBranch}</code>.
               </p>
             </div>

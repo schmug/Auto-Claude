@@ -142,10 +142,10 @@ function DroppableStatusColumn({
                     <>
                       <Inbox className="h-6 w-6 text-muted-foreground/50" />
                       <span className="mt-2 text-sm font-medium text-muted-foreground/70">
-                        No features
+                        No objectives
                       </span>
                       <span className="mt-0.5 text-xs text-muted-foreground/50">
-                        Drag features here
+                        Drag objectives here
                       </span>
                     </>
                   )}

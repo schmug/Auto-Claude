@@ -270,13 +270,13 @@ export function Insights({ projectId }: InsightsProps) {
             </h3>
             <p className="max-w-md text-sm text-muted-foreground">
               Ask questions about your codebase, get suggestions for improvements,
-              or discuss features you'd like to implement.
+              or discuss cases you'd like to investigate.
             </p>
             <div className="mt-6 flex flex-wrap justify-center gap-2">
               {[
                 'What is the architecture of this project?',
                 'Suggest improvements for code quality',
-                'What features could I add next?',
+                'What cases should I investigate next?',
                 'Are there any security concerns?'
               ].map((suggestion) => (
                 <Button
