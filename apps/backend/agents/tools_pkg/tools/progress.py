@@ -39,7 +39,7 @@ def create_progress_tools(case_dir: Path, project_dir: Path) -> list:
     # -------------------------------------------------------------------------
     @tool(
         "get_build_progress",
-        "Get the current build progress including completed subtasks, pending subtasks, and next subtask to work on.",
+        "Get the current build progress including completed tasks, pending tasks, and next task to work on.",
         {},
     )
     async def get_build_progress(args: dict[str, Any]) -> dict[str, Any]:
@@ -71,10 +71,17 @@ def create_progress_tools(case_dir: Path, project_dir: Path) -> list:
             phases_summary = []
             next_subtask = None
 
+            def get_phase_tasks(phase: dict) -> list[dict]:
+                tasks = phase.get("analysis_tasks")
+                if isinstance(tasks, list):
+                    return tasks
+                tasks = phase.get("subtasks") or phase.get("chunks") or []
+                return tasks if isinstance(tasks, list) else []
+
             for phase in plan.get("phases", []):
                 phase_id = phase.get("id") or phase.get("phase")
                 phase_name = phase.get("name", phase_id)
-                phase_subtasks = phase.get("subtasks", [])
+                phase_subtasks = get_phase_tasks(phase)
 
                 phase_stats = {"completed": 0, "total": len(phase_subtasks)}
 
@@ -107,7 +114,7 @@ def create_progress_tools(case_dir: Path, project_dir: Path) -> list:
                 (stats["completed"] / stats["total"] * 100) if stats["total"] > 0 else 0
             )
 
-            result = f"""Build Progress: {stats["completed"]}/{stats["total"]} subtasks ({progress_pct:.0f}%)
+            result = f"""Build Progress: {stats["completed"]}/{stats["total"]} tasks ({progress_pct:.0f}%)
 
 Status breakdown:
   Completed: {stats["completed"]}
@@ -121,12 +128,12 @@ Phases:
             if next_subtask:
                 result += f"""
 
-Next subtask to work on:
+Next task to work on:
   ID: {next_subtask["id"]}
   Phase: {next_subtask["phase"]}
   Description: {next_subtask["description"]}"""
             elif stats["completed"] == stats["total"]:
-                result += "\n\nAll subtasks completed! Build is ready for QA."
+                result += "\n\nAll tasks completed! Build is ready for QA."
 
             return {"content": [{"type": "text", "text": result}]}
 

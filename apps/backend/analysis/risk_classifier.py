@@ -122,7 +122,7 @@ class RiskAssessment:
     """Complete risk assessment from complexity_assessment.json."""
 
     complexity: str  # simple, standard, complex
-    workflow_type: str  # feature, refactor, investigation, migration, simple
+    investigation_type: str  # feature, refactor, investigation, migration, simple
     confidence: float
     reasoning: str
     analysis: ComplexityAnalysis
@@ -221,7 +221,8 @@ class RiskClassifier:
 
         return RiskAssessment(
             complexity=data.get("complexity", "standard"),
-            workflow_type=data.get("workflow_type", "feature"),
+            investigation_type=data.get("investigation_type")
+            or data.get("workflow_type", "feature"),
             confidence=float(data.get("confidence", 0.5)),
             reasoning=data.get("reasoning", ""),
             analysis=analysis,

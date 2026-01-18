@@ -188,9 +188,11 @@ class ComplexityAnalyzer:
 
         # 5. Requirements-based signals (if available)
         if requirements:
-            services_involved = requirements.get("services_involved", [])
-            signals["explicit_services"] = len(services_involved)
-            estimated_services = max(estimated_services, len(services_involved))
+            evidence_sources = requirements.get("evidence_sources") or requirements.get(
+                "services_involved", []
+            )
+            signals["explicit_services"] = len(evidence_sources)
+            estimated_services = max(estimated_services, len(evidence_sources))
 
         # Determine complexity
         complexity, confidence, reasoning = self._calculate_complexity(
@@ -370,8 +372,8 @@ async def run_ai_complexity_assessment(
             context += f"""
 ## Requirements (from user)
 **Task Description**: {req.get("task_description", "Not provided")}
-**Workflow Type**: {req.get("workflow_type", "Not caseified")}
-**Services Involved**: {", ".join(req.get("services_involved", []))}
+**Investigation Type**: {req.get("investigation_type", req.get("workflow_type", "Not caseified"))}
+**Evidence Sources**: {", ".join(req.get("evidence_sources") or req.get("services_involved", []))}
 **User Requirements**:
 {chr(10).join(f"- {r}" for r in req.get("user_requirements", []))}
 **Acceptance Criteria**:

@@ -104,7 +104,7 @@ Based on your Phase 0 investigation, use the Write tool to create `evidence_inve
     "endpoint_01": {
       "hostname": "WORKSTATION-01",
       "type": "windows_workstation",
-      "artifacts": ["event_logs", "registry", "prefetch", "amcache", "memory_dump"],
+      "artifacts_to_analyze": ["event_logs", "registry", "prefetch", "amcache", "memory_dump"],
       "collection_date": "2024-01-15T10:30:00Z",
       "hash_algorithm": "SHA256",
       "original_hash": "abc123..."
@@ -113,7 +113,7 @@ Based on your Phase 0 investigation, use the Write tool to create `evidence_inve
       "type": "network_capture",
       "source": "firewall_logs",
       "timeframe": "2024-01-01T00:00:00Z to 2024-01-15T23:59:59Z",
-      "artifacts": ["pcap", "netflow", "dns_logs"]
+      "artifacts_to_analyze": ["pcap", "netflow", "dns_logs"]
     }
   },
   "chain_of_custody": {
@@ -229,7 +229,8 @@ Based on the investigation type and evidence sources, create the investigation p
 ```json
 {
   "case_id": "CASE-2024-001",
-  "incident_type": "ransomware|intrusion|data_breach|insider_threat|malware|phishing|apt",
+  "case_name": "Investigate [short incident name]",
+  "case_type": "ransomware|intrusion|data_breach|insider_threat|malware|phishing|apt",
   "investigation_type": "full|triage|re-analysis|incident_analysis",
   "investigation_rationale": "Why this investigation approach was chosen",
   "phases": [
@@ -240,19 +241,19 @@ Based on the investigation type and evidence sources, create the investigation p
       "description": "Verify evidence integrity and document chain of custody",
       "depends_on": [],
       "parallel_safe": false,
-      "steps": [
+      "analysis_tasks": [
         {
           "id": "step-1-1",
           "description": "Verify integrity of disk image from WORKSTATION-01",
           "evidence_source": "endpoint_01",
-          "artifacts": ["disk_image.E01"],
+          "artifacts_to_analyze": ["disk_image.E01"],
           "analysis_type": "integrity_verification",
           "chain_of_custody": {
             "collector": "Auto-DFIR",
             "timestamp": "ISO-8601",
             "hash_algorithm": "SHA256"
           },
-          "verification": {
+          "validation": {
             "type": "hash_verification",
             "expected_hash": "abc123..."
           },
@@ -267,15 +268,15 @@ Based on the investigation type and evidence sources, create the investigation p
       "description": "Analyze host artifacts for indicators of compromise",
       "depends_on": ["phase-1-collection"],
       "parallel_safe": true,
-      "steps": [
+      "analysis_tasks": [
         {
           "id": "step-2-1",
           "description": "Parse Windows Event Logs for suspicious activity",
           "evidence_source": "endpoint_01",
-          "artifacts": ["Security.evtx", "System.evtx", "PowerShell.evtx"],
+          "artifacts_to_analyze": ["Security.evtx", "System.evtx", "PowerShell.evtx"],
           "analysis_type": "log_analysis",
           "ioc_categories": ["process_execution", "authentication", "lateral_movement"],
-          "verification": {
+          "validation": {
             "type": "ioc_validation",
             "min_confidence": 0.7
           },
@@ -285,10 +286,10 @@ Based on the investigation type and evidence sources, create the investigation p
           "id": "step-2-2",
           "description": "Analyze registry for persistence mechanisms",
           "evidence_source": "endpoint_01",
-          "artifacts": ["SYSTEM", "SOFTWARE", "NTUSER.DAT"],
+          "artifacts_to_analyze": ["SYSTEM", "SOFTWARE", "NTUSER.DAT"],
           "analysis_type": "registry_analysis",
           "ioc_categories": ["persistence", "defense_evasion"],
-          "verification": {
+          "validation": {
             "type": "ioc_validation",
             "min_confidence": 0.7
           },
@@ -298,10 +299,10 @@ Based on the investigation type and evidence sources, create the investigation p
           "id": "step-2-3",
           "description": "Analyze memory dump for malicious processes",
           "evidence_source": "endpoint_01",
-          "artifacts": ["memory.dmp"],
+          "artifacts_to_analyze": ["memory.dmp"],
           "analysis_type": "memory_analysis",
           "ioc_categories": ["process_injection", "credential_access"],
-          "verification": {
+          "validation": {
             "type": "ioc_validation",
             "min_confidence": 0.7
           },
@@ -316,15 +317,15 @@ Based on the investigation type and evidence sources, create the investigation p
       "description": "Analyze network traffic for command and control activity",
       "depends_on": ["phase-1-collection"],
       "parallel_safe": true,
-      "steps": [
+      "analysis_tasks": [
         {
           "id": "step-3-1",
           "description": "Analyze PCAP for suspicious connections",
           "evidence_source": "network",
-          "artifacts": ["capture.pcap"],
+          "artifacts_to_analyze": ["capture.pcap"],
           "analysis_type": "network_analysis",
           "ioc_categories": ["c2_communication", "data_exfiltration"],
-          "verification": {
+          "validation": {
             "type": "ioc_validation",
             "min_confidence": 0.7
           },
@@ -339,15 +340,15 @@ Based on the investigation type and evidence sources, create the investigation p
       "description": "Enrich IOCs with threat intelligence and map to MITRE ATT&CK",
       "depends_on": ["phase-2-endpoint", "phase-3-network"],
       "parallel_safe": false,
-      "steps": [
+      "analysis_tasks": [
         {
           "id": "step-4-1",
           "description": "Query threat intelligence feeds for extracted IOCs",
           "evidence_source": "threat_intel",
-          "artifacts": [],
+          "artifacts_to_analyze": [],
           "analysis_type": "threat_intel_lookup",
           "ioc_categories": ["ip_address", "domain", "file_hash"],
-          "verification": {
+          "validation": {
             "type": "enrichment_complete",
             "min_iocs_enriched": 1
           },
@@ -357,10 +358,10 @@ Based on the investigation type and evidence sources, create the investigation p
           "id": "step-4-2",
           "description": "Map findings to MITRE ATT&CK framework",
           "evidence_source": "analysis_results",
-          "artifacts": [],
+          "artifacts_to_analyze": [],
           "analysis_type": "mitre_mapping",
           "ioc_categories": [],
-          "verification": {
+          "validation": {
             "type": "mitre_mapping_complete",
             "min_techniques_mapped": 1
           },
@@ -375,15 +376,15 @@ Based on the investigation type and evidence sources, create the investigation p
       "description": "Build attack timeline and correlate events across sources",
       "depends_on": ["phase-4-enrichment"],
       "parallel_safe": false,
-      "steps": [
+      "analysis_tasks": [
         {
           "id": "step-5-1",
           "description": "Build chronological timeline of attack",
           "evidence_source": "all",
-          "artifacts": [],
+          "artifacts_to_analyze": [],
           "analysis_type": "timeline_reconstruction",
           "ioc_categories": [],
-          "verification": {
+          "validation": {
             "type": "timeline_complete",
             "min_events": 5
           },
@@ -398,15 +399,15 @@ Based on the investigation type and evidence sources, create the investigation p
       "description": "Validate findings and verify chain of custody",
       "depends_on": ["phase-5-correlation"],
       "parallel_safe": false,
-      "steps": [
+      "analysis_tasks": [
         {
           "id": "step-6-1",
           "description": "Validate all findings and check evidence integrity",
           "evidence_source": "all",
-          "artifacts": [],
+          "artifacts_to_analyze": [],
           "analysis_type": "validation",
           "ioc_categories": [],
-          "verification": {
+          "validation": {
             "type": "validation_complete",
             "checks": ["chain_of_custody", "ioc_validation", "timeline_consistency"]
           },
@@ -419,7 +420,7 @@ Based on the investigation type and evidence sources, create the investigation p
     "endpoint_01": {
       "type": "windows_workstation",
       "hostname": "WORKSTATION-01",
-      "artifacts": ["event_logs", "registry", "prefetch", "amcache", "memory_dump"]
+      "artifacts_to_analyze": ["event_logs", "registry", "prefetch", "amcache", "memory_dump"]
     },
     "network": {
       "type": "network_capture",

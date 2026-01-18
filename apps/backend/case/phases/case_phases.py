@@ -21,11 +21,11 @@ class CasePhaseMixin:
     async def phase_quick_case(self) -> PhaseResult:
         """Quick case for simple tasks - combines context and case in one step."""
         case_file = self.case_dir / "case.md"
-        case_file = self.case_dir / "case.md"  # DFIR alternative
+        spec_file = self.case_dir / "spec.md"  # Legacy alternative
         plan_file = self.case_dir / "investigation_plan.json"
 
-        # Check for either case.md or case.md (DFIR uses case.md)
-        doc_file = case_file if case_file.exists() else case_file
+        # Check for either case.md or spec.md (DFIR uses case.md)
+        doc_file = case_file if case_file.exists() else spec_file
 
         if doc_file.exists() and plan_file.exists():
             self.ui.print_status("Quick investigation case already exists", "success")
@@ -48,8 +48,8 @@ This is a SIMPLE task. Create a minimal case definition and investigation plan d
 No research or extensive analysis needed.
 
 Create:
-1. A concise case.md (or case.md) with just the essential sections
-2. A simple investigation_plan.json with 1-2 subtasks
+1. A concise case.md (or spec.md) with just the essential sections
+2. A simple investigation_plan.json with 1-2 analysis tasks
 """
             success, output = await self.run_agent_fn(
                 "case_quick.md",
@@ -57,8 +57,8 @@ Create:
                 phase_name="quick_case",
             )
 
-            # Check for either case.md or case.md
-            doc_file = case_file if case_file.exists() else case_file
+            # Check for either case.md or spec.md
+            doc_file = case_file if case_file.exists() else spec_file
 
             if success and doc_file.exists():
                 # Create minimal plan if agent didn't
@@ -75,12 +75,12 @@ Create:
         return PhaseResult("quick_case", False, [], errors, MAX_RETRIES)
 
     async def phase_case_writing(self) -> PhaseResult:
-        """Write the case.md or case.md document (DFIR workflows use case.md)."""
+        """Write the case.md or spec.md document (DFIR workflows use case.md)."""
         case_file = self.case_dir / "case.md"
-        case_file = self.case_dir / "case.md"  # DFIR alternative
-        
-        # Check for either case.md or case.md (DFIR uses case.md)
-        output_file = case_file if case_file.exists() else case_file
+        spec_file = self.case_dir / "spec.md"  # Legacy alternative
+
+        # Check for either case.md or spec.md (DFIR uses case.md)
+        output_file = case_file if case_file.exists() else spec_file
         
         if output_file.exists():
             result = self.case_validator.validate_case_document()
@@ -102,8 +102,8 @@ Create:
                 phase_name="case_writing",
             )
 
-            # Check for either case.md or case.md (DFIR workflows use case.md)
-            output_file = case_file if case_file.exists() else case_file
+            # Check for either case.md or spec.md (DFIR workflows use case.md)
+            output_file = case_file if case_file.exists() else spec_file
             
             if success and output_file.exists():
                 result = self.case_validator.validate_case_document()
@@ -120,19 +120,19 @@ Create:
                         f"Case created but invalid: {result.errors}", "error"
                     )
             else:
-                errors.append(f"Attempt {attempt + 1}: Agent did not create case.md or case.md")
+                errors.append(f"Attempt {attempt + 1}: Agent did not create case.md or spec.md")
 
         return PhaseResult("case_writing", False, [], errors, MAX_RETRIES)
 
     async def phase_self_critique(self) -> PhaseResult:
         """Self-critique the case using extended thinking."""
         case_file = self.case_dir / "case.md"
-        case_file = self.case_dir / "case.md"  # DFIR alternative
+        spec_file = self.case_dir / "spec.md"  # Legacy alternative
         research_file = self.case_dir / "research.json"
         critique_file = self.case_dir / "critique_report.json"
 
-        # Check for either case.md or case.md (DFIR uses case.md)
-        output_file = case_file if case_file.exists() else case_file
+        # Check for either case.md or spec.md (DFIR uses case.md)
+        output_file = case_file if case_file.exists() else spec_file
 
         if not output_file.exists():
             self.ui.print_status(f"No {output_file.name} to critique", "error")

@@ -24,11 +24,14 @@ class InvestigationPlan:
     case_id: str
     case_name: str
     case_type: CaseType = CaseType.UNKNOWN
+    investigation_type: str | None = None
     
     # Case details
     description: str = ""
+    investigation_rationale: str = ""
     client: str = ""
     lead_analyst: str = "Auto-DFIR"
+    created_by: str | None = None
     
     # Investigation structure
     phases: list[InvestigationPhase] = field(default_factory=list)
@@ -39,11 +42,17 @@ class InvestigationPlan:
     # Acceptance criteria
     investigation_objectives: list[str] = field(default_factory=list)
     final_deliverables: list[str] = field(default_factory=list)
+    final_acceptance: list[str] = field(default_factory=list)
     
     # Metadata
     created_at: str | None = None
     updated_at: str | None = None
     case_file: str | None = None
+    summary: dict | None = None
+    validation_strategy: dict | None = None
+    qa_signoff: dict | None = None
+    qa_acceptance: list[str] | None = None
+    metadata: dict | None = None
     
     # Status tracking (synced with UI)
     status: str | None = None  # intake, in_progress, validation, reporting, complete
@@ -53,24 +62,50 @@ class InvestigationPlan:
     # Notes and recovery
     analyst_notes: str | None = None
     recovery_note: str | None = None
+
+    # Preserve unknown fields for round-trip safety
+    extra_fields: dict = field(default_factory=dict)
     
     def to_dict(self) -> dict:
         """Convert to dictionary representation."""
-        result = {
-            "case_id": self.case_id,
-            "case_name": self.case_name,
-            "case_type": self.case_type.value,
-            "description": self.description,
-            "client": self.client,
-            "lead_analyst": self.lead_analyst,
-            "phases": [p.to_dict() for p in self.phases],
-            "evidence_sources": self.evidence_sources,
-            "investigation_objectives": self.investigation_objectives,
-            "final_deliverables": self.final_deliverables,
-            "created_at": self.created_at,
-            "updated_at": self.updated_at,
-            "case_file": self.case_file,
-        }
+        result = dict(self.extra_fields)
+        result.update(
+            {
+                "case_id": self.case_id,
+                "case_name": self.case_name,
+                "description": self.description,
+                "client": self.client,
+                "lead_analyst": self.lead_analyst,
+                "phases": [p.to_dict() for p in self.phases],
+                "evidence_sources": self.evidence_sources,
+                "investigation_objectives": self.investigation_objectives,
+                "final_deliverables": self.final_deliverables,
+                "created_at": self.created_at,
+                "updated_at": self.updated_at,
+                "case_file": self.case_file,
+            }
+        )
+
+        if self.case_type and self.case_type != CaseType.UNKNOWN:
+            result["case_type"] = self.case_type.value
+        if self.investigation_type:
+            result["investigation_type"] = self.investigation_type
+        if self.investigation_rationale:
+            result["investigation_rationale"] = self.investigation_rationale
+        if self.created_by:
+            result["created_by"] = self.created_by
+        if self.final_acceptance:
+            result["final_acceptance"] = self.final_acceptance
+        if self.summary is not None:
+            result["summary"] = self.summary
+        if self.validation_strategy is not None:
+            result["validation_strategy"] = self.validation_strategy
+        if self.qa_signoff is not None:
+            result["qa_signoff"] = self.qa_signoff
+        if self.qa_acceptance is not None:
+            result["qa_acceptance"] = self.qa_acceptance
+        if self.metadata is not None:
+            result["metadata"] = self.metadata
         
         # Include status fields if set
         if self.status:
@@ -94,14 +129,69 @@ class InvestigationPlan:
             case_type = CaseType(case_type_str)
         except ValueError:
             case_type = CaseType.UNKNOWN
-            
+
+        known_fields = {
+            "case_id",
+            "id",
+            "case_name",
+            "feature",
+            "title",
+            "case_type",
+            "investigation_type",
+            "workflow_type",
+            "workflowType",
+            "investigation_rationale",
+            "description",
+            "client",
+            "lead_analyst",
+            "created_by",
+            "phases",
+            "evidence_sources",
+            "services_involved",
+            "investigation_objectives",
+            "final_deliverables",
+            "final_acceptance",
+            "created_at",
+            "updated_at",
+            "case_file",
+            "summary",
+            "validation_strategy",
+            "qa_signoff",
+            "qa_acceptance",
+            "metadata",
+            "status",
+            "plan_status",
+            "planStatus",
+            "validation_status",
+            "analyst_notes",
+            "recovery_note",
+        }
+        extra_fields = {k: v for k, v in data.items() if k not in known_fields}
+        case_id = (
+            data.get("case_id")
+            or data.get("id")
+            or data.get("case_name")
+            or data.get("feature")
+            or ""
+        )
+        case_name = (
+            data.get("case_name")
+            or data.get("feature")
+            or data.get("title")
+            or case_id
+            or "Unnamed Case"
+        )
+
         return cls(
-            case_id=data.get("case_id", ""),
-            case_name=data.get("case_name", data.get("title", "Unnamed Case")),
+            case_id=case_id,
+            case_name=case_name,
             case_type=case_type,
+            investigation_type=data.get("investigation_type") or data.get("workflow_type"),
             description=data.get("description", ""),
+            investigation_rationale=data.get("investigation_rationale", ""),
             client=data.get("client", ""),
             lead_analyst=data.get("lead_analyst", "Auto-DFIR"),
+            created_by=data.get("created_by"),
             phases=[
                 InvestigationPhase.from_dict(p, idx + 1)
                 for idx, p in enumerate(data.get("phases", []))
@@ -109,14 +199,21 @@ class InvestigationPlan:
             evidence_sources=data.get("evidence_sources", []),
             investigation_objectives=data.get("investigation_objectives", []),
             final_deliverables=data.get("final_deliverables", []),
+            final_acceptance=data.get("final_acceptance", []),
             created_at=data.get("created_at"),
             updated_at=data.get("updated_at"),
             case_file=data.get("case_file"),
+            summary=data.get("summary"),
+            validation_strategy=data.get("validation_strategy"),
+            qa_signoff=data.get("qa_signoff"),
+            qa_acceptance=data.get("qa_acceptance"),
+            metadata=data.get("metadata"),
             status=data.get("status"),
-            plan_status=data.get("plan_status"),
+            plan_status=data.get("plan_status") or data.get("planStatus"),
             validation_status=data.get("validation_status"),
             analyst_notes=data.get("analyst_notes"),
             recovery_note=data.get("recovery_note"),
+            extra_fields=extra_fields,
         )
     
     def save(self, path: Path):

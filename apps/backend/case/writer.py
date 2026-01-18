@@ -11,30 +11,28 @@ from pathlib import Path
 
 
 def create_minimal_plan(case_dir: Path, task_description: str) -> Path:
-    """Create a minimal implementation plan for simple tasks."""
+    """Create a minimal investigation plan for simple tasks."""
     plan = {
         "case_name": case_dir.name,
-        "workflow_type": "simple",
+        "case_id": case_dir.name,
+        "investigation_type": "simple",
         "total_phases": 1,
         "recommended_workers": 1,
         "phases": [
             {
                 "phase": 1,
+                "id": "phase-1-simple",
                 "name": "Implementation",
                 "description": task_description or "Simple implementation",
                 "depends_on": [],
-                "subtasks": [
+                "analysis_tasks": [
                     {
-                        "id": "subtask-1-1",
+                        "id": "task-1-1",
                         "description": task_description or "Implement the change",
-                        "service": "main",
                         "status": "pending",
-                        "files_to_create": [],
-                        "files_to_modify": [],
-                        "patterns_from": [],
-                        "verification": {
+                        "validation": {
                             "type": "manual",
-                            "run": "Verify the change works as expected",
+                            "instructions": "Verify the change works as expected",
                         },
                     }
                 ],
@@ -63,9 +61,11 @@ def get_plan_stats(case_dir: Path) -> dict:
     try:
         with open(plan_file) as f:
             plan_data = json.load(f)
-        total_subtasks = sum(
-            len(p.get("subtasks", [])) for p in plan_data.get("phases", [])
-        )
+        total_subtasks = 0
+        for phase in plan_data.get("phases", []):
+            tasks = phase.get("analysis_tasks")
+            if isinstance(tasks, list):
+                total_subtasks += len(tasks)
         return {
             "total_subtasks": total_subtasks,
             "total_phases": len(plan_data.get("phases", [])),

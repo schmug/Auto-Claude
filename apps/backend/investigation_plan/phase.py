@@ -17,6 +17,7 @@ class InvestigationPhase:
     
     phase: int  # Phase number (1, 2, 3, ...)
     name: str
+    id: str | None = None
     phase_type: InvestigationPhaseType = InvestigationPhaseType.ANALYSIS
     description: str = ""
     steps: list[InvestigationStep] = field(default_factory=list)
@@ -26,40 +27,83 @@ class InvestigationPhase:
     # Phase-level metadata
     evidence_scope: list[str] = field(default_factory=list)  # Evidence sources for this phase
     expected_outputs: list[str] = field(default_factory=list)  # Expected deliverables
+
+    extra_fields: dict = field(default_factory=dict)
     
     def to_dict(self) -> dict:
         """Convert to dictionary representation."""
-        return {
-            "phase": self.phase,
-            "name": self.name,
-            "phase_type": self.phase_type.value,
-            "description": self.description,
-            "steps": [s.to_dict() for s in self.steps],
-            "depends_on": self.depends_on,
-            "parallel_safe": self.parallel_safe,
-            "evidence_scope": self.evidence_scope,
-            "expected_outputs": self.expected_outputs,
-        }
+        result = dict(self.extra_fields)
+        result.update(
+            {
+                "phase": self.phase,
+                "name": self.name,
+                "description": self.description,
+                "depends_on": self.depends_on,
+                "parallel_safe": self.parallel_safe,
+                "evidence_scope": self.evidence_scope,
+                "expected_outputs": self.expected_outputs,
+            }
+        )
+        if self.id:
+            result["id"] = self.id
+
+        phase_type_value = self.phase_type.value if self.phase_type else None
+        if phase_type_value:
+            result["type"] = phase_type_value
+
+        result["analysis_tasks"] = [s.to_dict() for s in self.steps]
+        return result
     
     @classmethod
     def from_dict(cls, data: dict, phase_num: int | None = None) -> "InvestigationPhase":
         """Create InvestigationPhase from dictionary."""
-        phase_type_str = data.get("phase_type", "analysis")
+        phase_type_str = data.get("type") or data.get("phase_type") or "analysis"
         try:
             phase_type = InvestigationPhaseType(phase_type_str)
         except ValueError:
             phase_type = InvestigationPhaseType.ANALYSIS
-            
+
+        known_fields = {
+            "phase",
+            "id",
+            "name",
+            "phase_type",
+            "type",
+            "description",
+            "steps",
+            "analysis_tasks",
+            "subtasks",
+            "chunks",
+            "tasks",
+            "depends_on",
+            "parallel_safe",
+            "evidence_scope",
+            "expected_outputs",
+        }
+        extra_fields = {k: v for k, v in data.items() if k not in known_fields}
+
+        tasks = data.get("analysis_tasks")
+        if not isinstance(tasks, list):
+            tasks = (
+                data.get("subtasks")
+                or data.get("chunks")
+                or data.get("steps")
+                or data.get("tasks")
+                or []
+            )
+
         return cls(
             phase=phase_num or data.get("phase", 1),
+            id=data.get("id"),
             name=data.get("name", ""),
             phase_type=phase_type,
             description=data.get("description", ""),
-            steps=[InvestigationStep.from_dict(s) for s in data.get("steps", [])],
+            steps=[InvestigationStep.from_dict(s) for s in tasks],
             depends_on=data.get("depends_on", []),
             parallel_safe=data.get("parallel_safe", False),
             evidence_scope=data.get("evidence_scope", []),
             expected_outputs=data.get("expected_outputs", []),
+            extra_fields=extra_fields,
         )
     
     def is_complete(self) -> bool:

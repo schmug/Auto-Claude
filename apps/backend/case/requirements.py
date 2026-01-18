@@ -103,15 +103,15 @@ def gather_requirements_interactively(ui_module) -> dict:
         task = "No task description provided"
     print()
 
-    # Workflow type
-    print(f"  {ui_module.bold('2. What type of work is this?')}")
+    # Investigation type
+    print(f"  {ui_module.bold('2. What type of investigation is this?')}")
     print(f"     {ui_module.muted('[1] feature  - New functionality')}")
     print(f"     {ui_module.muted('[2] bugfix   - Fix existing issue')}")
     print(f"     {ui_module.muted('[3] refactor - Improve code structure')}")
     print(f"     {ui_module.muted('[4] docs     - Documentation changes')}")
     print(f"     {ui_module.muted('[5] test     - Add or improve tests')}")
-    workflow_choice = input("     > ").strip()
-    workflow_map = {
+    investigation_choice = input("     > ").strip()
+    investigation_map = {
         "1": "feature",
         "feature": "feature",
         "2": "bugfix",
@@ -123,7 +123,7 @@ def gather_requirements_interactively(ui_module) -> dict:
         "5": "test",
         "test": "test",
     }
-    workflow_type = workflow_map.get(workflow_choice.lower(), "feature")
+    investigation_type = investigation_map.get(investigation_choice.lower(), "feature")
     print()
 
     # Additional context (optional) - multi-line support
@@ -147,8 +147,8 @@ def gather_requirements_interactively(ui_module) -> dict:
 
     return {
         "task_description": task,
-        "workflow_type": workflow_type,
-        "services_involved": [],  # AI will discover this during planning and context fetching
+        "investigation_type": investigation_type,
+        "evidence_sources": [],
         "additional_context": additional_context if additional_context else None,
         "created_at": datetime.now().isoformat(),
     }
@@ -158,8 +158,8 @@ def create_requirements_from_task(task_description: str) -> dict:
     """Create minimal requirements dictionary from task description."""
     return {
         "task_description": task_description,
-        "workflow_type": "feature",  # Default, agent will refine
-        "services_involved": [],  # AI will discover during planning and context fetching
+        "investigation_type": "feature",  # Default, agent will refine
+        "evidence_sources": [],
         "created_at": datetime.now().isoformat(),
     }
 

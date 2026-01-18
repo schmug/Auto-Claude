@@ -165,7 +165,7 @@ class LinearManager:
 
     def get_subtasks_for_sync(self) -> list[dict]:
         """
-        Get all subtasks that need Linear issues.
+        Get all analysis tasks that need Linear issues.
 
         Returns:
             List of subtask dicts with phase context
@@ -182,7 +182,10 @@ class LinearManager:
             phase_num = phase.get("phase", 1)
             phase_name = phase.get("name", f"Phase {phase_num}")
 
-            for subtask in phase.get("subtasks", []):
+            tasks = phase.get("analysis_tasks")
+            if not isinstance(tasks, list):
+                tasks = phase.get("subtasks", []) or []
+            for subtask in tasks:
                 subtasks.append(
                     {
                         **subtask,
@@ -217,13 +220,14 @@ class LinearManager:
 
         # Build labels list
         labels = [LABELS["auto_build"]]
-        if subtask.get("service"):
-            labels.append(f"{LABELS['service']}-{subtask['service']}")
+        service = subtask.get("evidence_source") or subtask.get("service")
+        if service:
+            labels.append(f"{LABELS['service']}-{service}")
         if subtask.get("phase_num"):
             labels.append(f"{LABELS['phase']}-{subtask['phase_num']}")
 
         return {
-            "title": f"[{subtask.get('id', 'subtask')}] {subtask.get('description', 'Implement subtask')[:100]}",
+            "title": f"[{subtask.get('id', 'task')}] {subtask.get('description', 'Implement task')[:100]}",
             "description": format_subtask_description(subtask, phase),
             "priority": priority,
             "labels": labels,
@@ -389,12 +393,12 @@ Available Linear MCP tools:
             "## Linear Integration",
             "",
             f"**Project:** {summary['project_name']}",
-            f"**Issues:** {summary['mapped_subtasks']}/{summary['total_subtasks']} subtasks mapped",
+            f"**Issues:** {summary['mapped_subtasks']}/{summary['total_subtasks']} tasks mapped",
             "",
-            "When working on a subtask:",
+            "When working on a task:",
             "1. Update issue status to 'In Progress' at start",
             "2. Add comments with progress/blockers",
-            "3. Update status to 'Done' when subtask completes",
+            "3. Update status to 'Done' when task completes",
             "4. If stuck, status will be set to 'Blocked' automatically",
         ]
 

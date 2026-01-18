@@ -201,7 +201,7 @@ def gather_extraction_inputs(
     Returns:
         Dict with all inputs for the extractor
     """
-    # Get subtask description from implementation plan
+    # Get task description from investigation plan
     subtask_description = _get_subtask_description(case_dir, subtask_id)
 
     # Get git diff
@@ -238,11 +238,14 @@ def _get_subtask_description(case_dir: Path, subtask_id: str) -> str:
         with open(plan_file) as f:
             plan = json.load(f)
 
-        # Search through phases for the subtask
-        for phase in plan.get("phases", []):
-            for subtask in phase.get("subtasks", []):
-                if subtask.get("id") == subtask_id:
-                    return subtask.get("description", f"Subtask: {subtask_id}")
+    # Search through phases for the task (analysis_tasks)
+    for phase in plan.get("phases", []):
+        tasks = phase.get("analysis_tasks")
+        if not isinstance(tasks, list):
+            continue
+        for subtask in tasks:
+            if subtask.get("id") == subtask_id:
+                return subtask.get("description", f"Subtask: {subtask_id}")
 
         return f"Subtask: {subtask_id}"
 

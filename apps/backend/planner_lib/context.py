@@ -6,8 +6,6 @@ import json
 import re
 from pathlib import Path
 
-from investigation_plan import WorkflowType
-
 from .models import PlannerContext
 
 
@@ -21,13 +19,23 @@ def _normalize_workflow_type(value: str) -> str:
     return normalized.replace("_", "")
 
 
-_WORKFLOW_TYPE_MAPPING: dict[str, WorkflowType] = {
-    "feature": WorkflowType.FEATURE,
-    "refactor": WorkflowType.REFACTOR,
-    "investigation": WorkflowType.INVESTIGATION,
-    "migration": WorkflowType.MIGRATION,
-    "simple": WorkflowType.SIMPLE,
-    "bugfix": WorkflowType.INVESTIGATION,
+_WORKFLOW_TYPE_MAPPING: dict[str, str] = {
+    "feature": "feature",
+    "refactor": "refactor",
+    "investigation": "investigation",
+    "intrusion": "intrusion",
+    "malware": "malware",
+    "insiderthreat": "insider_threat",
+    "databreach": "data_breach",
+    "triage": "triage",
+    "incidentresponse": "incident_response",
+    "incidentanalysis": "incident_analysis",
+    "ransomware": "ransomware",
+    "phishing": "phishing",
+    "threathunting": "threat_hunting",
+    "migration": "migration",
+    "simple": "simple",
+    "bugfix": "investigation",
 }
 
 
@@ -62,21 +70,21 @@ class ContextLoader:
         if not services:
             services = list(project_index.get("services", {}).keys())
 
-        # Determine workflow type from multiple sources (priority order)
-        workflow_type = self._determine_workflow_type(case_content)
+        # Determine investigation type from multiple sources (priority order)
+        investigation_type = self._determine_investigation_type(case_content)
 
         return PlannerContext(
             case_content=case_content,
             project_index=project_index,
             task_context=task_context,
             services_involved=services,
-            workflow_type=workflow_type,
+            investigation_type=investigation_type,
             files_to_modify=task_context.get("files_to_modify", []),
             files_to_reference=task_context.get("files_to_reference", []),
         )
 
-    def _determine_workflow_type(self, case_content: str) -> WorkflowType:
-        """Determine workflow type from multiple sources.
+    def _determine_investigation_type(self, case_content: str) -> str:
+        """Determine investigation type from multiple sources.
 
         Priority order (highest to lowest):
         1. requirements.json - User's explicit intent
@@ -92,7 +100,8 @@ class ContextLoader:
                 with open(requirements_file) as f:
                     requirements = json.load(f)
                 declared_type = _normalize_workflow_type(
-                    requirements.get("workflow_type", "")
+                    requirements.get("investigation_type")
+                    or requirements.get("workflow_type", "")
                 )
                 if declared_type in _WORKFLOW_TYPE_MAPPING:
                     return _WORKFLOW_TYPE_MAPPING[declared_type]
@@ -106,7 +115,8 @@ class ContextLoader:
                 with open(assessment_file) as f:
                     assessment = json.load(f)
                 declared_type = _normalize_workflow_type(
-                    assessment.get("workflow_type", "")
+                    assessment.get("investigation_type")
+                    or assessment.get("workflow_type", "")
                 )
                 if declared_type in _WORKFLOW_TYPE_MAPPING:
                     return _WORKFLOW_TYPE_MAPPING[declared_type]
@@ -114,10 +124,10 @@ class ContextLoader:
                 pass
 
         # 3. & 4. Fall back to case content detection
-        return self._detect_workflow_type_from_case(case_content)
+        return self._detect_investigation_type_from_case(case_content)
 
-    def _detect_workflow_type_from_case(self, case_content: str) -> WorkflowType:
-        """Detect workflow type from case content (fallback method).
+    def _detect_investigation_type_from_case(self, case_content: str) -> str:
+        """Detect investigation type from case content (fallback method).
 
         Priority:
         1. Explicit Type: declaration in case.md
@@ -158,7 +168,7 @@ class ContextLoader:
                 or "intermittent" in content_lower
                 or "random" in content_lower
             ):
-                return WorkflowType.INVESTIGATION
+                    return _WORKFLOW_TYPE_MAPPING["investigation"]
 
         # Refactor indicators - only match if the INTENT is to refactor, not incidental mentions
         # These should be in headings or task descriptions, not implementation notes
@@ -177,7 +187,7 @@ class ContextLoader:
             # Only trigger on headings or explicit task descriptions
             if line_lower.startswith(("#", "**", "- [ ]", "- [x]")):
                 if any(kw in line_lower for kw in refactor_keywords):
-                    return WorkflowType.REFACTOR
+                    return _WORKFLOW_TYPE_MAPPING["refactor"]
 
         # Migration indicators (data)
         migration_keywords = [
@@ -188,7 +198,7 @@ class ContextLoader:
             "batch",
         ]
         if any(kw in content_lower for kw in migration_keywords):
-            return WorkflowType.MIGRATION
+            return _WORKFLOW_TYPE_MAPPING["migration"]
 
         # Default to feature
-        return WorkflowType.FEATURE
+        return _WORKFLOW_TYPE_MAPPING["feature"]

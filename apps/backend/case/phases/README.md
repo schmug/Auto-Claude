@@ -8,7 +8,7 @@ The `phases.py` file (originally 720 lines) has been refactored into a well-orga
 
 ### Before Refactoring
 ```
-auto-sleuth/spec/
+auto-sleuth/case/
 └── phases.py (720 lines)
     ├── PhaseResult dataclass
     ├── PhaseExecutor class with 12 phase methods
@@ -17,7 +17,7 @@ auto-sleuth/spec/
 
 ### After Refactoring
 ```
-auto-sleuth/spec/
+auto-sleuth/case/
 ├── phases.py (14 lines - entry point)
 └── phases/
     ├── __init__.py (19 lines)
@@ -25,7 +25,7 @@ auto-sleuth/spec/
     ├── executor.py (76 lines)
     ├── discovery_phases.py (108 lines)
     ├── requirements_phases.py (244 lines)
-    ├── spec_phases.py (199 lines)
+    ├── case_phases.py (199 lines)
     ├── planning_phases.py (172 lines)
     ├── utils.py (51 lines)
     └── README.md
@@ -50,10 +50,10 @@ auto-sleuth/spec/
 - `phase_requirements()` - Interactive and automated requirements gathering
 - `phase_research()` - External integration validation
 
-### `spec_phases.py` (SpecPhaseMixin)
-- `phase_quick_spec()` - Simple task spec creation
-- `phase_spec_writing()` - Full spec.md document creation
-- `phase_self_critique()` - AI-powered spec validation
+### `case_phases.py` (CasePhaseMixin)
+- `phase_quick_case()` - Simple task case creation
+- `phase_case_writing()` - Full case.md document creation
+- `phase_self_critique()` - AI-powered case validation
 
 ### `planning_phases.py` (PlanningPhaseMixin)
 - `phase_planning()` - Investigation plan generation
@@ -67,7 +67,7 @@ auto-sleuth/spec/
 The main `phases.py` file re-exports all public APIs, ensuring existing imports continue to work:
 
 ```python
-from spec.phases import PhaseExecutor, PhaseResult, MAX_RETRIES
+from case.phases import PhaseExecutor, PhaseResult, MAX_RETRIES
 ```
 
 ## Design Pattern

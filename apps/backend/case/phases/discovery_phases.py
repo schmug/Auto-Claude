@@ -71,7 +71,7 @@ class DiscoveryPhaseMixin:
         req = requirements.load_requirements(self.case_dir)
         if req:
             task = req.get("task_description", task)
-            services = req.get("services_involved", [])
+            services = req.get("evidence_sources") or req.get("services_involved", [])
 
         errors = []
         for attempt in range(MAX_RETRIES):

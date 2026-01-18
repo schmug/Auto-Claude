@@ -75,10 +75,13 @@ def create_subtask_tools(case_dir: Path, project_dir: Path) -> list:
             with open(plan_file) as f:
                 plan = json.load(f)
 
-            # Find and update the subtask
+            # Find and update the task
             subtask_found = False
             for phase in plan.get("phases", []):
-                for subtask in phase.get("subtasks", []):
+                tasks = phase.get("analysis_tasks")
+                if not isinstance(tasks, list):
+                    tasks = phase.get("subtasks") or phase.get("chunks") or []
+                for subtask in tasks:
                     if subtask.get("id") == subtask_id:
                         subtask["status"] = status
                         if notes:
@@ -94,7 +97,7 @@ def create_subtask_tools(case_dir: Path, project_dir: Path) -> list:
                     "content": [
                         {
                             "type": "text",
-                            "text": f"Error: Subtask '{subtask_id}' not found in implementation plan",
+                            "text": f"Error: Task '{subtask_id}' not found in investigation plan",
                         }
                     ]
                 }

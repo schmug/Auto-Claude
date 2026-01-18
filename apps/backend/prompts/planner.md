@@ -234,7 +234,7 @@ Phases follow data flow:
 
 ### QUICK TRIAGE (Rapid Assessment)
 
-Minimal overhead - just key subtasks, no phases.
+Minimal overhead - just key analysis tasks, no phases.
 
 ---
 
@@ -257,16 +257,18 @@ Based on the investigation type and evidence sources involved, create the invest
 
 **IMPORTANT**: The validator requires these exact field names:
 
-- `remediation` - Short name for the investigation (required)
-- `workflow_type` - Must be "investigation" for DFIR cases (required)
+- `case_id` - Unique case identifier (required)
+- `case_name` - Short name for the investigation (required)
+- `investigation_type` - Investigation category (required)
 - `phases` - Array of phases (required)
-- `subtasks` - Array inside each phase (NOT "analysis_tasks")
-- `service` - Evidence source type (NOT "evidence_source")
+- `analysis_tasks` - Array inside each phase (required)
+- `evidence_source` - Evidence source type (NOT "service")
 
 ```json
 {
-  "remediation": "Investigate [short incident name]",
-  "workflow_type": "investigation",
+  "case_id": "INC-2024-001",
+  "case_name": "Investigate [short incident name]",
+  "investigation_type": "investigation",
   "description": "Why this investigation type was chosen",
   "phases": [
     {
@@ -276,12 +278,12 @@ Based on the investigation type and evidence sources involved, create the invest
       "description": "Analyze network captures for lateral movement indicators",
       "depends_on": [],
       "parallel_safe": true,
-      "subtasks": [
+      "analysis_tasks": [
         {
           "id": "task-1-1",
           "description": "Extract connection logs from PCAP files",
           "status": "pending",
-          "service": "network",
+          "evidence_source": "network",
           "files_to_modify": ["./outputs/connection_timeline.csv"],
           "verification": {
             "type": "command",
@@ -292,7 +294,7 @@ Based on the investigation type and evidence sources involved, create the invest
           "id": "task-1-2",
           "description": "Identify suspicious connections to IOC IPs",
           "status": "pending",
-          "service": "network",
+          "evidence_source": "network",
           "files_to_modify": ["./outputs/suspicious_connections.json"],
           "verification": {
             "type": "command",
@@ -308,12 +310,12 @@ Based on the investigation type and evidence sources involved, create the invest
       "description": "Analyze endpoint artifacts for process execution and persistence",
       "depends_on": ["phase-1-network"],
       "parallel_safe": false,
-      "subtasks": [
+      "analysis_tasks": [
         {
           "id": "task-2-1",
           "description": "Extract Windows Event Logs for suspicious activity",
           "status": "pending",
-          "service": "endpoint",
+          "evidence_source": "endpoint",
           "files_to_modify": ["./outputs/event_timeline.json"],
           "verification": {
             "type": "command",
@@ -329,12 +331,12 @@ Based on the investigation type and evidence sources involved, create the invest
       "description": "Analyze memory dumps for malicious processes and injections",
       "depends_on": ["phase-1-network"],
       "parallel_safe": true,
-      "subtasks": [
+      "analysis_tasks": [
         {
           "id": "task-3-1",
           "description": "List running processes and network connections",
           "status": "pending",
-          "service": "memory",
+          "evidence_source": "memory",
           "files_to_modify": [
             "./outputs/process_list.json",
             "./outputs/network_connections.json"
@@ -353,12 +355,12 @@ Based on the investigation type and evidence sources involved, create the invest
       "description": "Correlate findings across all evidence sources into unified timeline",
       "depends_on": ["phase-2-endpoint", "phase-3-memory"],
       "parallel_safe": false,
-      "subtasks": [
+      "analysis_tasks": [
         {
           "id": "task-4-1",
           "description": "Build master timeline from all evidence sources",
           "status": "pending",
-          "all_services": true,
+          "all_sources": true,
           "files_to_modify": [
             "./outputs/master_timeline.json",
             "./outputs/attack_chain.md"
@@ -386,7 +388,7 @@ Use ONLY these values for the `type` field in phases:
 | `validation`  | Verifying findings and chain of custody                   |
 | `reporting`   | Final report and documentation generation                 |
 
-**IMPORTANT:** Do NOT use `network`, `endpoint`, `memory`, or any other types. Use the `service` field in subtasks to indicate which evidence source the task analyzes.
+**IMPORTANT:** Do NOT use `network`, `endpoint`, `memory`, or any other types. Use the `evidence_source` field in analysis tasks to indicate which evidence source the task analyzes.
 
 ### Subtask Guidelines
 
@@ -446,7 +448,7 @@ Use ONLY these values for the `type` field in phases:
 
 ## PHASE 3.5: DEFINE VALIDATION STRATEGY
 
-After creating the phases and subtasks, define the validation strategy based on the case's severity assessment.
+After creating the phases and analysis tasks, define the validation strategy based on the case's severity assessment.
 
 ### Read Severity Assessment
 
@@ -749,7 +751,7 @@ Rationale: [Why this investigation type]
 Session 1 (Investigation Planner):
 - Created investigation_plan.json
 - Phases: [N]
-- Total subtasks: [N]
+- Total analysis tasks: [N]
 - Created init.sh
 
 Phase Summary:

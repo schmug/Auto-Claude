@@ -142,7 +142,7 @@ Path: {evidence_dir}
                 stats = writer.get_plan_stats(self.case_dir)
                 if stats:
                     self.task_logger.log(
-                        f"Investigation plan created with {stats.get('total_subtasks', 0)} subtasks",
+                        f"Investigation plan created with {stats.get('total_subtasks', 0)} tasks",
                         LogEntryType.SUCCESS,
                         LogPhase.PLANNING,
                     )

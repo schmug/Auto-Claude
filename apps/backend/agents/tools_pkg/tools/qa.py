@@ -111,10 +111,12 @@ def create_qa_tools(case_dir: Path, project_dir: Path) -> list:
             # This ensures the UI shows the correct column after QA
             if status == "approved":
                 plan["status"] = "human_review"
-                plan["planStatus"] = "review"
+                plan["plan_status"] = "review"
             elif status == "rejected":
                 plan["status"] = "human_review"
-                plan["planStatus"] = "review"
+                plan["plan_status"] = "review"
+            if "planStatus" in plan:
+                del plan["planStatus"]
 
             plan["last_updated"] = datetime.now(timezone.utc).isoformat()
 

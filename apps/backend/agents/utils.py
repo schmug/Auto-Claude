@@ -54,10 +54,16 @@ def load_investigation_plan(case_dir: Path) -> dict | None:
         return None
 
 
+def _get_phase_tasks(phase: dict) -> list[dict]:
+    """Return the list of tasks for a phase."""
+    tasks = phase.get("analysis_tasks")
+    return tasks if isinstance(tasks, list) else []
+
+
 def find_subtask_in_plan(plan: dict, subtask_id: str) -> dict | None:
     """Find a subtask by ID in the plan."""
     for phase in plan.get("phases", []):
-        for subtask in phase.get("subtasks", []):
+        for subtask in _get_phase_tasks(phase):
             if subtask.get("id") == subtask_id:
                 return subtask
     return None
@@ -66,7 +72,7 @@ def find_subtask_in_plan(plan: dict, subtask_id: str) -> dict | None:
 def find_phase_for_subtask(plan: dict, subtask_id: str) -> dict | None:
     """Find the phase containing a subtask."""
     for phase in plan.get("phases", []):
-        for subtask in phase.get("subtasks", []):
+        for subtask in _get_phase_tasks(phase):
             if subtask.get("id") == subtask_id:
                 return phase
     return None
@@ -75,7 +81,7 @@ def find_phase_for_subtask(plan: dict, subtask_id: str) -> dict | None:
 def find_step_in_plan(plan: dict, step_id: str) -> dict | None:
     """Find an investigation step by ID in the plan."""
     for phase in plan.get("phases", []):
-        for step in phase.get("steps", []):
+        for step in _get_phase_tasks(phase):
             if step.get("id") == step_id:
                 return step
     return None
@@ -84,7 +90,7 @@ def find_step_in_plan(plan: dict, step_id: str) -> dict | None:
 def find_phase_for_step(plan: dict, step_id: str) -> dict | None:
     """Find the phase containing a step."""
     for phase in plan.get("phases", []):
-        for step in phase.get("steps", []):
+        for step in _get_phase_tasks(phase):
             if step.get("id") == step_id:
                 return phase
     return None

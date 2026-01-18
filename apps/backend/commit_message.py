@@ -107,10 +107,10 @@ def _get_case_context(case_dir: Path) -> dict:
     if req_file.exists():
         try:
             req_data = json.loads(req_file.read_text(encoding="utf-8"))
-            if not context["title"] and req_data.get("feature"):
-                context["title"] = req_data["feature"]
-            if req_data.get("workflow_type"):
-                context["category"] = req_data["workflow_type"]
+            if not context["title"] and req_data.get("case_name"):
+                context["title"] = req_data["case_name"]
+            if req_data.get("investigation_type"):
+                context["category"] = req_data["investigation_type"]
             if req_data.get("task_description") and not context["description"]:
                 context["description"] = req_data["task_description"][:200]
         except Exception as e:
@@ -127,8 +127,10 @@ def _get_case_context(case_dir: Path) -> dict:
                 context["github_issue"] = metadata["githubIssueNumber"]
             # Fallback title
             if not context["title"]:
-                context["title"] = plan_data.get("feature") or plan_data.get(
-                    "title", ""
+                context["title"] = (
+                    plan_data.get("case_name")
+                    or plan_data.get("case_id")
+                    or plan_data.get("title", "")
                 )
         except Exception as e:
             logger.debug(f"Could not read investigation_plan.json: {e}")

@@ -27,15 +27,15 @@ def main():
     case_dir = Path(sys.argv[1])
 
     if "--demo" in sys.argv:
-        # Demo with sample subtask
+        # Demo with sample analysis task
         demo_subtask = {
             "id": "avatar-endpoint",
             "description": "POST /api/users/avatar endpoint for uploading user avatars",
-            "service": "backend",
-            "files_to_modify": ["app/routes/users.py"],
-            "files_to_create": [],
-            "patterns_from": ["app/routes/profile.py"],
-            "verification": {
+            "evidence_source": "backend",
+            "artifacts_to_analyze": ["app/routes/users.py"],
+            "artifacts_to_produce": [],
+            "reference_patterns": ["app/routes/profile.py"],
+            "validation": {
                 "type": "api",
                 "method": "POST",
                 "url": "/api/users/avatar",
@@ -55,10 +55,13 @@ def main():
         with open(plan_file) as f:
             plan = json.load(f)
 
-        # Find first pending subtask
+        # Find first pending task
         subtask = None
         for phase in plan.get("phases", []):
-            for c in phase.get("subtasks", []):
+            tasks = phase.get("analysis_tasks")
+            if not isinstance(tasks, list):
+                tasks = phase.get("subtasks", []) or []
+            for c in tasks:
                 if c.get("status") == "pending":
                     subtask = c
                     break
@@ -66,7 +69,7 @@ def main():
                 break
 
         if not subtask:
-            print("No pending subtasks found")
+            print("No pending tasks found")
             sys.exit(0)
 
         # Generate checklist

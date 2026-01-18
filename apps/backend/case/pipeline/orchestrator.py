@@ -484,8 +484,8 @@ class CaseOrchestrator:
             self.task_description = req.get("task_description", self.task_description)
             return f"""
 **Task Description**: {req.get("task_description", "Not provided")}
-**Workflow Type**: {req.get("workflow_type", "Not caseified")}
-**Services Involved**: {", ".join(req.get("services_involved", []))}
+**Investigation Type**: {req.get("investigation_type", req.get("workflow_type", "Not caseified"))}
+**Evidence Sources**: {", ".join(req.get("evidence_sources") or req.get("services_involved", []))}
 **User Requirements**:
 {chr(10).join(f"- {r}" for r in req.get("user_requirements", []))}
 **Acceptance Criteria**:

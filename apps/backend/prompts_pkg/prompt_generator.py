@@ -265,7 +265,7 @@ def generate_planner_prompt(case_dir: Path, project_dir: Path | None = None) -> 
         prompt = planner_file.read_text()
     else:
         prompt = (
-            f"Read {case_file_name} and create investigation_plan.json with phases and subtasks."
+            f"Read {case_file_name} and create investigation_plan.json with phases and analysis tasks."
         )
 
     # Use project_dir for relative paths, or infer from case_dir
@@ -285,7 +285,7 @@ def generate_planner_prompt(case_dir: Path, project_dir: Path | None = None) -> 
 Your case file is located at: `{relative_case}/{case_file_name}`
 
 Store all build artifacts in this case directory:
-- `{relative_case}/investigation_plan.json` - Subtask-based implementation plan
+- `{relative_case}/investigation_plan.json` - Analysis task-based investigation plan
 - `{relative_case}/build-progress.txt` - Progress notes
 - `{relative_case}/init.sh` - Environment setup script
 

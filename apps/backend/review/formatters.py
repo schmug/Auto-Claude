@@ -27,7 +27,6 @@ from ui import (
 from .diff_analyzer import (
     extract_checkboxes,
     extract_section,
-    extract_table_rows,
     extract_title,
     truncate_text,
 )
@@ -40,8 +39,8 @@ def display_case_summary(case_dir: Path) -> None:
 
     Extracts and displays:
     - Overview
-    - Workflow Type
-    - Files to Modify
+    - Investigation Type
+    - Evidence Sources
     - Success Criteria
 
     Uses formatted boxes for readability.
@@ -80,42 +79,28 @@ def display_case_summary(case_dir: Path) -> None:
             summary_lines.append(f"  {line}")
         summary_lines.append("")
 
-    # Workflow Type
-    workflow_section = extract_section(content, "## Workflow Type")
-    if workflow_section:
+    # Investigation Type (fallback to legacy Workflow Type)
+    investigation_section = extract_section(content, "## Investigation Type") or extract_section(content, "## Workflow Type")
+    if investigation_section:
         # Extract just the type value
-        type_match = re.search(r"\*\*Type\*\*:\s*(\w+)", workflow_section)
+        type_match = re.search(r"\*\*Type\*\*:\s*([^\n]+)", investigation_section)
         if type_match:
-            summary_lines.append(f"{muted('Workflow:')} {type_match.group(1)}")
+            summary_lines.append(f"{muted('Investigation:')} {type_match.group(1).strip()}")
 
-    # Files to Modify
-    files_section = extract_section(content, "## Files to Modify")
-    if files_section:
-        files = extract_table_rows(files_section, "File")
-        if files:
+    # Evidence Sources
+    evidence_section = extract_section(content, "## Evidence Sources")
+    if evidence_section:
+        sources = []
+        for line in evidence_section.splitlines():
+            if line.startswith("### "):
+                sources.append(line.replace("### ", "").strip())
+        if sources:
             summary_lines.append("")
-            summary_lines.append(highlight("Files to Modify:"))
-            for row in files[:6]:  # Show max 6 files
-                filename = row[0] if row else ""
-                # Strip markdown formatting
-                filename = re.sub(r"`([^`]+)`", r"\1", filename)
-                if filename:
-                    summary_lines.append(f"  {icon(Icons.FILE)} {filename}")
-            if len(files) > 6:
-                summary_lines.append(f"  {muted(f'... and {len(files) - 6} more')}")
-
-    # Files to Create
-    create_section = extract_section(content, "## Files to Create")
-    if create_section:
-        files = extract_table_rows(create_section, "File")
-        if files:
-            summary_lines.append("")
-            summary_lines.append(highlight("Files to Create:"))
-            for row in files[:4]:
-                filename = row[0] if row else ""
-                filename = re.sub(r"`([^`]+)`", r"\1", filename)
-                if filename:
-                    summary_lines.append(success(f"  + {filename}"))
+            summary_lines.append(highlight("Evidence Sources:"))
+            for source in sources[:6]:
+                summary_lines.append(f"  {icon(Icons.FILE)} {source}")
+            if len(sources) > 6:
+                summary_lines.append(f"  {muted(f'... and {len(sources) - 6} more')}")
 
     # Success Criteria
     criteria = extract_section(content, "## Success Criteria")
@@ -168,24 +153,27 @@ def display_plan_summary(case_dir: Path) -> None:
     # Build summary content
     summary_lines = []
 
-    feature_name = plan.get("feature", "Investigation Plan")
-    summary_lines.append(bold(f"{icon(Icons.GEAR)} {feature_name}"))
+    case_title = plan.get("case_name") or plan.get("case_id") or plan.get("feature", "Investigation Plan")
+    summary_lines.append(bold(f"{icon(Icons.GEAR)} {case_title}"))
     summary_lines.append("")
 
     # Overall stats
     phases = plan.get("phases", [])
-    total_subtasks = sum(len(p.get("subtasks", [])) for p in phases)
+    def _phase_tasks(phase: dict) -> list[dict]:
+        tasks = phase.get("analysis_tasks")
+        if isinstance(tasks, list):
+            return tasks
+        return phase.get("subtasks", []) or []
+
+    total_subtasks = sum(len(_phase_tasks(p)) for p in phases)
     completed_subtasks = sum(
-        1
-        for p in phases
-        for c in p.get("subtasks", [])
-        if c.get("status") == "completed"
+        1 for p in phases for c in _phase_tasks(p) if c.get("status") == "completed"
     )
-    services = plan.get("services_involved", [])
+    services = plan.get("evidence_sources", [])
 
     summary_lines.append(f"{muted('Phases:')} {len(phases)}")
     summary_lines.append(
-        f"{muted('Subtasks:')} {completed_subtasks}/{total_subtasks} completed"
+        f"{muted('Tasks:')} {completed_subtasks}/{total_subtasks} completed"
     )
     if services:
         summary_lines.append(f"{muted('Services:')} {', '.join(services)}")
@@ -198,7 +186,7 @@ def display_plan_summary(case_dir: Path) -> None:
         for phase in phases:
             phase_num = phase.get("phase", "?")
             phase_name = phase.get("name", "Unknown")
-            subtasks = phase.get("subtasks", [])
+            subtasks = _phase_tasks(phase)
             subtask_count = len(subtasks)
             completed = sum(1 for c in subtasks if c.get("status") == "completed")
 
@@ -214,7 +202,7 @@ def display_plan_summary(case_dir: Path) -> None:
                 phase_display = f"Phase {phase_num}: {phase_name}"
 
             summary_lines.append(
-                f"  {status_icon} {phase_display} ({completed}/{subtask_count} subtasks)"
+                f"  {status_icon} {phase_display} ({completed}/{subtask_count} tasks)"
             )
 
             # Show subtask details for non-completed phases
@@ -244,7 +232,7 @@ def display_plan_summary(case_dir: Path) -> None:
                 if len(subtasks) > 3:
                     remaining = len(subtasks) - 3
                     summary_lines.append(
-                        f"      {muted(f'... {remaining} more subtasks')}"
+                        f"      {muted(f'... {remaining} more tasks')}"
                     )
 
     # Parallelism info

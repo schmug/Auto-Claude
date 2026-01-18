@@ -59,7 +59,7 @@ Extract:
     "src/middleware/auth.ts"
   ],
   "complexity": "standard",
-  "estimated_subtasks": 3,
+  "estimated_analysis_tasks": 3,
   "risks": [
     "May affect existing session handling",
     "Need to verify backwards compatibility"

@@ -3,7 +3,7 @@ Progress Tracking Utilities
 ===========================
 
 Functions for tracking and displaying progress of the autonomous coding agent.
-Uses subtask-based implementation plans (investigation_plan.json).
+Uses task-based investigation plans (investigation_plan.json).
 
 Enhanced with colored output, icons, and better visual formatting.
 """
@@ -26,9 +26,18 @@ from ui import (
 )
 
 
+def _get_phase_tasks(phase: dict) -> list[dict]:
+    """Return the list of tasks for a phase."""
+    tasks = phase.get("analysis_tasks")
+    if isinstance(tasks, list):
+        return tasks
+    tasks = phase.get("subtasks") or phase.get("chunks") or []
+    return tasks if isinstance(tasks, list) else []
+
+
 def count_subtasks(case_dir: Path) -> tuple[int, int]:
     """
-    Count completed and total subtasks in investigation_plan.json.
+    Count completed and total tasks in investigation_plan.json.
 
     Args:
         case_dir: Directory containing investigation_plan.json
@@ -49,7 +58,7 @@ def count_subtasks(case_dir: Path) -> tuple[int, int]:
         completed = 0
 
         for phase in plan.get("phases", []):
-            for subtask in phase.get("subtasks", []):
+            for subtask in _get_phase_tasks(phase):
                 total += 1
                 if subtask.get("status") == "completed":
                     completed += 1
@@ -61,7 +70,7 @@ def count_subtasks(case_dir: Path) -> tuple[int, int]:
 
 def count_subtasks_detailed(case_dir: Path) -> dict:
     """
-    Count subtasks by status.
+    Count tasks by status.
 
     Returns:
         Dict with completed, in_progress, pending, failed counts
@@ -84,7 +93,7 @@ def count_subtasks_detailed(case_dir: Path) -> dict:
             plan = json.load(f)
 
         for phase in plan.get("phases", []):
-            for subtask in phase.get("subtasks", []):
+            for subtask in _get_phase_tasks(phase):
                 result["total"] += 1
                 status = subtask.get("status", "pending")
                 if status in result:
@@ -99,7 +108,7 @@ def count_subtasks_detailed(case_dir: Path) -> dict:
 
 def is_build_complete(case_dir: Path) -> bool:
     """
-    Check if all subtasks are completed.
+    Check if all tasks are completed.
 
     Args:
         case_dir: Directory containing investigation_plan.json
@@ -119,7 +128,7 @@ def get_progress_percentage(case_dir: Path) -> float:
         case_dir: Directory containing investigation_plan.json
 
     Returns:
-        Percentage of subtasks completed (0-100)
+    Percentage of tasks completed (0-100)
     """
     completed, total = count_subtasks(case_dir)
     if total == 0:
@@ -174,10 +183,10 @@ def print_progress_summary(case_dir: Path, show_next: bool = True) -> None:
 
         # Status message
         if completed == total:
-            print_status("BUILD COMPLETE - All subtasks completed!", "success")
+            print_status("BUILD COMPLETE - All tasks completed!", "success")
         else:
             remaining = total - completed
-            print_status(f"{remaining} subtasks remaining", "info")
+            print_status(f"{remaining} tasks remaining", "info")
 
         # Phase summary
         try:
@@ -186,17 +195,17 @@ def print_progress_summary(case_dir: Path, show_next: bool = True) -> None:
 
             print("\nPhases:")
             for phase in plan.get("phases", []):
-                phase_subtasks = phase.get("subtasks", [])
+                phase_tasks = _get_phase_tasks(phase)
                 phase_completed = sum(
-                    1 for s in phase_subtasks if s.get("status") == "completed"
+                    1 for s in phase_tasks if s.get("status") == "completed"
                 )
-                phase_total = len(phase_subtasks)
+                phase_total = len(phase_tasks)
                 phase_name = phase.get("name", phase.get("id", "Unknown"))
 
                 if phase_completed == phase_total:
                     status = "complete"
                 elif phase_completed > 0 or any(
-                    s.get("status") == "in_progress" for s in phase_subtasks
+                    s.get("status") == "in_progress" for s in phase_tasks
                 ):
                     status = "in_progress"
                 else:
@@ -206,9 +215,9 @@ def print_progress_summary(case_dir: Path, show_next: bool = True) -> None:
                     for dep_id in deps:
                         for p in plan.get("phases", []):
                             if p.get("id") == dep_id or p.get("phase") == dep_id:
-                                p_subtasks = p.get("subtasks", [])
+                                p_tasks = _get_phase_tasks(p)
                                 if not all(
-                                    s.get("status") == "completed" for s in p_subtasks
+                                    s.get("status") == "completed" for s in p_tasks
                                 ):
                                     all_deps_complete = False
                                 break
@@ -233,7 +242,7 @@ def print_progress_summary(case_dir: Path, show_next: bool = True) -> None:
             pass
     else:
         print()
-        print_status("No implementation subtasks yet - planner needs to run", "pending")
+        print_status("No investigation tasks yet - planner needs to run", "pending")
 
 
 def print_build_complete_banner(case_dir: Path) -> None:
@@ -241,7 +250,7 @@ def print_build_complete_banner(case_dir: Path) -> None:
     content = [
         success(f"{icon(Icons.SUCCESS)} BUILD COMPLETE!"),
         "",
-        "All subtasks have been implemented successfully.",
+        "All tasks have been implemented successfully.",
         "",
         muted("Next steps:"),
         f"  1. Review the {highlight('auto-sleuth/*')} branch",
@@ -265,7 +274,7 @@ def print_paused_banner(
     content = [
         warning(f"{icon(Icons.PAUSE)} BUILD PAUSED"),
         "",
-        f"Progress saved: {completed}/{total} subtasks complete",
+        f"Progress saved: {completed}/{total} tasks complete",
     ]
 
     if has_worktree:
@@ -290,8 +299,13 @@ def get_plan_summary(case_dir: Path) -> dict:
 
     if not plan_file.exists():
         return {
-            "workflow_type": None,
+            "investigation_type": None,
             "total_phases": 0,
+            "total_tasks": 0,
+            "completed_tasks": 0,
+            "pending_tasks": 0,
+            "in_progress_tasks": 0,
+            "failed_tasks": 0,
             "total_subtasks": 0,
             "completed_subtasks": 0,
             "pending_subtasks": 0,
@@ -305,8 +319,13 @@ def get_plan_summary(case_dir: Path) -> dict:
             plan = json.load(f)
 
         summary = {
-            "workflow_type": plan.get("workflow_type"),
+            "investigation_type": plan.get("investigation_type") or plan.get("workflow_type"),
             "total_phases": len(plan.get("phases", [])),
+            "total_tasks": 0,
+            "completed_tasks": 0,
+            "pending_tasks": 0,
+            "in_progress_tasks": 0,
+            "failed_tasks": 0,
             "total_subtasks": 0,
             "completed_subtasks": 0,
             "pending_subtasks": 0,
@@ -321,32 +340,37 @@ def get_plan_summary(case_dir: Path) -> dict:
                 "phase": phase.get("phase"),
                 "name": phase.get("name"),
                 "depends_on": phase.get("depends_on", []),
-                "subtasks": [],
+                "tasks": [],
                 "completed": 0,
                 "total": 0,
             }
 
-            for subtask in phase.get("subtasks", []):
+            for subtask in _get_phase_tasks(phase):
                 status = subtask.get("status", "pending")
+                summary["total_tasks"] += 1
                 summary["total_subtasks"] += 1
                 phase_info["total"] += 1
 
                 if status == "completed":
+                    summary["completed_tasks"] += 1
                     summary["completed_subtasks"] += 1
                     phase_info["completed"] += 1
                 elif status == "in_progress":
+                    summary["in_progress_tasks"] += 1
                     summary["in_progress_subtasks"] += 1
                 elif status == "failed":
+                    summary["failed_tasks"] += 1
                     summary["failed_subtasks"] += 1
                 else:
+                    summary["pending_tasks"] += 1
                     summary["pending_subtasks"] += 1
 
-                phase_info["subtasks"].append(
+                phase_info["tasks"].append(
                     {
                         "id": subtask.get("id"),
                         "description": subtask.get("description"),
                         "status": status,
-                        "service": subtask.get("service"),
+                        "service": subtask.get("evidence_source") or subtask.get("service"),
                     }
                 )
 
@@ -356,8 +380,13 @@ def get_plan_summary(case_dir: Path) -> dict:
 
     except (OSError, json.JSONDecodeError):
         return {
-            "workflow_type": None,
+            "investigation_type": None,
             "total_phases": 0,
+            "total_tasks": 0,
+            "completed_tasks": 0,
+            "pending_tasks": 0,
+            "in_progress_tasks": 0,
+            "failed_tasks": 0,
             "total_subtasks": 0,
             "completed_subtasks": 0,
             "pending_subtasks": 0,
@@ -379,7 +408,7 @@ def get_current_phase(case_dir: Path) -> dict | None:
             plan = json.load(f)
 
         for phase in plan.get("phases", []):
-            subtasks = phase.get("subtasks", [])
+            subtasks = _get_phase_tasks(phase)
             # Phase is current if it has incomplete subtasks and dependencies are met
             has_incomplete = any(s.get("status") != "completed" for s in subtasks)
             if has_incomplete:
@@ -401,7 +430,7 @@ def get_current_phase(case_dir: Path) -> dict | None:
 
 def get_next_subtask(case_dir: Path) -> dict | None:
     """
-    Find the next subtask to work on, recaseting phase dependencies.
+    Find the next task to work on, recaseting phase dependencies.
 
     Args:
         case_dir: Directory containing investigation_plan.json
@@ -424,7 +453,7 @@ def get_next_subtask(case_dir: Path) -> dict | None:
         phase_complete = {}
         for phase in phases:
             phase_id = phase.get("id") or phase.get("phase")
-            subtasks = phase.get("subtasks", [])
+            subtasks = _get_phase_tasks(phase)
             phase_complete[phase_id] = all(
                 s.get("status") == "completed" for s in subtasks
             )
@@ -439,8 +468,8 @@ def get_next_subtask(case_dir: Path) -> dict | None:
             if not deps_satisfied:
                 continue
 
-            # Find first pending subtask in this phase
-            for subtask in phase.get("subtasks", []):
+            # Find first pending task in this phase
+            for subtask in _get_phase_tasks(phase):
                 if subtask.get("status") == "pending":
                     return {
                         "phase_id": phase_id,

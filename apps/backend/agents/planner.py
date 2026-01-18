@@ -135,7 +135,7 @@ async def run_followup_planner(
             plan = InvestigationPlan.load(plan_file)
 
             # Check if there are any pending subtasks
-            all_tasks = [c for p in plan.phases for c in p.subtasks]  # subtasks = analysis_tasks
+            all_tasks = [c for p in plan.phases for c in p.steps]  # steps = analysis_tasks
             pending_tasks = [c for c in all_tasks if c.status.value == "pending"]
 
             if pending_tasks:

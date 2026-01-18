@@ -397,13 +397,25 @@ def initialize_timeline_tracking(
             if plan_path.exists():
                 with open(plan_path) as f:
                     plan = json.load(f)
-                task_title = plan.get("title", case_name)
+                task_title = (
+                    plan.get("case_name")
+                    or plan.get("case_id")
+                    or plan.get("title")
+                    or case_name
+                )
                 task_intent = plan.get("description", "")
 
-                # Extract files from phases/subtasks
+                # Extract files from phases/analysis tasks
                 for phase in plan.get("phases", []):
-                    for subtask in phase.get("subtasks", []):
-                        files_to_modify.extend(subtask.get("files", []))
+                    tasks = phase.get("analysis_tasks")
+                    if not isinstance(tasks, list):
+                        tasks = phase.get("subtasks", []) or []
+                    for task in tasks:
+                        files_to_modify.extend(task.get("artifacts_to_analyze", []))
+                        files_to_modify.extend(task.get("artifacts_to_produce", []))
+                        files_to_modify.extend(task.get("output_files", []))
+                        files_to_modify.extend(task.get("files_to_modify", []))
+                        files_to_modify.extend(task.get("files", []))
 
         # Get the current branch point commit
         result = run_git(

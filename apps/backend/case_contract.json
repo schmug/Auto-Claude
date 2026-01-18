@@ -2,7 +2,6 @@
   "$schema": "Case Creation Contract - Defines required outputs at each phase",
   "version": "1.0.0",
   "description": "This contract defines the checkpoints and required outputs for case creation. Each agent MUST produce the specified outputs before proceeding.",
-
   "phases": {
     "1_discovery": {
       "name": "Project Discovery",
@@ -16,93 +15,156 @@
           "location": "case_dir",
           "validation": {
             "type": "json",
-            "required_fields": ["project_type"],
-            "project_type_values": ["single", "monorepo"]
+            "required_fields": [
+              "project_type"
+            ],
+            "project_type_values": [
+              "single",
+              "monorepo"
+            ]
           }
         }
       },
       "on_failure": "retry_script"
     },
-
     "2_requirements": {
       "name": "Requirements Gathering",
       "agent": "case_gatherer.md",
       "script": null,
       "description": "Interactive session to gather user requirements",
-      "inputs": ["project_index.json"],
+      "inputs": [
+        "project_index.json"
+      ],
       "outputs": {
         "requirements.json": {
           "required": true,
           "location": "case_dir",
           "validation": {
             "type": "json",
-            "required_fields": ["task_description", "workflow_type", "services_involved"],
-            "workflow_type_values": ["feature", "refactor", "investigation", "migration", "simple"]
+            "required_fields": [
+              "task_description",
+              "investigation_type"
+            ]
           }
         }
       },
       "on_failure": "retry_agent"
     },
-
     "3_context": {
       "name": "Context Discovery",
       "agent": null,
       "script": "context.py",
       "description": "Find relevant files (deterministic - no AI needed)",
-      "inputs": ["project_index.json", "requirements.json"],
+      "inputs": [
+        "project_index.json",
+        "requirements.json"
+      ],
       "outputs": {
         "context.json": {
           "required": true,
           "location": "case_dir",
           "validation": {
             "type": "json",
-            "required_fields": ["task_description"],
-            "recommended_fields": ["files_to_modify", "files_to_reference", "scoped_services"]
+            "required_fields": [
+              "task_description"
+            ],
+            "recommended_fields": [
+              "files_to_modify",
+              "files_to_reference",
+              "scoped_services"
+            ]
           }
         }
       },
       "on_failure": "retry_script"
     },
-
     "4_spec_writing": {
-      "name": "Spec Document Creation",
+      "name": "Case Document Creation",
       "agent": "case_writer.md",
       "script": null,
-      "description": "Write the spec.md document from gathered context",
-      "inputs": ["project_index.json", "requirements.json", "context.json"],
+      "description": "Write the case.md document from gathered context",
+      "inputs": [
+        "project_index.json",
+        "requirements.json",
+        "context.json"
+      ],
       "outputs": {
         "case.md": {
           "required": true,
           "location": "case_dir",
           "validation": {
             "type": "markdown",
-            "required_sections": ["Overview", "Workflow Type", "Task Scope", "Success Criteria"],
-            "recommended_sections": ["Files to Modify", "Files to Reference", "Requirements", "QA Acceptance Criteria"],
+            "required_sections": [
+              "Overview",
+              "Investigation Type",
+              "Incident Scope",
+              "Evidence Sources",
+              "Initial IOCs",
+              "Success Criteria"
+            ],
+            "recommended_sections": [
+              "MITRE ATT&CK Mapping",
+              "Artifacts to Analyze",
+              "Detection Patterns",
+              "Investigation Objectives",
+              "Analysis Environment",
+              "Validation Acceptance Criteria",
+              "Constraints"
+            ],
             "min_length": 500
           }
         }
       },
       "on_failure": "retry_agent"
     },
-
     "5_planning": {
       "name": "Investigation Planning",
       "agent": "planner.md",
       "script": "planner.py",
-      "description": "Create the implementation plan (try script first, fall back to agent)",
-      "inputs": ["case.md", "project_index.json", "context.json"],
+      "description": "Create the investigation plan (try script first, fall back to agent)",
+      "inputs": [
+        "case.md",
+        "project_index.json",
+        "context.json"
+      ],
       "outputs": {
         "investigation_plan.json": {
           "required": true,
           "location": "case_dir",
           "validation": {
             "type": "json",
-            "required_fields": ["feature", "workflow_type", "phases"],
+            "required_fields": [
+              "case_id",
+              "case_name",
+              "phases"
+            ],
             "phases_validation": {
-              "required_fields": ["phase", "name", "chunks"],
-              "chunks_validation": {
-                "required_fields": ["id", "description", "status"],
-                "status_values": ["pending", "in_progress", "completed", "blocked", "failed"]
+              "required_fields": [
+                "name",
+                "analysis_tasks"
+              ],
+              "required_fields_any": [
+                [
+                  "phase",
+                  "id"
+                ]
+              ],
+              "task_keys": [
+                "analysis_tasks"
+              ],
+              "tasks_validation": {
+                "required_fields": [
+                  "id",
+                  "description",
+                  "status"
+                ],
+                "status_values": [
+                  "pending",
+                  "in_progress",
+                  "completed",
+                  "blocked",
+                  "failed"
+                ]
               }
             }
           }
@@ -111,18 +173,22 @@
       "on_failure": "retry_agent",
       "fallback_to_agent": true
     },
-
     "6_validation": {
       "name": "Final Validation",
       "agent": null,
       "script": "validate_spec.py",
       "description": "Validate all outputs before completion",
-      "inputs": ["project_index.json", "requirements.json", "context.json", "case.md", "investigation_plan.json"],
+      "inputs": [
+        "project_index.json",
+        "requirements.json",
+        "context.json",
+        "case.md",
+        "investigation_plan.json"
+      ],
       "outputs": {},
       "on_failure": "report_and_fix"
     }
   },
-
   "recovery_strategies": {
     "retry_script": {
       "max_retries": 3,
@@ -137,30 +203,50 @@
       "action": "Report errors and invoke fix agent"
     }
   },
-
   "agents": {
     "case_gatherer.md": {
       "purpose": "Gather requirements from user through interactive questions",
-      "input_files": ["project_index.json"],
-      "output_files": ["requirements.json"],
+      "input_files": [
+        "project_index.json"
+      ],
+      "output_files": [
+        "requirements.json"
+      ],
       "interactive": true
     },
     "case_writer.md": {
       "purpose": "Write case.md from requirements and context",
-      "input_files": ["project_index.json", "requirements.json", "context.json"],
-      "output_files": ["case.md"],
+      "input_files": [
+        "project_index.json",
+        "requirements.json",
+        "context.json"
+      ],
+      "output_files": [
+        "case.md"
+      ],
       "interactive": false
     },
     "planner.md": {
-      "purpose": "Create investigation_plan.json from spec",
-      "input_files": ["case.md", "project_index.json", "context.json"],
-      "output_files": ["investigation_plan.json"],
+      "purpose": "Create investigation_plan.json from case",
+      "input_files": [
+        "case.md",
+        "project_index.json",
+        "context.json"
+      ],
+      "output_files": [
+        "investigation_plan.json"
+      ],
       "interactive": false
     },
     "validation_fixer.md": {
       "purpose": "Fix validation errors in case outputs",
-      "input_files": ["validation_errors.json", "all case files"],
-      "output_files": ["fixed files"],
+      "input_files": [
+        "validation_errors.json",
+        "all case files"
+      ],
+      "output_files": [
+        "fixed files"
+      ],
       "interactive": false
     }
   }

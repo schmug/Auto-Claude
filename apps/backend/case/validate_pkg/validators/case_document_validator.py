@@ -24,7 +24,7 @@ class CaseDocumentValidator:
         self.case_dir = Path(case_dir)
 
     def validate(self) -> ValidationResult:
-        """Validate case.md or case.md exists and has required sections.
+        """Validate case.md or spec.md exists and has required sections.
 
         Returns:
             ValidationResult with errors, warnings, and suggested fixes
@@ -34,16 +34,16 @@ class CaseDocumentValidator:
         fixes = []
 
         case_file = self.case_dir / "case.md"
-        case_file = self.case_dir / "case.md"  # DFIR alternative
-        
-        # Check for either case.md or case.md (DFIR workflows use case.md)
+        spec_file = self.case_dir / "spec.md"  # Legacy alternative
+
+        # Check for either case.md or spec.md (DFIR workflows use case.md)
         if case_file.exists():
             doc_file = case_file
-        elif case_file.exists():
-            doc_file = case_file
+        elif spec_file.exists():
+            doc_file = spec_file
         else:
-            errors.append("case.md or case.md not found")
-            fixes.append("Create case.md (coding) or case.md (DFIR) with required sections")
+            errors.append("case.md or spec.md not found")
+            fixes.append("Create case.md (DFIR) or spec.md (legacy) with required sections")
             return ValidationResult(False, "case", errors, warnings, fixes)
 
         content = doc_file.read_text()
@@ -51,8 +51,10 @@ class CaseDocumentValidator:
         # Section alternatives: (required_section, [alternatives])
         # DFIR workflows use different section names than coding workflows
         section_alternatives = {
-            "Workflow Type": ["Investigation Type"],  # DFIR alternative
-            "Task Scope": ["Incident Scope"],  # DFIR alternative
+            "Investigation Type": ["Workflow Type"],  # Legacy alternative
+            "Incident Scope": ["Task Scope"],  # Legacy alternative
+            "Evidence Sources": ["Services Involved"],  # Legacy alternative
+            "Initial IOCs": ["IOCs"],  # Legacy alternative
         }
 
         # Check for required sections (with alternatives for DFIR)

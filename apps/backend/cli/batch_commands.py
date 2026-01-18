@@ -68,8 +68,8 @@ def handle_batch_create_command(batch_file: str, project_dir: str) -> bool:
         requirements = {
             "task_description": task.get("description", task_title),
             "description": task.get("description", task_title),
-            "workflow_type": task.get("workflow_type", "feature"),
-            "services_involved": task.get("services", ["frontend"]),
+            "investigation_type": task.get("investigation_type", task.get("workflow_type", "feature")),
+            "evidence_sources": task.get("evidence_sources", task.get("services", [])),
             "priority": task.get("priority", 5),
             "complexity_inferred": task.get("complexity", "standard"),
             "inferred_from": {},

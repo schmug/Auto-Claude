@@ -32,12 +32,16 @@ def auto_fix_plan(case_dir: Path) -> bool:
     fixed = False
 
     # Fix missing top-level fields
-    if "feature" not in plan:
-        plan["feature"] = "Unnamed Feature"
+    if "case_name" not in plan:
+        plan["case_name"] = case_dir.name
         fixed = True
 
-    if "workflow_type" not in plan:
-        plan["workflow_type"] = "feature"
+    if "case_id" not in plan:
+        plan["case_id"] = case_dir.name
+        fixed = True
+
+    if "investigation_type" not in plan:
+        plan["investigation_type"] = "investigation"
         fixed = True
 
     if "phases" not in plan:
@@ -46,7 +50,7 @@ def auto_fix_plan(case_dir: Path) -> bool:
 
     # Fix phases
     for i, phase in enumerate(plan.get("phases", [])):
-        if "phase" not in phase:
+        if "phase" not in phase and "id" not in phase:
             phase["phase"] = i + 1
             fixed = True
 
@@ -54,22 +58,22 @@ def auto_fix_plan(case_dir: Path) -> bool:
             phase["name"] = f"Phase {i + 1}"
             fixed = True
 
-        if "subtasks" not in phase:
-            phase["subtasks"] = []
+        if "analysis_tasks" not in phase:
+            phase["analysis_tasks"] = []
             fixed = True
 
-        # Fix subtasks
-        for j, subtask in enumerate(phase.get("subtasks", [])):
-            if "id" not in subtask:
-                subtask["id"] = f"subtask-{i + 1}-{j + 1}"
+        # Fix tasks
+        for j, task in enumerate(phase.get("analysis_tasks", [])):
+            if "id" not in task:
+                task["id"] = f"task-{i + 1}-{j + 1}"
                 fixed = True
 
-            if "description" not in subtask:
-                subtask["description"] = "No description"
+            if "description" not in task:
+                task["description"] = "No description"
                 fixed = True
 
-            if "status" not in subtask:
-                subtask["status"] = "pending"
+            if "status" not in task:
+                task["status"] = "pending"
                 fixed = True
 
     if fixed:

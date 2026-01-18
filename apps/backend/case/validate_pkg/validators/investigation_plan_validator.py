@@ -2,7 +2,7 @@
 Investigation Plan Validator
 ==============================
 
-Validates investigation_plan.json structure, phases, subtasks, and dependencies.
+Validates investigation_plan.json structure, phases, tasks, and dependencies.
 """
 
 import json
@@ -60,27 +60,21 @@ class InvestigationPlanValidator:
                 errors.append(f"Missing required field: {field}")
                 fixes.append(f"Add '{field}' to investigation_plan.json")
 
-        # Validate workflow_type
-        if "workflow_type" in plan:
-            if plan["workflow_type"] not in schema["workflow_types"]:
-                errors.append(f"Invalid workflow_type: {plan['workflow_type']}")
-                fixes.append(f"Use one of: {schema['workflow_types']}")
-
         # Validate phases
         phases = plan.get("phases", [])
         if not phases:
             errors.append("No phases defined")
-            fixes.append("Add at least one phase with subtasks")
+            fixes.append("Add at least one phase with analysis tasks")
         else:
             for i, phase in enumerate(phases):
                 phase_errors = self._validate_phase(phase, i)
                 errors.extend(phase_errors)
 
-        # Check for at least one subtask
-        total_subtasks = sum(len(p.get("subtasks", [])) for p in phases)
-        if total_subtasks == 0:
-            errors.append("No subtasks defined in any phase")
-            fixes.append("Add subtasks to phases")
+        # Check for at least one task
+        total_tasks = sum(len(self._get_phase_tasks(p)) for p in phases)
+        if total_tasks == 0:
+            errors.append("No analysis tasks defined in any phase")
+            fixes.append("Add analysis tasks to phases")
 
         # Validate dependencies don't create cycles
         dep_errors = self._validate_dependencies(phases)
@@ -121,59 +115,73 @@ class InvestigationPlanValidator:
                     f"Phase {index + 1}: missing required field (need one of: {', '.join(field_group)})"
                 )
 
-        if "type" in phase and phase["type"] not in schema["phase_types"]:
-            errors.append(f"Phase {index + 1}: invalid type '{phase['type']}'")
+        if "analysis_tasks" not in phase:
+            errors.append(
+                f"Phase {index + 1}: missing task list (analysis_tasks)"
+            )
 
-        # Validate subtasks
-        subtasks = phase.get("subtasks", [])
-        for j, subtask in enumerate(subtasks):
-            subtask_errors = self._validate_subtask(subtask, index, j)
-            errors.extend(subtask_errors)
+        phase_type = phase.get("type") or phase.get("phase_type")
+        if phase_type and phase_type not in schema["phase_types"]:
+            errors.append(f"Phase {index + 1}: invalid type '{phase_type}'")
+
+        # Validate tasks (analysis_tasks)
+        tasks = self._get_phase_tasks(phase)
+        for j, task in enumerate(tasks):
+            task_errors = self._validate_task(task, index, j)
+            errors.extend(task_errors)
 
         return errors
 
-    def _validate_subtask(
-        self, subtask: dict, phase_idx: int, subtask_idx: int
+    def _validate_task(
+        self, task: dict, phase_idx: int, task_idx: int
     ) -> list[str]:
-        """Validate a single subtask.
+        """Validate a single task.
 
         Args:
-            subtask: The subtask dictionary to validate
+            task: The task dictionary to validate
             phase_idx: The index of the parent phase
-            subtask_idx: The index of the subtask within the phase
+            task_idx: The index of the task within the phase
 
         Returns:
             List of error messages
         """
         errors = []
-        schema = INVESTIGATION_PLAN_SCHEMA["subtask_schema"]
+        schema = INVESTIGATION_PLAN_SCHEMA["task_schema"]
 
         for field in schema["required_fields"]:
-            if field not in subtask:
+            if field not in task:
                 errors.append(
-                    f"Phase {phase_idx + 1}, Subtask {subtask_idx + 1}: missing required field '{field}'"
+                    f"Phase {phase_idx + 1}, Task {task_idx + 1}: missing required field '{field}'"
                 )
 
-        if "status" in subtask and subtask["status"] not in schema["status_values"]:
+        if "status" in task and task["status"] not in schema["status_values"]:
             errors.append(
-                f"Phase {phase_idx + 1}, Subtask {subtask_idx + 1}: invalid status '{subtask['status']}'"
+                f"Phase {phase_idx + 1}, Task {task_idx + 1}: invalid status '{task['status']}'"
             )
 
-        # Validate verification if present
-        if "verification" in subtask:
-            ver = subtask["verification"]
+        # Validate verification/validation if present
+        verification = task.get("verification")
+        validation = task.get("validation")
+        ver = verification or validation
+        if ver:
             ver_schema = INVESTIGATION_PLAN_SCHEMA["verification_schema"]
 
             if "type" not in ver:
                 errors.append(
-                    f"Phase {phase_idx + 1}, Subtask {subtask_idx + 1}: verification missing 'type'"
+                    f"Phase {phase_idx + 1}, Task {task_idx + 1}: validation missing 'type'"
                 )
             elif ver["type"] not in ver_schema["verification_types"]:
                 errors.append(
-                    f"Phase {phase_idx + 1}, Subtask {subtask_idx + 1}: invalid verification type '{ver['type']}'"
+                    f"Phase {phase_idx + 1}, Task {task_idx + 1}: invalid verification type '{ver['type']}'"
                 )
 
         return errors
+
+    @staticmethod
+    def _get_phase_tasks(phase: dict) -> list[dict]:
+        """Return the list of tasks in a phase."""
+        tasks = phase.get("analysis_tasks")
+        return tasks if isinstance(tasks, list) else []
 
     def _validate_dependencies(self, phases: list[dict]) -> list[str]:
         """Check for circular dependencies.

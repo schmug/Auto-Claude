@@ -1,6 +1,6 @@
-# Spec Validation System
+# Case Validation System
 
-A modular validation framework for validating spec outputs at each checkpoint.
+A modular validation framework for validating case outputs at each checkpoint.
 
 ## Architecture
 
@@ -17,7 +17,7 @@ validate_spec/
     ├── __init__.py
     ├── prereqs_validator.py
     ├── context_validator.py
-    ├── spec_document_validator.py
+    ├── case_document_validator.py
     └── investigation_plan_validator.py
 ```
 
@@ -30,8 +30,8 @@ validate_spec/
 - **INVESTIGATION_PLAN_SCHEMA**: Schema for investigation_plan.json
 - **CONTEXT_SCHEMA**: Schema for context.json
 - **PROJECT_INDEX_SCHEMA**: Schema for project_index.json
-- **SPEC_REQUIRED_SECTIONS**: Required sections in spec.md
-- **SPEC_RECOMMENDED_SECTIONS**: Recommended sections in spec.md
+- **SPEC_REQUIRED_SECTIONS**: Required sections in case.md
+- **SPEC_RECOMMENDED_SECTIONS**: Recommended sections in case.md
 
 ### Validators (`validators/`)
 
@@ -39,7 +39,7 @@ Each validator is responsible for a specific checkpoint:
 
 #### PrereqsValidator
 Validates that required prerequisites exist:
-- Spec directory exists
+- Case directory exists
 - project_index.json exists
 
 #### ContextValidator
@@ -48,26 +48,26 @@ Validates context.json structure:
 - Contains required fields (task_description)
 - Warns about missing recommended fields
 
-#### SpecDocumentValidator
-Validates spec.md document:
+#### CaseDocumentValidator
+Validates case.md document:
 - File exists
-- Contains required sections (Overview, Workflow Type, Task Scope, Success Criteria)
+- Contains required sections (Overview, Investigation Type, Incident Scope, Evidence Sources, Initial IOCs, Success Criteria)
 - Warns about missing recommended sections
 - Checks minimum content length
 
-#### ImplementationPlanValidator
+#### InvestigationPlanValidator
 Validates investigation_plan.json:
 - File exists and is valid JSON
 - Contains required top-level fields
-- Valid workflow_type
+- Valid investigation_type
 - Phases have correct structure
-- Subtasks have correct structure
+- Analysis tasks/steps have correct structure
 - No circular dependencies
 
 ### Auto-Fix (`auto_fix.py`)
 Automated fixes for common issues:
 - Adds missing required fields to investigation_plan.json
-- Fixes missing phase/subtask IDs
+- Fixes missing phase/task IDs
 - Sets default status values
 
 ### Main Validator (`spec_validator.py`)
@@ -85,7 +85,7 @@ from validate_spec import SpecValidator, auto_fix_plan
 from pathlib import Path
 
 # Create validator
-case_dir = Path("auto-sleuth/specs/001-feature")
+case_dir = Path("auto-sleuth/cases/001-case")
 validator = SpecValidator(case_dir)
 
 # Validate specific checkpoint
@@ -100,23 +100,23 @@ all_valid = all(r.valid for r in results)
 
 # Auto-fix common issues
 if auto_fix_plan(case_dir):
-    print("Auto-fixed implementation plan")
+    print("Auto-fixed investigation plan")
 ```
 
 ### CLI
 
 ```bash
 # Validate all checkpoints
-python auto-sleuth/validate_spec.py --spec-dir auto-sleuth/specs/001-feature/ --checkpoint all
+python auto-sleuth/validate_spec.py --spec-dir auto-sleuth/cases/001-case/ --checkpoint all
 
 # Validate specific checkpoint
-python auto-sleuth/validate_spec.py --spec-dir auto-sleuth/specs/001-feature/ --checkpoint context
+python auto-sleuth/validate_spec.py --spec-dir auto-sleuth/cases/001-case/ --checkpoint context
 
 # Auto-fix and validate
-python auto-sleuth/validate_spec.py --spec-dir auto-sleuth/specs/001-feature/ --auto-fix --checkpoint plan
+python auto-sleuth/validate_spec.py --spec-dir auto-sleuth/cases/001-case/ --auto-fix --checkpoint plan
 
 # JSON output
-python auto-sleuth/validate_spec.py --spec-dir auto-sleuth/specs/001-feature/ --checkpoint all --json
+python auto-sleuth/validate_spec.py --spec-dir auto-sleuth/cases/001-case/ --checkpoint all --json
 ```
 
 ## Imports
@@ -158,7 +158,7 @@ Each validator can be tested independently:
 from validate_spec.validators import ContextValidator
 from pathlib import Path
 
-validator = ContextValidator(Path("specs/001-feature"))
+validator = ContextValidator(Path("cases/001-case"))
 result = validator.validate()
 assert result.valid
 ```

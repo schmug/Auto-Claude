@@ -7,11 +7,11 @@ Generates implementation plans from cases by analyzing the task and codebase.
 This replaces the initializer's test-generation with subtask-based planning.
 
 The planner:
-1. Reads the case.md to understand what needs to be built
+1. Reads the case.md to understand what needs to be analyzed
 2. Reads project_index.json to understand the codebase structure
 3. Reads context.json to know which files are relevant
-4. Determines the workflow type (feature, refactor, investigation, etc.)
-5. Generates phases and subtasks with proper dependencies
+4. Determines the investigation type (intrusion, malware, triage, etc.)
+5. Generates phases and analysis tasks with proper dependencies
 6. Outputs investigation_plan.json
 
 Usage:
@@ -69,7 +69,7 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(
-        description="Generate implementation plan from case"
+        description="Generate investigation plan from case"
     )
     parser.add_argument(
         "--case-dir",

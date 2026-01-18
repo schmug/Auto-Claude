@@ -2,8 +2,6 @@
 Utility functions for implementation planner.
 """
 
-from investigation_plan import Verification, VerificationType
-
 from .models import PlannerContext
 
 
@@ -58,35 +56,35 @@ def get_patterns_for_service(context: PlannerContext, service: str) -> list[str]
 
 def create_verification(
     context: PlannerContext, service: str, subtask_type: str
-) -> Verification:
-    """Create appropriate verification for a subtask."""
+) -> dict:
+    """Create appropriate validation payload for an analysis task."""
     service_info = context.project_index.get("services", {}).get(service, {})
     port = service_info.get("port")
 
     if subtask_type == "model":
-        return Verification(
-            type=VerificationType.COMMAND,
-            run="echo 'Model created - verify with migration'",
-        )
+        return {
+            "type": "command",
+            "run": "echo 'Model created - verify with migration'",
+        }
     elif subtask_type == "endpoint":
-        return Verification(
-            type=VerificationType.API,
-            method="GET",
-            url=f"http://localhost:{port}/health" if port else "/health",
-            expect_status=200,
-        )
+        return {
+            "type": "api",
+            "method": "GET",
+            "url": f"http://localhost:{port}/health" if port else "/health",
+            "expect_status": 200,
+        }
     elif subtask_type == "component":
-        return Verification(
-            type=VerificationType.BROWSER,
-            scenario="Component renders without errors",
-        )
+        return {
+            "type": "browser",
+            "scenario": "Component renders without errors",
+        }
     elif subtask_type == "task":
-        return Verification(
-            type=VerificationType.COMMAND,
-            run="echo 'Task registered - verify with celery incaset'",
-        )
+        return {
+            "type": "command",
+            "run": "echo 'Task registered - verify with celery incaset'",
+        }
     else:
-        return Verification(type=VerificationType.MANUAL)
+        return {"type": "manual"}
 
 
 def extract_acceptance_criteria(context: PlannerContext) -> list[str]:

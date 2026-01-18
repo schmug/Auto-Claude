@@ -122,6 +122,29 @@ class InvestigationStepStatus(str, Enum):
     NEEDS_REVIEW = "needs_review"
 
 
+class SubtaskStatus(str, Enum):
+    """Legacy subtask status values (compatibility)."""
+
+    PENDING = "pending"
+    IN_PROGRESS = "in_progress"
+    COMPLETED = "completed"
+    FAILED = "failed"
+    BLOCKED = "blocked"
+    SKIPPED = "skipped"
+
+
+class VerificationType(str, Enum):
+    """Type of verification/validation step."""
+
+    COMMAND = "command"
+    API = "api"
+    BROWSER = "browser"
+    COMPONENT = "component"
+    MANUAL = "manual"
+    NONE = "none"
+    E2E = "e2e"
+
+
 class FindingSeverity(str, Enum):
     """Severity level for investigation findings."""
     

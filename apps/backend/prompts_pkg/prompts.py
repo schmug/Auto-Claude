@@ -365,9 +365,9 @@ You are adding follow-up work to a **completed** case.
 
 **Your task:**
 1. Read `{case_dir}/FOLLOWUP_REQUEST.md` to understand what to add
-2. Read `{case_dir}/investigation_plan.json` to see existing phases/subtasks
-3. ADD new phase(s) with pending subtasks to the existing plan
-4. PRESERVE all existing subtasks and their statuses
+2. Read `{case_dir}/investigation_plan.json` to see existing phases/analysis tasks
+3. ADD new phase(s) with pending analysis tasks to the existing plan
+4. PRESERVE all existing analysis tasks and their statuses
 
 ---
 
@@ -377,16 +377,16 @@ You are adding follow-up work to a **completed** case.
 
 def is_first_run(case_dir: Path) -> bool:
     """
-    Check if this is the first run (no valid investigation plan with subtasks exists yet).
+    Check if this is the first run (no valid investigation plan with tasks exists yet).
 
     The case runner may create a skeleton investigation_plan.json with empty phases.
-    This function checks for actual phases with subtasks, not just file existence.
+    This function checks for actual phases with tasks, not just file existence.
 
     Args:
         case_dir: Directory containing case files
 
     Returns:
-        True if investigation_plan.json doesn't exist or has no subtasks
+        True if investigation_plan.json doesn't exist or has no tasks
     """
     plan_file = case_dir / "investigation_plan.json"
 
@@ -397,14 +397,19 @@ def is_first_run(case_dir: Path) -> bool:
         with open(plan_file) as f:
             plan = json.load(f)
 
-        # Check if there are any phases with subtasks
+        # Check if there are any phases with tasks
         phases = plan.get("phases", [])
         if not phases:
             return True
 
-        # Check if any phase has subtasks
-        total_subtasks = sum(len(phase.get("subtasks", [])) for phase in phases)
-        return total_subtasks == 0
+        # Check if any phase has tasks
+        total_tasks = 0
+        for phase in phases:
+            tasks = phase.get("analysis_tasks")
+            if not isinstance(tasks, list):
+                tasks = phase.get("subtasks", []) or []
+            total_tasks += len(tasks)
+        return total_tasks == 0
     except (OSError, json.JSONDecodeError):
         # If we can't read the file, treat as first run
         return True

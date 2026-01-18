@@ -1,18 +1,15 @@
 """
-Plan generation logic for different workflow types.
+Plan generation logic for different investigation types.
 """
 
 from pathlib import Path
 
 from investigation_plan import (
     InvestigationPlan,
-    Phase,
-    PhaseType,
-    Subtask,
-    SubtaskStatus,
-    Verification,
-    VerificationType,
-    WorkflowType,
+    InvestigationPhase,
+    InvestigationPhaseType,
+    InvestigationStep,
+    InvestigationStepStatus,
 )
 
 from .models import PlannerContext
@@ -35,16 +32,17 @@ class PlanGenerator:
         self.case_dir = case_dir
 
     def generate(self) -> InvestigationPlan:
-        """Generate implementation plan. Override in subclasses."""
+        """Generate investigation plan. Override in subclasses."""
         raise NotImplementedError
 
 
 class FeaturePlanGenerator(PlanGenerator):
-    """Generates feature implementation plans."""
+    """Generates analysis plans for feature-style tasks."""
 
     def generate(self) -> InvestigationPlan:
-        """Generate a feature implementation plan."""
-        feature_name = extract_feature_name(self.context)
+        """Generate a plan based on file-level context."""
+        case_name = extract_feature_name(self.context)
+        case_id = self.case_dir.name
         files_by_service = group_files_by_service(self.context)
 
         phases = []
@@ -54,7 +52,6 @@ class FeaturePlanGenerator(PlanGenerator):
         service_order = determine_service_order(files_by_service)
 
         backend_phase = None
-        worker_phase = None
 
         for service in service_order:
             files = files_by_service[service]
@@ -64,32 +61,29 @@ class FeaturePlanGenerator(PlanGenerator):
             phase_num += 1
             patterns = get_patterns_for_service(self.context, service)
 
-            # Create subtasks for each file
-            subtasks = []
+            steps = []
             for file_info in files:
                 path = file_info.get("path", "")
                 reason = file_info.get("reason", "")
 
-                # Determine subtask type from path
                 subtask_type = infer_subtask_type(path)
                 subtask_id = Path(path).stem.replace(".", "-").lower()
 
-                subtasks.append(
-                    Subtask(
+                steps.append(
+                    InvestigationStep(
                         id=f"{service}-{subtask_id}",
                         description=f"Modify {path}: {reason}"
                         if reason
                         else f"Update {path}",
-                        service=service,
-                        files_to_modify=[path],
-                        patterns_from=patterns,
-                        verification=create_verification(
+                        evidence_source=service,
+                        artifacts_to_analyze=[path] if path else [],
+                        reference_patterns=patterns,
+                        validation=create_verification(
                             self.context, service, subtask_type
                         ),
                     )
                 )
 
-            # Determine dependencies
             depends_on = []
             service_type = (
                 self.context.project_index.get("services", {})
@@ -102,63 +96,61 @@ class FeaturePlanGenerator(PlanGenerator):
             elif service_type in ["frontend", "web", "client", "ui"] and backend_phase:
                 depends_on = [backend_phase]
 
-            phase = Phase(
-                phase=phase_num,
-                name=f"{service.title()} Implementation",
-                type=PhaseType.IMPLEMENTATION,
-                subtasks=subtasks,
-                depends_on=depends_on,
-                parallel_safe=len(subtasks) > 1,
+            phases.append(
+                InvestigationPhase(
+                    phase=phase_num,
+                    name=f"{service.title()} Analysis",
+                    phase_type=InvestigationPhaseType.ANALYSIS,
+                    steps=steps,
+                    depends_on=depends_on,
+                    parallel_safe=len(steps) > 1,
+                )
             )
-            phases.append(phase)
 
-            # Track for dependencies
             if service_type in ["backend", "api", "server"]:
                 backend_phase = phase_num
-            elif service_type in ["worker", "celery"]:
-                worker_phase = phase_num
 
-        # Add integration phase if multiple services
+        # Add integration/validation phase if multiple services
         if len(service_order) > 1:
             phase_num += 1
             integration_depends = list(range(1, phase_num))
 
             phases.append(
-                Phase(
+                InvestigationPhase(
                     phase=phase_num,
-                    name="Integration",
-                    type=PhaseType.INTEGRATION,
+                    name="Cross-Service Validation",
+                    phase_type=InvestigationPhaseType.VALIDATION,
                     depends_on=integration_depends,
-                    subtasks=[
-                        Subtask(
+                    steps=[
+                        InvestigationStep(
                             id="integration-wiring",
-                            description="Wire all services together",
-                            all_services=True,
-                            verification=Verification(
-                                type=VerificationType.BROWSER,
-                                scenario="End-to-end flow works",
-                            ),
+                            description="Validate service boundaries and interfaces",
+                            analysis_type="integration",
+                            validation={
+                                "type": "browser",
+                                "scenario": "End-to-end flow works",
+                            },
                         ),
-                        Subtask(
+                        InvestigationStep(
                             id="integration-testing",
-                            description="Verify complete feature works",
-                            all_services=True,
-                            verification=Verification(
-                                type=VerificationType.BROWSER,
-                                scenario="All acceptance criteria met",
-                            ),
+                            description="Verify acceptance criteria across services",
+                            analysis_type="integration",
+                            validation={
+                                "type": "browser",
+                                "scenario": "All acceptance criteria met",
+                            },
                         ),
                     ],
                 )
             )
 
-        # Extract final acceptance from case
         final_acceptance = extract_acceptance_criteria(self.context)
 
         return InvestigationPlan(
-            feature=feature_name,
-            workflow_type=WorkflowType.FEATURE,
-            services_involved=self.context.services_involved,
+            case_id=case_id,
+            case_name=case_name,
+            investigation_type=self.context.investigation_type,
+            description=self.context.task_context.get("task_description", ""),
             phases=phases,
             final_acceptance=final_acceptance,
             case_file=str(self.case_dir / "case.md"),
@@ -170,80 +162,82 @@ class InvestigationPlanGenerator(PlanGenerator):
 
     def generate(self) -> InvestigationPlan:
         """Generate an investigation plan for debugging."""
-        feature_name = extract_feature_name(self.context)
+        case_name = extract_feature_name(self.context)
+        case_id = self.case_dir.name
 
         phases = [
-            Phase(
+            InvestigationPhase(
                 phase=1,
                 name="Reproduce & Instrument",
-                type=PhaseType.INVESTIGATION,
-                subtasks=[
-                    Subtask(
+                phase_type=InvestigationPhaseType.ANALYSIS,
+                steps=[
+                    InvestigationStep(
                         id="add-logging",
-                        description="Add detailed logging around sucaseted problem areas",
-                        expected_output="Logs capture relevant state changes and events",
-                        files_to_modify=[
-                            f.get("path", "") for f in self.context.files_to_modify[:3]
+                        description="Add detailed logging around suspected problem areas",
+                        artifacts_to_analyze=[
+                            f.get("path", "")
+                            for f in self.context.files_to_modify[:3]
+                            if f.get("path")
                         ],
                     ),
-                    Subtask(
+                    InvestigationStep(
                         id="create-repro",
                         description="Create reliable reproduction steps",
-                        expected_output="Can reproduce issue on demand with documented steps",
+                        analysis_type="investigation",
                     ),
                 ],
             ),
-            Phase(
+            InvestigationPhase(
                 phase=2,
                 name="Investigate & Analyze",
-                type=PhaseType.INVESTIGATION,
+                phase_type=InvestigationPhaseType.ANALYSIS,
                 depends_on=[1],
-                subtasks=[
-                    Subtask(
+                steps=[
+                    InvestigationStep(
                         id="analyze-logs",
                         description="Analyze logs from multiple reproductions",
-                        expected_output="Pattern identified in when/how issue occurs",
+                        analysis_type="investigation",
                     ),
-                    Subtask(
+                    InvestigationStep(
                         id="form-hypothesis",
                         description="Form and test hypotheses about root cause",
-                        expected_output="Root cause identified with supporting evidence",
+                        analysis_type="investigation",
                     ),
                 ],
             ),
-            Phase(
+            InvestigationPhase(
                 phase=3,
                 name="Implement Fix",
-                type=PhaseType.IMPLEMENTATION,
+                phase_type=InvestigationPhaseType.REMEDIATION,
                 depends_on=[2],
-                subtasks=[
-                    Subtask(
+                steps=[
+                    InvestigationStep(
                         id="implement-fix",
                         description="[TO BE DETERMINED: Fix based on investigation findings]",
-                        status=SubtaskStatus.BLOCKED,
+                        status=InvestigationStepStatus.BLOCKED,
                     ),
-                    Subtask(
+                    InvestigationStep(
                         id="add-regression-test",
                         description="Add test to prevent issue from recurring",
-                        status=SubtaskStatus.BLOCKED,
+                        status=InvestigationStepStatus.BLOCKED,
                     ),
                 ],
             ),
-            Phase(
+            InvestigationPhase(
                 phase=4,
                 name="Verify & Harden",
-                type=PhaseType.INTEGRATION,
+                phase_type=InvestigationPhaseType.VALIDATION,
                 depends_on=[3],
-                subtasks=[
-                    Subtask(
+                steps=[
+                    InvestigationStep(
                         id="verify-fix",
                         description="Verify issue no longer occurs",
-                        verification=Verification(
-                            type=VerificationType.MANUAL,
-                            scenario="Run reproduction steps - issue should not occur",
-                        ),
+                        validation={
+                            "type": "manual",
+                            "scenario": "Run reproduction steps - issue should not occur",
+                        },
                     ),
-                    Subtask(
+                    InvestigationStep(
                         id="add-monitoring",
                         description="Add alerting/monitoring to catch if issue returns",
                     ),
@@ -252,9 +246,10 @@ class InvestigationPlanGenerator(PlanGenerator):
         ]
 
         return InvestigationPlan(
-            feature=feature_name,
-            workflow_type=WorkflowType.INVESTIGATION,
-            services_involved=self.context.services_involved,
+            case_id=case_id,
+            case_name=case_name,
+            investigation_type=self.context.investigation_type,
+            description=self.context.task_context.get("task_description", ""),
             phases=phases,
             final_acceptance=[
                 "Issue no longer reproducible",
@@ -270,95 +265,97 @@ class RefactorPlanGenerator(PlanGenerator):
 
     def generate(self) -> InvestigationPlan:
         """Generate a refactor plan with stage-based phases."""
-        feature_name = extract_feature_name(self.context)
+        case_name = extract_feature_name(self.context)
+        case_id = self.case_dir.name
 
-        # For refactors, stages are: Add new, Migrate, Remove old, Cleanup
         phases = [
-            Phase(
+            InvestigationPhase(
                 phase=1,
                 name="Add New System",
-                type=PhaseType.IMPLEMENTATION,
-                subtasks=[
-                    Subtask(
+                phase_type=InvestigationPhaseType.ANALYSIS,
+                steps=[
+                    InvestigationStep(
                         id="add-new-implementation",
                         description="Implement new system alongside existing",
-                        files_to_modify=[
+                        artifacts_to_analyze=[
                             f.get("path", "") for f in self.context.files_to_modify
                         ],
-                        patterns_from=[
+                        reference_patterns=[
                             f.get("path", "")
                             for f in self.context.files_to_reference[:3]
+                            if f.get("path")
                         ],
-                        verification=Verification(
-                            type=VerificationType.COMMAND,
-                            run="echo 'New system added - both old and new should work'",
-                        ),
+                        validation={
+                            "type": "command",
+                            "run": "echo 'New system added - both old and new should work'",
+                        },
                     ),
                 ],
             ),
-            Phase(
+            InvestigationPhase(
                 phase=2,
                 name="Migrate Consumers",
-                type=PhaseType.IMPLEMENTATION,
+                phase_type=InvestigationPhaseType.ANALYSIS,
                 depends_on=[1],
-                subtasks=[
-                    Subtask(
+                steps=[
+                    InvestigationStep(
                         id="migrate-to-new",
                         description="Update consumers to use new system",
-                        verification=Verification(
-                            type=VerificationType.BROWSER,
-                            scenario="All functionality works with new system",
-                        ),
+                        validation={
+                            "type": "browser",
+                            "scenario": "All functionality works with new system",
+                        },
                     ),
                 ],
             ),
-            Phase(
+            InvestigationPhase(
                 phase=3,
                 name="Remove Old System",
-                type=PhaseType.CLEANUP,
+                phase_type=InvestigationPhaseType.REMEDIATION,
                 depends_on=[2],
-                subtasks=[
-                    Subtask(
+                steps=[
+                    InvestigationStep(
                         id="remove-old",
                         description="Remove old system code",
-                        verification=Verification(
-                            type=VerificationType.COMMAND,
-                            run="echo 'Old system removed - verify no references remain'",
-                        ),
+                        validation={
+                            "type": "command",
+                            "run": "echo 'Old system removed - verify no references remain'",
+                        },
                     ),
                 ],
             ),
-            Phase(
+            InvestigationPhase(
                 phase=4,
                 name="Polish",
-                type=PhaseType.CLEANUP,
+                phase_type=InvestigationPhaseType.VALIDATION,
                 depends_on=[3],
-                subtasks=[
-                    Subtask(
+                steps=[
+                    InvestigationStep(
                         id="cleanup",
                         description="Final cleanup and documentation",
                     ),
-                    Subtask(
+                    InvestigationStep(
                         id="verify-complete",
                         description="Verify refactor is complete",
-                        verification=Verification(
-                            type=VerificationType.BROWSER,
-                            scenario="All functionality works, no regressions",
-                        ),
+                        validation={
+                            "type": "browser",
+                            "scenario": "All functionality works, no regressions",
+                        },
                     ),
                 ],
             ),
         ]
 
         return InvestigationPlan(
-            feature=feature_name,
-            workflow_type=WorkflowType.REFACTOR,
-            services_involved=self.context.services_involved,
+            case_id=case_id,
+            case_name=case_name,
+            investigation_type=self.context.investigation_type,
+            description=self.context.task_context.get("task_description", ""),
             phases=phases,
             final_acceptance=[
                 "All functionality migrated to new system",
                 "Old system completely removed",
-                "No regressions in existing features",
+                "No regressions in existing functionality",
             ],
             case_file=str(self.case_dir / "case.md"),
         )
@@ -366,9 +363,21 @@ class RefactorPlanGenerator(PlanGenerator):
 
 def get_plan_generator(context: PlannerContext, case_dir: Path) -> PlanGenerator:
     """Factory function to get the appropriate plan generator."""
-    if context.workflow_type == WorkflowType.INVESTIGATION:
+    investigation_type = (context.investigation_type or "").lower()
+    if investigation_type in {
+        "investigation",
+        "intrusion",
+        "malware",
+        "insider_threat",
+        "data_breach",
+        "triage",
+        "incident_response",
+        "incident_analysis",
+        "ransomware",
+        "phishing",
+        "threat_hunting",
+    }:
         return InvestigationPlanGenerator(context, case_dir)
-    elif context.workflow_type == WorkflowType.REFACTOR:
+    if investigation_type == "refactor":
         return RefactorPlanGenerator(context, case_dir)
-    else:
-        return FeaturePlanGenerator(context, case_dir)
+    return FeaturePlanGenerator(context, case_dir)
