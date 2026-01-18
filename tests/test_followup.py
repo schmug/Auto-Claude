@@ -281,7 +281,7 @@ class TestResetForFollowup:
             ],
         )
 
-        plan.reset_for_followup()
+        result = plan.reset_for_followup()
 
         assert result is False
 
@@ -300,7 +300,7 @@ class TestResetForFollowup:
             ],
         )
 
-        plan.reset_for_followup()
+        result = plan.reset_for_followup()
 
         assert result is False
 
@@ -330,7 +330,7 @@ class TestResetForFollowup:
             case_name="Test Feature",
             status="done",
             plan_status="completed",
-            recoveryNote="Previous session note",
+            recovery_note="Previous session note",
             phases=[
                 InvestigationPhase(
                     phase=1,
@@ -342,7 +342,7 @@ class TestResetForFollowup:
 
         plan.reset_for_followup()
 
-        assert plan.recoveryNote is None
+        assert plan.recovery_note is None
 
 
 class TestExistingChunksPreserved:

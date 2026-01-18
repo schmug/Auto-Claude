@@ -17,33 +17,32 @@ from review.state import ReviewState
 
 @pytest.fixture
 def review_spec_dir(tmp_path: Path) -> Path:
-    """Create a spec directory with spec.md and investigation_plan.json."""
+    """Create a case directory with case.md and investigation_plan.json."""
     spec_dir = tmp_path / "spec"
     spec_dir.mkdir(parents=True)
 
-    # Create spec.md
+    # Create case.md
     spec_content = """# Test Feature
 
 ## Overview
 
 This is a test feature specification for unit testing purposes.
 
-## Workflow Type
+## Investigation Type
 
 **Type**: feature
 
-## Files to Modify
+## Evidence Sources
 
-| File | Service | What to Change |
-|------|---------|---------------|
-| `app/main.py` | backend | Add new endpoint |
-| `src/components/Test.tsx` | frontend | Add new component |
+### backend
 
-## Files to Create
+**Type**: application logs
+**Path**: `/var/log/app/main.log`
 
-| File | Service | Purpose |
-|------|---------|---------|
-| `app/utils/helper.py` | backend | Helper functions |
+### frontend
+
+**Type**: client logs
+**Path**: `/var/log/app/frontend.log`
 
 ## Success Criteria
 
@@ -53,7 +52,7 @@ The task is complete when:
 - [ ] Component renders without errors
 - [ ] All tests pass
 """
-    (spec_dir / "spec.md").write_text(spec_content)
+    (spec_dir / "case.md").write_text(spec_content)
 
     # Create investigation_plan.json
     plan = {
@@ -89,11 +88,11 @@ The task is complete when:
 
 @pytest.fixture
 def complete_spec_dir(tmp_path: Path) -> Path:
-    """Create a complete spec directory mimicking real spec_runner output."""
+    """Create a complete case directory mimicking real spec_runner output."""
     spec_dir = tmp_path / "specs" / "001-test-feature"
     spec_dir.mkdir(parents=True)
 
-    # Create a realistic spec.md
+    # Create a realistic case.md
     spec_content = """# Specification: Test Feature Implementation
 
 ## Overview
@@ -101,19 +100,19 @@ def complete_spec_dir(tmp_path: Path) -> Path:
 This is a test feature that adds new functionality to the system.
 It involves changes to both backend and frontend components.
 
-## Workflow Type
+## Investigation Type
 
 **Type**: feature
 
 **Rationale**: New capability requiring multiple coordinated changes.
 
-## Task Scope
+## Incident Scope
 
-### Services Involved
+### Evidence Sources
 - **backend** - API endpoints and business logic
 - **frontend** - UI components and state management
 
-### This Task Will:
+### This Investigation Will:
 - [ ] Add new REST API endpoint
 - [ ] Create frontend form component
 - [ ] Add validation logic
@@ -123,21 +122,17 @@ It involves changes to both backend and frontend components.
 - Database schema changes
 - Authentication modifications
 
-## Files to Modify
+## Evidence Sources
 
-| File | Service | What to Change |
-|------|---------|---------------|
-| `app/api/routes.py` | backend | Add new endpoint |
-| `src/components/Form.tsx` | frontend | Add form component |
-| `app/services/processor.py` | backend | Add business logic |
+### backend
 
-## Files to Create
+**Type**: application logs
+**Path**: `/var/log/app/api.log`
 
-| File | Service | Purpose |
-|------|---------|---------|
-| `app/api/handlers/new_feature.py` | backend | Handler implementation |
-| `src/components/NewFeature/index.tsx` | frontend | New component |
-| `tests/test_new_feature.py` | backend | Unit tests |
+### frontend
+
+**Type**: client logs
+**Path**: `/var/log/app/frontend.log`
 
 ## Requirements
 
@@ -161,7 +156,7 @@ The task is complete when:
 - [ ] Unit tests pass with >80% coverage
 - [ ] Integration tests pass
 """
-    (spec_dir / "spec.md").write_text(spec_content)
+    (spec_dir / "case.md").write_text(spec_content)
 
     # Create a realistic investigation_plan.json
     plan = {

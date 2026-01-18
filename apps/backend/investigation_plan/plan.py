@@ -376,13 +376,36 @@ class InvestigationPlan:
         )
         
         self.phases.append(new_phase)
+        self.status = "in_progress"
+        self.plan_status = "in_progress"
+        self.qa_signoff = None
+        self.recovery_note = None
+        if "recoveryNote" in self.extra_fields:
+            del self.extra_fields["recoveryNote"]
         return new_phase
     
     def reset_for_followup(self):
         """Reset plan status for follow-up work."""
+        progress = self.get_progress()
+        has_steps = progress["total_steps"] > 0
+        is_complete = progress["is_complete"]
+        is_review_status = (self.status or "") in {"done", "complete", "ai_review", "human_review"}
+        is_ready = (self.plan_status or "") in {"completed", "review"}
+
+        if not (is_complete or is_review_status or is_ready):
+            return False
+
+        if has_steps and not is_complete and not is_review_status and not is_ready:
+            return False
+
         self.status = "in_progress"
         self.plan_status = "in_progress"
         self.validation_status = None
+        self.qa_signoff = None
+        self.recovery_note = None
+        if "recoveryNote" in self.extra_fields:
+            del self.extra_fields["recoveryNote"]
+        return True
     
     def mark_step_complete(self, step_id: str, notes: str | None = None) -> bool:
         """Mark a specific step as completed."""

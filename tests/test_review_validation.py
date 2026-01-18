@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
-Tests for Spec Hash Validation
+Tests for Case Hash Validation
 ===============================
 
 Tests for hash computation and spec change detection:
 - File hash computation
-- Spec hash computation (spec.md + investigation_plan.json)
+- Case hash computation (case.md + investigation_plan.json)
 - Approval validation based on hash comparison
 """
 
@@ -63,7 +63,7 @@ class TestSpecHashValidation:
         assert hash_a != hash_b
 
     def test_compute_spec_hash(self, review_spec_dir: Path) -> None:
-        """_compute_spec_hash() computes combined hash of spec files."""
+        """_compute_spec_hash() computes combined hash of case files."""
         spec_hash = _compute_spec_hash(review_spec_dir)
 
         # Should be a valid MD5 hash
@@ -71,11 +71,11 @@ class TestSpecHashValidation:
         assert all(c in "0123456789abcdef" for c in spec_hash)
 
     def test_compute_spec_hash_changes_on_spec_edit(self, review_spec_dir: Path) -> None:
-        """_compute_spec_hash() changes when spec.md is modified."""
+        """_compute_spec_hash() changes when case.md is modified."""
         hash_before = _compute_spec_hash(review_spec_dir)
 
-        # Modify spec.md
-        spec_file = review_spec_dir / "spec.md"
+        # Modify case.md
+        spec_file = review_spec_dir / "case.md"
         spec_file.write_text("Modified content")
 
         hash_after = _compute_spec_hash(review_spec_dir)
@@ -102,12 +102,12 @@ class TestSpecHashValidation:
         assert state.is_approval_valid(review_spec_dir) is True
 
     def test_is_approval_valid_with_changed_spec(self, review_spec_dir: Path) -> None:
-        """is_approval_valid() returns False when spec changed."""
+        """is_approval_valid() returns False when case changed."""
         state = ReviewState()
         state.approve(review_spec_dir, approved_by="user", auto_save=False)
 
-        # Modify spec after approval
-        spec_file = review_spec_dir / "spec.md"
+        # Modify case after approval
+        spec_file = review_spec_dir / "case.md"
         spec_file.write_text("New content after approval")
 
         assert state.is_approval_valid(review_spec_dir) is False
@@ -133,11 +133,11 @@ class TestSpecHashValidation:
         # Approve initially
         state = ReviewState()
         state.approve(review_spec_dir, approved_by="user", auto_save=False)
-        original_hash = state.spec_hash
+        original_hash = state.case_hash
         assert state.is_approval_valid(review_spec_dir)
 
         # Test 1: Whitespace-only change should change hash
-        spec_file = review_spec_dir / "spec.md"
+        spec_file = review_spec_dir / "case.md"
         original_content = spec_file.read_text()
         spec_file.write_text(original_content + "\n\n\n")
         assert not state.is_approval_valid(review_spec_dir)
@@ -157,7 +157,7 @@ class TestSpecHashValidation:
 
         # Test 3: New hash should be different
         state.approve(review_spec_dir, approved_by="user", auto_save=False)
-        assert state.spec_hash != original_hash
+        assert state.case_hash != original_hash
 
     def test_approval_invalidation_on_change(self, review_spec_dir: Path) -> None:
         """Test that spec changes invalidate approval."""
@@ -166,8 +166,8 @@ class TestSpecHashValidation:
         state.approve(review_spec_dir, approved_by="user")
         assert state.is_approval_valid(review_spec_dir)
 
-        # 2. Modify spec.md
-        spec_file = review_spec_dir / "spec.md"
+        # 2. Modify case.md
+        spec_file = review_spec_dir / "case.md"
         original_content = spec_file.read_text()
         spec_file.write_text(original_content + "\n## New Section\n\nAdded content.")
 

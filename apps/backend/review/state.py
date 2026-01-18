@@ -32,7 +32,10 @@ def _compute_case_hash(case_dir: Path) -> str:
     Compute a combined hash of case.md and investigation_plan.json.
     Used to detect changes after approval.
     """
-    case_hash = _compute_file_hash(case_dir / "case.md")
+    case_file = case_dir / "case.md"
+    spec_file = case_dir / "spec.md"
+    doc_file = case_file if case_file.exists() else spec_file
+    case_hash = _compute_file_hash(doc_file)
     plan_hash = _compute_file_hash(case_dir / "investigation_plan.json")
     combined = f"{case_hash}:{plan_hash}"
     return hashlib.md5(combined.encode("utf-8"), usedforsecurity=False).hexdigest()
@@ -62,7 +65,14 @@ class ReviewState:
     approved_at: str = ""
     feedback: list[str] = field(default_factory=list)
     case_hash: str = ""
+    spec_hash: str = ""
     review_count: int = 0
+
+    def __post_init__(self) -> None:
+        if not self.case_hash and self.spec_hash:
+            self.case_hash = self.spec_hash
+        if not self.spec_hash and self.case_hash:
+            self.spec_hash = self.case_hash
 
     def to_dict(self) -> dict:
         """Convert to dictionary for JSON serialization."""
@@ -72,6 +82,7 @@ class ReviewState:
             "approved_at": self.approved_at,
             "feedback": self.feedback,
             "case_hash": self.case_hash,
+            "spec_hash": self.spec_hash,
             "review_count": self.review_count,
         }
 
@@ -83,7 +94,8 @@ class ReviewState:
             approved_by=data.get("approved_by", ""),
             approved_at=data.get("approved_at", ""),
             feedback=data.get("feedback", []),
-            case_hash=data.get("case_hash", ""),
+            case_hash=data.get("case_hash") or data.get("spec_hash", ""),
+            spec_hash=data.get("spec_hash", ""),
             review_count=data.get("review_count", 0),
         )
 
@@ -150,6 +162,7 @@ class ReviewState:
         self.approved_by = approved_by
         self.approved_at = datetime.now().isoformat()
         self.case_hash = _compute_case_hash(case_dir)
+        self.spec_hash = self.case_hash
         self.review_count += 1
 
         if auto_save:
@@ -167,6 +180,7 @@ class ReviewState:
         self.approved_by = ""
         self.approved_at = ""
         self.case_hash = ""
+        self.spec_hash = ""
         self.review_count += 1
 
         if auto_save:
