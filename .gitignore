@@ -172,3 +172,8 @@ OPUS_ANALYSIS_AND_IDEAS.md
 
 # Auto Claude generated files
 logs/security/
+
+# Auto Sleuth generated files
+.auto-sleuth-security.json
+.auto-sleuth-status
+.sleuth_settings.json
