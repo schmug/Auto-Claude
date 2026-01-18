@@ -148,9 +148,11 @@ export function buildChangelogPrompt(
   const taskSummaries = specs.map(spec => {
     const parts: string[] = [`- **${spec.specId}**`];
 
-    // Get workflow type if available
-    if (spec.implementationPlan?.workflow_type) {
-      parts.push(`(${spec.implementationPlan.workflow_type})`);
+    // Get investigation type if available (fallback to legacy workflow_type)
+    const investigationType = spec.implementationPlan?.investigation_type
+      || (spec.implementationPlan as { workflow_type?: string } | undefined)?.workflow_type;
+    if (investigationType) {
+      parts.push(`(${investigationType})`);
     }
 
     // Extract just the overview/purpose

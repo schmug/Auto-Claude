@@ -19,7 +19,7 @@ import {
   getTaskWorktreeDir,
   findTaskWorktree,
 } from '../../worktree-paths';
-import { persistPlanStatus, updateTaskMetadataPrUrl } from './plan-file-utils';
+import { persistPlanStatus, updateTaskMetadataPrUrl, resolvePlanPath, getPlanPaths } from './plan-file-utils';
 
 // Regex pattern for validating git branch names
 const GIT_BRANCH_REGEX = /^[a-zA-Z0-9][a-zA-Z0-9._/-]*[a-zA-Z0-9]$|^[a-zA-Z0-9]$/;
@@ -1460,7 +1460,8 @@ async function updateTaskStatusAfterPRCreation(
     worktreeMetadata: false
   };
 
-  const planPath = path.join(specDir, AUTO_BUILD_PATHS.IMPLEMENTATION_PLAN);
+  const projectRoot = path.resolve(specDir, '..', '..', '..');
+  const planPath = resolvePlanPath(specDir, projectRoot, specId);
   const metadataPath = path.join(specDir, 'task_metadata.json');
 
   // Await status persistence to ensure completion before resolving
@@ -1480,7 +1481,8 @@ async function updateTaskStatusAfterPRCreation(
   // This ensures the status persists after refresh since getTasks() prefers worktree version
   if (worktreePath) {
     const specsBaseDir = getSpecsDir(autoBuildPath);
-    const worktreePlanPath = path.join(worktreePath, specsBaseDir, specId, AUTO_BUILD_PATHS.IMPLEMENTATION_PLAN);
+    const worktreeSpecDir = path.join(worktreePath, specsBaseDir, specId);
+    const worktreePlanPath = resolvePlanPath(worktreeSpecDir, worktreePath, specId);
     const worktreeMetadataPath = path.join(worktreePath, specsBaseDir, specId, 'task_metadata.json');
 
     try {
@@ -2221,18 +2223,18 @@ export function registerWorktreeHandlers(
                 }
               }
 
-              // Persist the status change to implementation_plan.json
+              // Persist the status change to investigation_plan.json
               // Issue #243: We must update BOTH the main project's plan AND the worktree's plan (if it exists)
               // because ProjectStore prefers the worktree version when deduplicating tasks.
               // OPTIMIZATION: Use async I/O and parallel updates to prevent UI blocking
               // NOTE: The worktree has the same directory structure as main project
-              const planPaths: { path: string; isMain: boolean }[] = [
-                { path: path.join(specDir, AUTO_BUILD_PATHS.IMPLEMENTATION_PLAN), isMain: true },
-              ];
+              const planPaths: { path: string; isMain: boolean }[] = getPlanPaths(specDir, project.path, task.specId)
+                .map((planPath) => ({ path: planPath, isMain: true }));
               // Add worktree plan path if worktree exists
               if (worktreePath) {
                 const worktreeSpecDir = path.join(worktreePath, project.autoBuildPath || '.auto-claude', 'specs', task.specId);
-                planPaths.push({ path: path.join(worktreeSpecDir, AUTO_BUILD_PATHS.IMPLEMENTATION_PLAN), isMain: false });
+                getPlanPaths(worktreeSpecDir, worktreePath, task.specId)
+                  .forEach((planPath) => planPaths.push({ path: planPath, isMain: false }));
               }
 
               const { promises: fsPromises } = require('fs');
@@ -2250,7 +2252,10 @@ export function registerWorktreeHandlers(
                       const planContent = await fsPromises.readFile(planPath, 'utf-8');
                       const plan = JSON.parse(planContent);
                       plan.status = newStatus;
-                      plan.planStatus = planStatus;
+                      plan.plan_status = planStatus;
+                      if ('planStatus' in plan) {
+                        delete plan.planStatus;
+                      }
                       plan.updated_at = new Date().toISOString();
                       if (staged) {
                         plan.stagedAt = new Date().toISOString();
@@ -2261,7 +2266,7 @@ export function registerWorktreeHandlers(
                       // Verify the write succeeded by reading back
                       const verifyContent = await fsPromises.readFile(planPath, 'utf-8');
                       const verifyPlan = JSON.parse(verifyContent);
-                      if (verifyPlan.status !== newStatus || verifyPlan.planStatus !== planStatus) {
+                      if (verifyPlan.status !== newStatus || verifyPlan.plan_status !== planStatus) {
                         throw new Error('Write verification failed - status mismatch');
                       }
                     },
@@ -2851,7 +2856,7 @@ export function registerWorktreeHandlers(
 
         const specsBaseDir = getSpecsDir(project.autoBuildPath);
         const specDir = path.join(project.path, specsBaseDir, task.specId);
-        const planPath = path.join(specDir, AUTO_BUILD_PATHS.IMPLEMENTATION_PLAN);
+        const planPath = resolvePlanPath(specDir, project.path, task.specId);
 
         // Use EAFP pattern (try/catch) instead of LBYL (existsSync check) to avoid TOCTOU race conditions
         const { promises: fsPromises } = require('fs');
@@ -2881,19 +2886,21 @@ export function registerWorktreeHandlers(
         // Also update worktree plan if it exists
         const worktreePath = findTaskWorktree(project.path, task.specId);
         if (worktreePath) {
-          const worktreePlanPath = path.join(worktreePath, specsBaseDir, task.specId, AUTO_BUILD_PATHS.IMPLEMENTATION_PLAN);
-          try {
-            const worktreePlanContent = await fsPromises.readFile(worktreePlanPath, 'utf-8');
-            const worktreePlan = JSON.parse(worktreePlanContent);
-            delete worktreePlan.stagedInMainProject;
-            delete worktreePlan.stagedAt;
-            worktreePlan.updated_at = new Date().toISOString();
-            await fsPromises.writeFile(worktreePlanPath, JSON.stringify(worktreePlan, null, 2));
-          } catch (e) {
-            // Non-fatal - worktree plan update is best-effort
-            // ENOENT is expected when worktree has no plan file
-            if (!isFileNotFound(e)) {
-              console.warn('[CLEAR_STAGED_STATE] Failed to update worktree plan:', e);
+          const worktreeSpecDir = path.join(worktreePath, specsBaseDir, task.specId);
+          for (const worktreePlanPath of getPlanPaths(worktreeSpecDir, worktreePath, task.specId)) {
+            try {
+              const worktreePlanContent = await fsPromises.readFile(worktreePlanPath, 'utf-8');
+              const worktreePlan = JSON.parse(worktreePlanContent);
+              delete worktreePlan.stagedInMainProject;
+              delete worktreePlan.stagedAt;
+              worktreePlan.updated_at = new Date().toISOString();
+              await fsPromises.writeFile(worktreePlanPath, JSON.stringify(worktreePlan, null, 2));
+            } catch (e) {
+              // Non-fatal - worktree plan update is best-effort
+              // ENOENT is expected when worktree has no plan file
+              if (!isFileNotFound(e)) {
+                console.warn('[CLEAR_STAGED_STATE] Failed to update worktree plan:', e);
+              }
             }
           }
         }

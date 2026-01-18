@@ -874,7 +874,7 @@ ${issue.description || 'No description provided.'}
             const specDir = path.join(specsDir, specId);
             mkdirSync(specDir, { recursive: true });
 
-            // Create initial implementation_plan.json
+            // Create initial investigation_plan.json
             const now = new Date().toISOString();
             const implementationPlan = {
               feature: issue.title,
@@ -884,7 +884,7 @@ ${issue.description || 'No description provided.'}
               status: 'pending',
               phases: []
             };
-            writeFileSync(path.join(specDir, AUTO_BUILD_PATHS.IMPLEMENTATION_PLAN), JSON.stringify(implementationPlan, null, 2));
+            writeFileSync(path.join(specDir, AUTO_BUILD_PATHS.INVESTIGATION_PLAN), JSON.stringify(implementationPlan, null, 2));
 
             // Create requirements.json
             const requirements = {
@@ -1366,7 +1366,7 @@ Please analyze this issue and provide:
         const specDir = path.join(specsDir, specId);
         mkdirSync(specDir, { recursive: true });
 
-        // Create initial implementation_plan.json
+        // Create initial investigation_plan.json
         const now = new Date().toISOString();
         const implementationPlan = {
           feature: issue.title,
@@ -1376,7 +1376,7 @@ Please analyze this issue and provide:
           status: 'pending',
           phases: []
         };
-        writeFileSync(path.join(specDir, AUTO_BUILD_PATHS.IMPLEMENTATION_PLAN), JSON.stringify(implementationPlan, null, 2));
+        writeFileSync(path.join(specDir, AUTO_BUILD_PATHS.INVESTIGATION_PLAN), JSON.stringify(implementationPlan, null, 2));
 
         // Create requirements.json
         const requirements = {
@@ -1530,7 +1530,7 @@ ${issue.body || 'No description provided.'}
           const specDir = path.join(specsDir, specId);
           mkdirSync(specDir, { recursive: true });
 
-          // Create initial implementation_plan.json
+          // Create initial investigation_plan.json
           const now = new Date().toISOString();
           const implementationPlan = {
             feature: issue.title,
@@ -1540,7 +1540,7 @@ ${issue.body || 'No description provided.'}
             status: 'pending',
             phases: []
           };
-          writeFileSync(path.join(specDir, AUTO_BUILD_PATHS.IMPLEMENTATION_PLAN), JSON.stringify(implementationPlan, null, 2));
+          writeFileSync(path.join(specDir, AUTO_BUILD_PATHS.INVESTIGATION_PLAN), JSON.stringify(implementationPlan, null, 2));
 
           // Create requirements.json
           const requirements = {

@@ -126,7 +126,7 @@
         taskMetadata.attachedImages = savedImages;
       }
 
-      // Create initial implementation_plan.json (task is created but not started)
+      // Create initial investigation_plan.json (task is created but not started)
       const now = new Date().toISOString();
       const implementationPlan = {
         feature: finalTitle,
@@ -137,7 +137,7 @@
         phases: []
       };
 
-      const planPath = path.join(specDir, AUTO_BUILD_PATHS.IMPLEMENTATION_PLAN);
+      const planPath = path.join(specDir, AUTO_BUILD_PATHS.INVESTIGATION_PLAN);
       writeFileSync(planPath, JSON.stringify(implementationPlan, null, 2));
 
       // Save task metadata if provided
@@ -172,7 +172,7 @@
         title: finalTitle,
         description,
         status: 'backlog',
-        subtasks: [],
+        analysis_tasks: [],
         logs: [],
         metadata: taskMetadata,
         createdAt: new Date(),
@@ -290,8 +290,8 @@
           }
         }
 
-        // Update implementation_plan.json
-        const planPath = path.join(specDir, AUTO_BUILD_PATHS.IMPLEMENTATION_PLAN);
+        // Update investigation_plan.json
+        const planPath = path.join(specDir, AUTO_BUILD_PATHS.INVESTIGATION_PLAN);
         if (existsSync(planPath)) {
           try {
             const planContent = readFileSync(planPath, 'utf-8');
@@ -392,7 +392,7 @@
         return;
       }
 
-      console.log('[TASK_START] Found task:', task.specId, 'status:', task.status, 'subtasks:', task.subtasks.length);
+      console.log('[TASK_START] Found task:', task.specId, 'status:', task.status, 'analysis_tasks:', task.analysis_tasks.length);
 
       // Start file watcher for this task
       const specsBaseDir = getSpecsDir(project.autoBuildPath);
@@ -408,9 +408,9 @@
       const hasSpec = existsSync(specFilePath);
 
       // Check if this task needs spec creation first (no spec file = not yet created)
-      // OR if it has a spec but no implementation plan subtasks (spec created, needs planning/building)
+      // OR if it has a spec but no implementation plan analysis_tasks (spec created, needs planning/building)
       const needsSpecCreation = !hasSpec;
-      const needsImplementation = hasSpec && task.subtasks.length === 0;
+      const needsImplementation = hasSpec && task.analysis_tasks.length === 0;
 
       console.log('[TASK_START] hasSpec:', hasSpec, 'needsSpecCreation:', needsSpecCreation, 'needsImplementation:', needsImplementation);
 
@@ -423,7 +423,7 @@
         // so spec_runner uses it instead of creating a new one
         agentManager.startSpecCreation(task.specId, project.path, taskDescription, specDir, task.metadata);
       } else if (needsImplementation) {
-        // Spec exists but no subtasks - run run.py to create implementation plan and execute
+        // Spec exists but no analysis_tasks - run run.py to create implementation plan and execute
         // Read the spec.md to get the task description
         let taskDescription = task.description || task.title;
         try {
@@ -432,9 +432,9 @@
           // Use default description
         }
 
-        console.log('[TASK_START] Starting task execution (no subtasks) for:', task.specId);
+        console.log('[TASK_START] Starting task execution (no analysis_tasks) for:', task.specId);
         // Start task execution which will create the implementation plan
-        // Note: No parallel mode for planning phase - parallel only makes sense with multiple subtasks
+        // Note: No parallel mode for planning phase - parallel only makes sense with multiple analysis_tasks
         agentManager.startTaskExecution(
           taskId,
           project.path,
@@ -445,15 +445,15 @@
           }
         );
       } else {
-        // Task has subtasks, start normal execution
-        // Only enable parallel if there are multiple subtasks AND user has parallel enabled
-        const hasMultipleSubtasks = task.subtasks.length > 1;
-        const pendingSubtasks = task.subtasks.filter(s => s.status === 'pending' || s.status === 'in_progress').length;
+        // Task has analysis_tasks, start normal execution
+        // Only enable parallel if there are multiple analysis_tasks AND user has parallel enabled
+        const hasMultipleSubtasks = task.analysis_tasks.length > 1;
+        const pendingSubtasks = task.analysis_tasks.filter(s => s.status === 'pending' || s.status === 'in_progress').length;
         const parallelEnabled = options?.parallel ?? project.settings.parallelEnabled;
         const useParallel = parallelEnabled && hasMultipleSubtasks && pendingSubtasks > 1;
         const workers = useParallel ? (options?.workers ?? project.settings.maxWorkers) : 1;
 
-        console.log('[TASK_START] Starting task execution (has subtasks) for:', task.specId);
+        console.log('[TASK_START] Starting task execution (has analysis_tasks) for:', task.specId);
         console.log('[TASK_START] Parallel decision:', {
           hasMultipleSubtasks,
           pendingSubtasks,
@@ -604,8 +604,8 @@
         task.specId
       );
 
-      // Update implementation_plan.json if it exists
-      const planPath = path.join(specDir, AUTO_BUILD_PATHS.IMPLEMENTATION_PLAN);
+      // Update investigation_plan.json if it exists
+      const planPath = path.join(specDir, AUTO_BUILD_PATHS.INVESTIGATION_PLAN);
 
       try {
         if (existsSync(planPath)) {
@@ -615,7 +615,7 @@
           // Store the exact UI status - project-store.ts will map it back
           plan.status = status;
           // Also store mapped version for Python compatibility
-          plan.planStatus = status === 'done' ? 'completed'
+          plan.plan_status = status === 'done' ? 'completed'
             : status === 'in_progress' ? 'in_progress'
             : status === 'ai_review' ? 'review'
             : status === 'human_review' ? 'review'
@@ -631,7 +631,7 @@
             created_at: task.createdAt.toISOString(),
             updated_at: new Date().toISOString(),
             status: status, // Store exact UI status for persistence
-            planStatus: status === 'done' ? 'completed'
+            plan_status: status === 'done' ? 'completed'
               : status === 'in_progress' ? 'in_progress'
               : status === 'ai_review' ? 'review'
               : status === 'human_review' ? 'review'
@@ -659,7 +659,7 @@
           const specFilePath = path.join(specDir, AUTO_BUILD_PATHS.SPEC_FILE);
           const hasSpec = existsSync(specFilePath);
           const needsSpecCreation = !hasSpec;
-          const needsImplementation = hasSpec && task.subtasks.length === 0;
+          const needsImplementation = hasSpec && task.analysis_tasks.length === 0;
 
           console.log('[TASK_UPDATE_STATUS] hasSpec:', hasSpec, 'needsSpecCreation:', needsSpecCreation, 'needsImplementation:', needsImplementation);
 
@@ -669,8 +669,8 @@
             console.log('[TASK_UPDATE_STATUS] Starting spec creation for:', task.specId);
             agentManager.startSpecCreation(task.specId, project.path, taskDescription, specDir, task.metadata);
           } else if (needsImplementation) {
-            // Spec exists but no subtasks - run run.py to create implementation plan and execute
-            console.log('[TASK_UPDATE_STATUS] Starting task execution (no subtasks) for:', task.specId);
+            // Spec exists but no analysis_tasks - run run.py to create implementation plan and execute
+            console.log('[TASK_UPDATE_STATUS] Starting task execution (no analysis_tasks) for:', task.specId);
             agentManager.startTaskExecution(
               taskId,
               project.path,
@@ -681,14 +681,14 @@
               }
             );
           } else {
-            // Task has subtasks, start normal execution
-            const hasMultipleSubtasks = task.subtasks.length > 1;
-            const pendingSubtasks = task.subtasks.filter(s => s.status === 'pending' || s.status === 'in_progress').length;
+            // Task has analysis_tasks, start normal execution
+            const hasMultipleSubtasks = task.analysis_tasks.length > 1;
+            const pendingSubtasks = task.analysis_tasks.filter(s => s.status === 'pending' || s.status === 'in_progress').length;
             const parallelEnabled = project.settings.parallelEnabled;
             const useParallel = parallelEnabled && hasMultipleSubtasks && pendingSubtasks > 1;
             const workers = useParallel ? project.settings.maxWorkers : 1;
 
-            console.log('[TASK_UPDATE_STATUS] Starting task execution (has subtasks) for:', task.specId);
+            console.log('[TASK_UPDATE_STATUS] Starting task execution (has analysis_tasks) for:', task.specId);
             agentManager.startTaskExecution(
               taskId,
               project.path,
@@ -783,8 +783,8 @@
         task.specId
       );
 
-      // Update implementation_plan.json
-      const planPath = path.join(specDir, AUTO_BUILD_PATHS.IMPLEMENTATION_PLAN);
+      // Update investigation_plan.json
+      const planPath = path.join(specDir, AUTO_BUILD_PATHS.INVESTIGATION_PLAN);
 
       try {
         // Read the plan to analyze subtask progress
@@ -795,15 +795,15 @@
         }
 
         // Determine the target status intelligently based on subtask progress
-        // If targetStatus is explicitly provided, use it; otherwise calculate from subtasks
+        // If targetStatus is explicitly provided, use it; otherwise calculate from analysis_tasks
         let newStatus: TaskStatus = targetStatus || 'backlog';
 
         if (!targetStatus && plan?.phases && Array.isArray(plan.phases)) {
           // Analyze subtask statuses to determine appropriate recovery status
           const allSubtasks: Array<{ status: string }> = [];
-          for (const phase of plan.phases as Array<{ subtasks?: Array<{ status: string }> }>) {
-            if (phase.subtasks && Array.isArray(phase.subtasks)) {
-              allSubtasks.push(...phase.subtasks);
+          for (const phase of plan.phases as Array<{ analysis_tasks?: Array<{ status: string }> }>) {
+            if (phase.analysis_tasks && Array.isArray(phase.analysis_tasks)) {
+              allSubtasks.push(...phase.analysis_tasks);
             }
           }
 
@@ -812,21 +812,21 @@
             const allCompleted = completedCount === allSubtasks.length;
 
             if (allCompleted) {
-              // All subtasks completed - should go to review (ai_review or human_review based on source)
+              // All analysis_tasks completed - should go to review (ai_review or human_review based on source)
               // For recovery, human_review is safer as it requires manual verification
               newStatus = 'human_review';
             } else if (completedCount > 0) {
-              // Some subtasks completed, some still pending - task is in progress
+              // Some analysis_tasks completed, some still pending - task is in progress
               newStatus = 'in_progress';
             }
-            // else: no subtasks completed, stay with 'backlog'
+            // else: no analysis_tasks completed, stay with 'backlog'
           }
         }
 
         if (plan) {
           // Update status
           plan.status = newStatus;
-          plan.planStatus = newStatus === 'done' ? 'completed'
+          plan.plan_status = newStatus === 'done' ? 'completed'
             : newStatus === 'in_progress' ? 'in_progress'
             : newStatus === 'ai_review' ? 'review'
             : newStatus === 'human_review' ? 'review'
@@ -837,13 +837,13 @@
           plan.recoveryNote = `Task recovered from stuck state at ${new Date().toISOString()}`;
 
           // Reset in_progress and failed subtask statuses to 'pending' so they can be retried
-          // Keep completed subtasks as-is so run.py can resume from where it left off
+          // Keep completed analysis_tasks as-is so run.py can resume from where it left off
           if (plan.phases && Array.isArray(plan.phases)) {
-            for (const phase of plan.phases as Array<{ subtasks?: Array<{ status: string; actual_output?: string; started_at?: string; completed_at?: string }> }>) {
-              if (phase.subtasks && Array.isArray(phase.subtasks)) {
-                for (const subtask of phase.subtasks) {
-                  // Reset in_progress subtasks to pending (they were interrupted)
-                  // Keep completed subtasks as-is so run.py can resume
+            for (const phase of plan.phases as Array<{ analysis_tasks?: Array<{ status: string; actual_output?: string; started_at?: string; completed_at?: string }> }>) {
+              if (phase.analysis_tasks && Array.isArray(phase.analysis_tasks)) {
+                for (const subtask of phase.analysis_tasks) {
+                  // Reset in_progress analysis_tasks to pending (they were interrupted)
+                  // Keep completed analysis_tasks as-is so run.py can resume
                   if (subtask.status === 'in_progress') {
                     subtask.status = 'pending';
                     // Clear execution data to maintain consistency
@@ -851,7 +851,7 @@
                     delete subtask.started_at;
                     delete subtask.completed_at;
                   }
-                  // Also reset failed subtasks so they can be retried
+                  // Also reset failed analysis_tasks so they can be retried
                   if (subtask.status === 'failed') {
                     subtask.status = 'pending';
                     // Clear execution data to maintain consistency
@@ -880,15 +880,15 @@
             // Update plan status for restart
             if (plan) {
               plan.status = 'in_progress';
-              plan.planStatus = 'in_progress';
+              plan.plan_status = 'in_progress';
               writeFileSync(planPath, JSON.stringify(plan, null, 2));
             }
 
             // Start the task execution
 
             // Check if we should use parallel mode
-            const hasMultipleSubtasks = task.subtasks.length > 1;
-            const pendingSubtasks = task.subtasks.filter(s => s.status === 'pending').length;
+            const hasMultipleSubtasks = task.analysis_tasks.length > 1;
+            const pendingSubtasks = task.analysis_tasks.filter(s => s.status === 'pending').length;
             const parallelEnabled = project.settings.parallelEnabled;
             const useParallel = parallelEnabled && hasMultipleSubtasks && pendingSubtasks > 1;
             const workers = useParallel ? project.settings.maxWorkers : 1;
@@ -1248,14 +1248,14 @@
 
           mergeProcess.on('close', (code: number) => {
             if (code === 0) {
-              // Persist the status change to implementation_plan.json
-              const planPath = path.join(specDir, AUTO_BUILD_PATHS.IMPLEMENTATION_PLAN);
+              // Persist the status change to investigation_plan.json
+              const planPath = path.join(specDir, AUTO_BUILD_PATHS.INVESTIGATION_PLAN);
               try {
                 if (existsSync(planPath)) {
                   const planContent = readFileSync(planPath, 'utf-8');
                   const plan = JSON.parse(planContent);
                   plan.status = 'done';
-                  plan.planStatus = 'completed';
+                  plan.plan_status = 'completed';
                   plan.updated_at = new Date().toISOString();
                   writeFileSync(planPath, JSON.stringify(plan, null, 2));
                 }

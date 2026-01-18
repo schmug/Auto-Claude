@@ -140,18 +140,21 @@ export function registerInsightsHandlers(
           ...metadata
         };
 
-        // Create initial implementation_plan.json
+        // Create initial investigation_plan.json
         const now = new Date().toISOString();
         const implementationPlan = {
-          feature: title,
+          case_id: specId,
+          case_name: title,
+          investigation_type: 'investigation',
           description: description,
           created_at: now,
           updated_at: now,
           status: 'pending',
+          plan_status: 'pending',
           phases: []
         };
 
-        const planPath = path.join(specDir, AUTO_BUILD_PATHS.IMPLEMENTATION_PLAN);
+        const planPath = path.join(specDir, AUTO_BUILD_PATHS.INVESTIGATION_PLAN);
         writeFileSync(planPath, JSON.stringify(implementationPlan, null, 2));
 
         // Save task metadata

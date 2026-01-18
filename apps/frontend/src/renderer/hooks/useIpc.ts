@@ -4,7 +4,7 @@ import { useTaskStore } from '../stores/task-store';
 import { useRoadmapStore } from '../stores/roadmap-store';
 import { useRateLimitStore } from '../stores/rate-limit-store';
 import { useProjectStore } from '../stores/project-store';
-import type { ImplementationPlan, TaskStatus, RoadmapGenerationStatus, Roadmap, ExecutionProgress, RateLimitInfo, SDKRateLimitInfo } from '../../shared/types';
+import type { InvestigationPlan, TaskStatus, RoadmapGenerationStatus, Roadmap, ExecutionProgress, RateLimitInfo, SDKRateLimitInfo } from '../../shared/types';
 
 /**
  * Batched update queue for IPC events.
@@ -14,7 +14,7 @@ import type { ImplementationPlan, TaskStatus, RoadmapGenerationStatus, Roadmap, 
 interface BatchedUpdate {
   status?: TaskStatus;
   progress?: ExecutionProgress;
-  plan?: ImplementationPlan;
+  plan?: InvestigationPlan;
   logs?: string[]; // Batched log lines
   queuedAt?: number; // For debug timing
 }
@@ -25,7 +25,7 @@ interface BatchedUpdate {
 interface StoreActions {
   updateTaskStatus: (taskId: string, status: TaskStatus) => void;
   updateExecutionProgress: (taskId: string, progress: ExecutionProgress) => void;
-  updateTaskFromPlan: (taskId: string, plan: ImplementationPlan) => void;
+  updateTaskFromPlan: (taskId: string, plan: InvestigationPlan) => void;
   batchAppendLogs: (taskId: string, logs: string[]) => void;
 }
 
@@ -170,7 +170,7 @@ export function useIpcListeners(): void {
   useEffect(() => {
     // Set up listeners with batched updates
     const cleanupProgress = window.electronAPI.onTaskProgress(
-      (taskId: string, plan: ImplementationPlan, projectId?: string) => {
+      (taskId: string, plan: InvestigationPlan, projectId?: string) => {
         // Filter by project to prevent multi-project interference
         if (!isTaskForCurrentProject(projectId)) return;
         queueUpdate(taskId, { plan });

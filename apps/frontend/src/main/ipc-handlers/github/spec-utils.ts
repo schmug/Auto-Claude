@@ -121,24 +121,27 @@ export async function createSpecForIssue(
     // Create initial files
     const now = new Date().toISOString();
 
-    // implementation_plan.json
+    // investigation_plan.json
     const implementationPlan = {
-      feature: issueTitle,
+      case_id: specId,
+      case_name: issueTitle,
+      investigation_type: 'investigation',
       description: taskDescription,
       created_at: now,
       updated_at: now,
       status: 'pending',
+      plan_status: 'pending',
       phases: []
     };
     writeFileSync(
-      path.join(specDir, AUTO_BUILD_PATHS.IMPLEMENTATION_PLAN),
+      path.join(specDir, AUTO_BUILD_PATHS.INVESTIGATION_PLAN),
       JSON.stringify(implementationPlan, null, 2)
     );
 
     // requirements.json
     const requirements = {
       task_description: taskDescription,
-      workflow_type: 'feature'
+      investigation_type: 'investigation'
     };
     writeFileSync(
       path.join(specDir, AUTO_BUILD_PATHS.REQUIREMENTS),
@@ -220,13 +223,21 @@ Please analyze this issue and provide:
  * Update implementation plan status
  * Used to immediately update the plan file so the frontend shows the correct status
  */
-export function updateImplementationPlanStatus(specDir: string, status: string): void {
-  const planPath = path.join(specDir, AUTO_BUILD_PATHS.IMPLEMENTATION_PLAN);
+export function updateInvestigationPlanStatus(specDir: string, status: string): void {
+  const planPath = path.join(specDir, AUTO_BUILD_PATHS.INVESTIGATION_PLAN);
 
   try {
     const content = readFileSync(planPath, 'utf-8');
     const plan = JSON.parse(content);
     plan.status = status;
+    plan.plan_status = status === 'done' ? 'completed'
+      : status === 'in_progress' ? 'in_progress'
+      : status === 'ai_review' ? 'review'
+      : status === 'human_review' ? 'review'
+      : 'pending';
+    if ('planStatus' in plan) {
+      delete plan.planStatus;
+    }
     plan.updated_at = new Date().toISOString();
     writeFileSync(planPath, JSON.stringify(plan, null, 2));
   } catch (error) {

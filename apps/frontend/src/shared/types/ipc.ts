@@ -29,7 +29,7 @@ import type {
   Task,
   TaskStatus,
   TaskStartOptions,
-  ImplementationPlan,
+  InvestigationPlan,
   ExecutionProgress,
   WorktreeStatus,
   WorktreeDiff,
@@ -182,7 +182,7 @@ export interface ElectronAPI {
   unarchiveTasks: (projectId: string, taskIds: string[]) => Promise<IPCResult<boolean>>;
 
   // Event listeners
-  onTaskProgress: (callback: (taskId: string, plan: ImplementationPlan) => void) => () => void;
+  onTaskProgress: (callback: (taskId: string, plan: InvestigationPlan) => void) => () => void;
   onTaskError: (callback: (taskId: string, error: string) => void) => () => void;
   onTaskLog: (callback: (taskId: string, log: string) => void) => () => void;
   onTaskStatusChange: (callback: (taskId: string, status: TaskStatus) => void) => () => void;

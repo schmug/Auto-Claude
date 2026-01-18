@@ -164,7 +164,7 @@
                     const sessionContent = readFileSync(sessionPath, 'utf-8');
                     const sessionData = JSON.parse(sessionContent);
 
-                    // Session files have: session_number, timestamp, subtasks_completed,
+                    // Session files have: session_number, timestamp, analysis_tasks_completed,
                     // discoveries, what_worked, what_failed, recommendations_for_next_session
                     if (sessionData.session_number !== undefined) {
                       recentMemories.push({
@@ -176,7 +176,7 @@
                           what_worked: sessionData.what_worked,
                           what_failed: sessionData.what_failed,
                           recommendations: sessionData.recommendations_for_next_session,
-                          subtasks_completed: sessionData.subtasks_completed
+                          analysis_tasks_completed: sessionData.analysis_tasks_completed
                         }, null, 2),
                         session_number: sessionData.session_number
                       });

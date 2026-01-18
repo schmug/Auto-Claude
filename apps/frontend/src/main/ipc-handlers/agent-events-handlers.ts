@@ -8,7 +8,7 @@ import type {
   Task,
   TaskStatus,
   Project,
-  ImplementationPlan
+  InvestigationPlan
 } from '../../shared/types';
 import { AgentManager } from '../agent';
 import type { ProcessType, ExecutionProgressData } from '../agent';
@@ -16,7 +16,7 @@ import { titleGenerator } from '../title-generator';
 import { fileWatcher } from '../file-watcher';
 import { projectStore } from '../project-store';
 import { notificationService } from '../notification-service';
-import { persistPlanStatusSync, getPlanPath } from './task/plan-file-utils';
+import { persistPlanStatusSync, getPlanPath, getPlanPaths } from './task/plan-file-utils';
 import { findTaskWorktree } from '../worktree-paths';
 import { findTaskAndProject } from './task/shared';
 
@@ -179,16 +179,13 @@ export function registerAgenteventsHandlers(
             const worktreePath = findTaskWorktree(projectPath, taskSpecId);
             if (worktreePath) {
               const specsBaseDir = getSpecsDir(autoBuildPath);
-              const worktreePlanPath = path.join(
-                worktreePath,
-                specsBaseDir,
-                taskSpecId,
-                AUTO_BUILD_PATHS.IMPLEMENTATION_PLAN
-              );
-              if (existsSync(worktreePlanPath)) {
-                const worktreePersisted = persistPlanStatusSync(worktreePlanPath, status, projectId);
-                if (worktreePersisted) {
-                  console.warn(`[Task ${taskId}] Persisted status to worktree plan: ${status}`);
+              const worktreeSpecDir = path.join(worktreePath, specsBaseDir, taskSpecId);
+              for (const worktreePlanPath of getPlanPaths(worktreeSpecDir, worktreePath, taskSpecId)) {
+                if (existsSync(worktreePlanPath)) {
+                  const worktreePersisted = persistPlanStatusSync(worktreePlanPath, status, projectId);
+                  if (worktreePersisted) {
+                    console.warn(`[Task ${taskId}] Persisted status to worktree plan: ${status}`);
+                  }
                 }
               }
             }
@@ -292,7 +289,7 @@ export function registerAgenteventsHandlers(
                 worktreePath,
                 specsBaseDir,
                 task.specId,
-                AUTO_BUILD_PATHS.IMPLEMENTATION_PLAN
+                AUTO_BUILD_PATHS.INVESTIGATION_PLAN
               );
               if (existsSync(worktreePlanPath)) {
                 persistPlanStatusSync(worktreePlanPath, newStatus, project.id);
@@ -311,7 +308,7 @@ export function registerAgenteventsHandlers(
   // File Watcher Events → Renderer
   // ============================================
 
-  fileWatcher.on('progress', (taskId: string, plan: ImplementationPlan) => {
+  fileWatcher.on('progress', (taskId: string, plan: InvestigationPlan) => {
     const mainWindow = getMainWindow();
     if (mainWindow) {
       // Use shared helper to find project (issue #723 - deduplicate lookup)

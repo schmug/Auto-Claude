@@ -9,7 +9,7 @@ import { AUTO_BUILD_PATHS, getSpecsDir } from '../../../shared/constants';
 import type {
   IPCResult,
   Task,
-  ImplementationPlan,
+  InvestigationPlan,
   TaskMetadata,
   TaskCategory,
   TaskImpact,
@@ -139,26 +139,24 @@ function createSpecFiles(
   // Create the spec directory
   mkdirSync(specDir, { recursive: true });
 
-  // Create initial implementation_plan.json
-  const initialPlan: ImplementationPlan = {
-    feature: idea.title,
+  // Create initial investigation_plan.json
+  const initialPlan: InvestigationPlan = {
+    case_id: path.basename(specDir),
+    case_name: idea.title,
+    investigation_type: 'investigation',
     description: idea.description,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
     status: 'backlog',
-    planStatus: 'pending',
-    phases: [],
-    workflow_type: 'development',
-    services_involved: [],
-    final_acceptance: [],
-    spec_file: 'spec.md'
+    plan_status: 'pending',
+    phases: []
   };
   writeFileSync(
-    path.join(specDir, AUTO_BUILD_PATHS.IMPLEMENTATION_PLAN),
+    path.join(specDir, AUTO_BUILD_PATHS.INVESTIGATION_PLAN),
     JSON.stringify(initialPlan, null, 2)
   );
 
-  // Create initial spec.md
+  // Create initial case.md
   const specContent = `# ${idea.title}
 
 ## Overview
@@ -170,9 +168,9 @@ ${idea.description}
 ${idea.rationale}
 
 ---
-*This spec was created from ideation and is pending detailed specification.*
+*This case was created from ideation and is pending detailed specification.*
 `;
-  writeFileSync(path.join(specDir, AUTO_BUILD_PATHS.SPEC_FILE), specContent);
+  writeFileSync(path.join(specDir, AUTO_BUILD_PATHS.CASE_FILE), specContent);
 }
 
 /**

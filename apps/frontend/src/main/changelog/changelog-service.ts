@@ -12,7 +12,7 @@ import type {
   ChangelogSaveResult,
   ExistingChangelog,
   Task,
-  ImplementationPlan,
+  InvestigationPlan,
   GitBranchInfo,
   GitTagInfo
 } from '../../shared/types';
@@ -262,7 +262,9 @@ export class ChangelogService extends EventEmitter {
       .filter(task => task.status === 'done' && !task.metadata?.archivedAt)
       .map(task => {
         const specDir = path.join(specsDir, task.specId);
-        const hasSpecs = existsSync(specDir) && existsSync(path.join(specDir, AUTO_BUILD_PATHS.SPEC_FILE));
+        const casePath = path.join(specDir, AUTO_BUILD_PATHS.CASE_FILE);
+        const specPath = path.join(specDir, AUTO_BUILD_PATHS.SPEC_FILE);
+        const hasSpecs = existsSync(specDir) && (existsSync(casePath) || existsSync(specPath));
 
         return {
           id: task.id,
@@ -277,7 +279,7 @@ export class ChangelogService extends EventEmitter {
   }
 
   /**
-   * Load spec files for given tasks
+   * Load case files for given tasks
    */
   async loadTaskSpecs(projectPath: string, taskIds: string[], tasks: Task[], specsBaseDir?: string): Promise<TaskSpecContent[]> {
     const specsDir = path.join(projectPath, specsBaseDir || AUTO_BUILD_PATHS.SPECS_DIR);
@@ -301,11 +303,13 @@ export class ChangelogService extends EventEmitter {
       };
 
       try {
-        // Load spec.md
+        // Load case.md (fallback to legacy spec.md)
+        const casePath = path.join(specDir, AUTO_BUILD_PATHS.CASE_FILE);
         const specPath = path.join(specDir, AUTO_BUILD_PATHS.SPEC_FILE);
-        if (existsSync(specPath)) {
-          content.spec = readFileSync(specPath, 'utf-8');
-          this.debug('Loaded spec.md', { specId: task.specId, length: content.spec.length });
+        const docPath = existsSync(casePath) ? casePath : specPath;
+        if (existsSync(docPath)) {
+          content.spec = readFileSync(docPath, 'utf-8');
+          this.debug('Loaded case.md', { specId: task.specId, length: content.spec.length });
         }
 
         // Load requirements.json
@@ -320,10 +324,12 @@ export class ChangelogService extends EventEmitter {
           content.qaReport = readFileSync(qaReportPath, 'utf-8');
         }
 
-        // Load implementation_plan.json
-        const planPath = path.join(specDir, AUTO_BUILD_PATHS.IMPLEMENTATION_PLAN);
+        // Load plan file (investigation_plan.json preferred)
+        const investigationPlanPath = path.join(specDir, AUTO_BUILD_PATHS.INVESTIGATION_PLAN);
+        const legacyPlanPath = path.join(specDir, AUTO_BUILD_PATHS.INVESTIGATION_PLAN);
+        const planPath = existsSync(investigationPlanPath) ? investigationPlanPath : legacyPlanPath;
         if (existsSync(planPath)) {
-          content.implementationPlan = JSON.parse(readFileSync(planPath, 'utf-8')) as ImplementationPlan;
+          content.implementationPlan = JSON.parse(readFileSync(planPath, 'utf-8')) as InvestigationPlan;
         }
       } catch (error) {
         content.error = error instanceof Error ? error.message : 'Failed to load spec files';
@@ -466,7 +472,9 @@ export class ChangelogService extends EventEmitter {
         hasBreakingChanges = true;
       }
 
-      if (spec.implementationPlan?.workflow_type === 'new_feature' ||
+      const investigationType = spec.implementationPlan?.investigation_type
+        || (spec.implementationPlan as { workflow_type?: string } | undefined)?.workflow_type;
+      if (investigationType === 'new_feature' ||
           content.includes('new feature') ||
           content.includes('## added')) {
         hasNewFeatures = true;

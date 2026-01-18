@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { Task, TaskStatus, SubtaskStatus, ImplementationPlan, Subtask, TaskMetadata, ExecutionProgress, ExecutionPhase, ReviewReason, TaskDraft } from '../../shared/types';
+import type { Task, TaskStatus, SubtaskStatus, InvestigationPlan, Subtask, TaskMetadata, ExecutionProgress, ExecutionPhase, ReviewReason, TaskDraft } from '../../shared/types';
 import { debugLog } from '../../shared/utils/debug-logger';
 
 interface TaskState {
@@ -13,7 +13,7 @@ interface TaskState {
   addTask: (task: Task) => void;
   updateTask: (taskId: string, updates: Partial<Task>) => void;
   updateTaskStatus: (taskId: string, status: TaskStatus) => void;
-  updateTaskFromPlan: (taskId: string, plan: ImplementationPlan) => void;
+  updateTaskFromPlan: (taskId: string, plan: InvestigationPlan) => void;
   updateExecutionProgress: (taskId: string, progress: Partial<ExecutionProgress>) => void;
   appendLog: (taskId: string, log: string) => void;
   batchAppendLogs: (taskId: string, logs: string[]) => void;
@@ -25,6 +25,32 @@ interface TaskState {
   // Selectors
   getSelectedTask: () => Task | undefined;
   getTasksByStatus: (status: TaskStatus) => Task[];
+}
+
+type PlanTaskLike = {
+  id?: string;
+  description?: string;
+  status?: string;
+  verification?: unknown;
+};
+
+type PlanPhaseLike = {
+  analysis_tasks?: PlanTaskLike[];
+  subtasks?: PlanTaskLike[];
+  chunks?: PlanTaskLike[];
+};
+
+function getPhaseTasks(phase: PlanPhaseLike): PlanTaskLike[] {
+  if (Array.isArray(phase.analysis_tasks)) {
+    return phase.analysis_tasks;
+  }
+  if (Array.isArray(phase.subtasks)) {
+    return phase.subtasks;
+  }
+  if (Array.isArray(phase.chunks)) {
+    return phase.chunks;
+  }
+  return [];
 }
 
 /**
@@ -57,27 +83,31 @@ function updateTaskAtIndex(tasks: Task[], index: number, updater: (task: Task) =
 }
 
 /**
- * Validates implementation plan data structure before processing.
+ * Validates investigation plan data structure before processing.
  * Returns true if valid, false if invalid/incomplete.
  */
-function validatePlanData(plan: ImplementationPlan): boolean {
+function validatePlanData(plan: InvestigationPlan): boolean {
   // Validate plan has phases array
   if (!plan.phases || !Array.isArray(plan.phases)) {
     console.warn('[validatePlanData] Invalid plan: missing or invalid phases array');
     return false;
   }
 
-  // Validate each phase has subtasks array
+  // Validate each phase has a task list
   for (let i = 0; i < plan.phases.length; i++) {
     const phase = plan.phases[i];
-    if (!phase || !phase.subtasks || !Array.isArray(phase.subtasks)) {
-      console.warn(`[validatePlanData] Invalid phase ${i}: missing or invalid subtasks array`);
+    const hasTaskList = Array.isArray(phase?.analysis_tasks)
+      || Array.isArray((phase as PlanPhaseLike)?.subtasks)
+      || Array.isArray((phase as PlanPhaseLike)?.chunks);
+    if (!phase || !hasTaskList) {
+      console.warn(`[validatePlanData] Invalid phase ${i}: missing or invalid analysis_tasks array`);
       return false;
     }
 
-    // Validate each subtask has at minimum a description
-    for (let j = 0; j < phase.subtasks.length; j++) {
-      const subtask = phase.subtasks[j];
+    // Validate each task has at minimum a description
+    const tasks = getPhaseTasks(phase as PlanPhaseLike);
+    for (let j = 0; j < tasks.length; j++) {
+      const subtask = tasks[j];
       if (!subtask || typeof subtask !== 'object') {
         console.warn(`[validatePlanData] Invalid subtask at phase ${i}, index ${j}: not an object`);
         return false;
@@ -147,9 +177,9 @@ export const useTaskStore = create<TaskState>((set, get) => ({
       // FIX (PR Review): Gate debug logging to prevent production console clutter
       debugLog('[updateTaskFromPlan] called with plan:', {
         taskId,
-        feature: plan.feature,
+        caseName: plan.case_name,
         phases: plan.phases?.length || 0,
-        totalSubtasks: plan.phases?.reduce((acc, p) => acc + (p.subtasks?.length || 0), 0) || 0
+        totalSubtasks: plan.phases?.reduce((acc, p) => acc + getPhaseTasks(p as PlanPhaseLike).length, 0) || 0
         // Note: planData removed to avoid verbose output in logs
       });
 
@@ -171,7 +201,7 @@ export const useTaskStore = create<TaskState>((set, get) => ({
       return {
         tasks: updateTaskAtIndex(state.tasks, index, (t) => {
           const subtasks: Subtask[] = plan.phases.flatMap((phase) =>
-            phase.subtasks.map((subtask) => {
+            getPhaseTasks(phase as PlanPhaseLike).map((subtask) => {
               // Ensure all required fields have valid values to prevent UI issues
               // Use crypto.randomUUID() for stronger randomness when available
               const id = subtask.id || (typeof crypto !== 'undefined' && crypto.randomUUID
@@ -222,7 +252,7 @@ export const useTaskStore = create<TaskState>((set, get) => ({
 
           // FIX (Flip-Flop Bug): Respect explicit human_review status from plan file
           // When the plan explicitly says 'human_review', don't override it with calculated status
-          // Note: ImplementationPlan type already defines status?: TaskStatus
+          // Note: InvestigationPlan type already defines status?: TaskStatus
           const planStatus = plan.status;
           const isExplicitHumanReview = planStatus === 'human_review';
 
@@ -264,7 +294,7 @@ export const useTaskStore = create<TaskState>((set, get) => ({
 
           return {
             ...t,
-            title: plan.feature || t.title,
+            title: plan.case_name || t.title,
             subtasks,
             status,
             reviewReason,

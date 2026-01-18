@@ -14,7 +14,7 @@ import path from 'path';
 import fs from 'fs';
 import { IPC_CHANNELS } from '../../../shared/constants';
 import { getGitHubConfig, githubFetch } from './utils';
-import { createSpecForIssue, buildIssueContext, buildInvestigationTask, updateImplementationPlanStatus } from './spec-utils';
+import { createSpecForIssue, buildIssueContext, buildInvestigationTask, updateInvestigationPlanStatus } from './spec-utils';
 import type { Project } from '../../../shared/types';
 import { createContextLogger } from './utils/logger';
 import { withProjectOrNull } from './utils/project-middleware';
@@ -421,7 +421,7 @@ async function startAutoFix(
 
     // Immediately update the plan status to 'planning' so the frontend shows the task as "In Progress"
     // This provides instant feedback to the user while spec_runner.py is starting up
-    updateImplementationPlanStatus(specData.specDir, 'planning');
+    updateInvestigationPlanStatus(specData.specDir, 'planning');
 
     sendProgress({ phase: 'complete', issueNumber, progress: 100, message: 'Auto-fix spec creation started!' });
     sendComplete(state);

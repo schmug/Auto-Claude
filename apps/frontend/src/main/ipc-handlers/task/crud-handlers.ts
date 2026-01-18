@@ -141,18 +141,21 @@ export function registerTaskCRUDHandlers(agentManager: AgentManager): void {
         taskMetadata.attachedImages = savedImages;
       }
 
-      // Create initial implementation_plan.json (task is created but not started)
+      // Create initial investigation_plan.json (task is created but not started)
       const now = new Date().toISOString();
       const implementationPlan = {
-        feature: finalTitle,
+        case_id: specId,
+        case_name: finalTitle,
+        investigation_type: 'investigation',
         description: description,
         created_at: now,
         updated_at: now,
         status: 'pending',
+        plan_status: 'pending',
         phases: []
       };
 
-      const planPath = path.join(specDir, AUTO_BUILD_PATHS.IMPLEMENTATION_PLAN);
+      const planPath = path.join(specDir, AUTO_BUILD_PATHS.INVESTIGATION_PLAN);
       writeFileSync(planPath, JSON.stringify(implementationPlan, null, 2));
 
       // Save task metadata if provided
@@ -164,7 +167,7 @@ export function registerTaskCRUDHandlers(agentManager: AgentManager): void {
       // Create requirements.json with attached images
       const requirements: Record<string, unknown> = {
         task_description: description,
-        workflow_type: taskMetadata.category || 'feature'
+        investigation_type: taskMetadata.category || 'investigation'
       };
 
       // Add attached images to requirements if present
@@ -298,15 +301,18 @@ export function registerTaskCRUDHandlers(agentManager: AgentManager): void {
           }
         }
 
-        // Update implementation_plan.json
-        const planPath = path.join(specDir, AUTO_BUILD_PATHS.IMPLEMENTATION_PLAN);
+        // Update investigation_plan.json
+        const planPath = path.join(specDir, AUTO_BUILD_PATHS.INVESTIGATION_PLAN);
         if (existsSync(planPath)) {
           try {
             const planContent = readFileSync(planPath, 'utf-8');
             const plan = JSON.parse(planContent);
 
             if (finalTitle !== undefined) {
-              plan.feature = finalTitle;
+              plan.case_name = finalTitle;
+              if ('feature' in plan) {
+                delete plan.feature;
+              }
             }
             if (updates.description !== undefined) {
               plan.description = updates.description;
@@ -319,11 +325,13 @@ export function registerTaskCRUDHandlers(agentManager: AgentManager): void {
           }
         }
 
-        // Update spec.md if it exists
+        // Update case.md if it exists (fallback to legacy spec.md)
+        const casePath = path.join(specDir, AUTO_BUILD_PATHS.CASE_FILE);
         const specPath = path.join(specDir, AUTO_BUILD_PATHS.SPEC_FILE);
-        if (existsSync(specPath)) {
+        const docPath = existsSync(casePath) ? casePath : specPath;
+        if (existsSync(docPath)) {
           try {
-            let specContent = readFileSync(specPath, 'utf-8');
+            let specContent = readFileSync(docPath, 'utf-8');
 
             // Update title (first # heading)
             if (finalTitle !== undefined) {
@@ -342,9 +350,9 @@ export function registerTaskCRUDHandlers(agentManager: AgentManager): void {
               );
             }
 
-            writeFileSync(specPath, specContent);
+            writeFileSync(docPath, specContent);
           } catch {
-            // Spec file update failed, continue anyway
+            // Case file update failed, continue anyway
           }
         }
 
@@ -406,7 +414,10 @@ export function registerTaskCRUDHandlers(agentManager: AgentManager): void {
                 requirements.task_description = updates.description;
               }
               if (updates.metadata.category) {
-                requirements.workflow_type = updates.metadata.category;
+                requirements.investigation_type = updates.metadata.category;
+                if ('workflow_type' in requirements) {
+                  delete requirements.workflow_type;
+                }
               }
 
               writeFileSync(requirementsPath, JSON.stringify(requirements, null, 2));

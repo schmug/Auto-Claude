@@ -2,10 +2,99 @@ import { app } from 'electron';
 import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync, Dirent } from 'fs';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
-import type { Project, ProjectSettings, Task, TaskStatus, TaskMetadata, ImplementationPlan, ReviewReason, PlanSubtask } from '../shared/types';
+import type { Project, ProjectSettings, Task, TaskStatus, TaskMetadata, InvestigationPlan, ReviewReason, PlanSubtask } from '../shared/types';
 import { DEFAULT_PROJECT_SETTINGS, AUTO_BUILD_PATHS, getSpecsDir } from '../shared/constants';
 import { getAutoBuildPath, isInitialized } from './project-initializer';
 import { getTaskWorktreeDir } from './worktree-paths';
+
+function getCaseDirFromSpecPath(specPath: string): string | null {
+  const normalized = path.normalize(specPath);
+  const root = path.parse(normalized).root;
+  const parts = normalized.slice(root.length).split(path.sep).filter(Boolean);
+
+  for (let i = 0; i < parts.length - 2; i++) {
+    const part = parts[i];
+    if ((part === '.auto-sleuth' || part === 'auto-sleuth') && parts[i + 1] === 'cases') {
+      return path.join(root, ...parts.slice(0, i + 3));
+    }
+  }
+
+  return null;
+}
+
+function getCasePlanPath(specPath: string, basePath?: string, specId?: string): string | null {
+  const candidates = [];
+  const caseDir = getCaseDirFromSpecPath(specPath);
+  if (caseDir) {
+    candidates.push(path.join(caseDir, AUTO_BUILD_PATHS.INVESTIGATION_PLAN));
+  }
+
+  if (basePath && specId) {
+    candidates.push(path.join(basePath, '.auto-sleuth', 'cases', specId, AUTO_BUILD_PATHS.INVESTIGATION_PLAN));
+    candidates.push(path.join(basePath, 'auto-sleuth', 'cases', specId, AUTO_BUILD_PATHS.INVESTIGATION_PLAN));
+  }
+
+  for (const candidate of candidates) {
+    if (existsSync(candidate)) {
+      return candidate;
+    }
+  }
+
+  return null;
+}
+
+function resolvePlanPath(specPath: string, basePath: string, specId: string): string {
+  const casePlanPath = getCasePlanPath(specPath, basePath, specId);
+  if (casePlanPath) {
+    return casePlanPath;
+  }
+
+  const investigationPlanPath = path.join(specPath, AUTO_BUILD_PATHS.INVESTIGATION_PLAN);
+  if (existsSync(investigationPlanPath)) {
+    return investigationPlanPath;
+  }
+
+  return investigationPlanPath;
+}
+
+function getPhaseTasks(phase: { analysis_tasks?: PlanSubtask[]; subtasks?: PlanSubtask[]; chunks?: PlanSubtask[] }): PlanSubtask[] {
+  if (Array.isArray(phase.analysis_tasks)) {
+    return phase.analysis_tasks;
+  }
+  if (Array.isArray(phase.subtasks)) {
+    return phase.subtasks;
+  }
+  if (Array.isArray(phase.chunks)) {
+    return phase.chunks;
+  }
+  return [];
+}
+
+function getCaseSpecsDirs(projectPath: string, specsBaseDir: string): Array<{ specsDir: string; caseDir: string }> {
+  const caseRoots = [
+    path.join(projectPath, '.auto-sleuth', 'cases'),
+    path.join(projectPath, 'auto-sleuth', 'cases')
+  ];
+
+  const results: Array<{ specsDir: string; caseDir: string }> = [];
+
+  for (const casesRoot of caseRoots) {
+    if (!existsSync(casesRoot)) {
+      continue;
+    }
+    const caseDirs = readdirSync(casesRoot, { withFileTypes: true });
+    for (const dir of caseDirs) {
+      if (!dir.isDirectory()) continue;
+      const caseDir = path.join(casesRoot, dir.name);
+      const specsDir = path.join(caseDir, specsBaseDir);
+      if (existsSync(specsDir)) {
+        results.push({ specsDir, caseDir });
+      }
+    }
+  }
+
+  return results;
+}
 
 interface TabState {
   openProjectIds: string[];
@@ -282,7 +371,16 @@ export class ProjectStore {
       console.warn('[ProjectStore] Loaded', mainTasks.length, 'tasks from main project');
     }
 
-    // 2. Scan worktree specs directories
+    // 2. Scan case specs directories (DFIR)
+    const caseSpecsDirs = getCaseSpecsDirs(project.path, specsBaseDir);
+    for (const { specsDir, caseDir } of caseSpecsDirs) {
+      const caseTasks = this.loadTasksFromSpecsDir(specsDir, caseDir, 'main', projectId, specsBaseDir);
+      allTasks.push(...caseTasks);
+      caseTasks.forEach(t => mainSpecIds.add(t.specId));
+      console.warn('[ProjectStore] Loaded', caseTasks.length, 'tasks from case:', path.basename(caseDir));
+    }
+
+    // 3. Scan worktree specs directories
     // NOTE FOR MAINTAINERS: Worktree tasks are only included if the spec also exists in main.
     // This prevents deleted tasks from "coming back" when the worktree isn't cleaned up.
     const worktreesDir = getTaskWorktreeDir(project.path);
@@ -379,31 +477,50 @@ export class ProjectStore {
 
       try {
         const specPath = path.join(specsDir, dir.name);
-        const planPath = path.join(specPath, AUTO_BUILD_PATHS.IMPLEMENTATION_PLAN);
+        const planPath = resolvePlanPath(specPath, basePath, dir.name);
+        const caseFilePath = path.join(specPath, AUTO_BUILD_PATHS.CASE_FILE);
         const specFilePath = path.join(specPath, AUTO_BUILD_PATHS.SPEC_FILE);
+        const docFilePath = existsSync(caseFilePath) ? caseFilePath : specFilePath;
 
-        // Try to read implementation plan
-        let plan: ImplementationPlan | null = null;
+        // Try to read plan file (investigation_plan.json preferred)
+        let plan: InvestigationPlan | null = null;
         if (existsSync(planPath)) {
-          console.warn(`[ProjectStore] Loading implementation_plan.json for spec: ${dir.name} from ${location}`);
+          console.warn(`[ProjectStore] Loading plan for spec: ${dir.name} from ${location}`, { planPath });
           try {
             const content = readFileSync(planPath, 'utf-8');
             plan = JSON.parse(content);
-            console.warn(`[ProjectStore] Loaded plan for ${dir.name}:`, {
-              hasDescription: !!plan?.description,
-              hasFeature: !!plan?.feature,
-              status: plan?.status,
-              phaseCount: plan?.phases?.length || 0,
-              subtaskCount: plan?.phases?.flatMap(p => p.subtasks || []).length || 0
-            });
           } catch (err) {
-            console.error(`[ProjectStore] Failed to parse implementation_plan.json for ${dir.name}:`, err);
+            console.error(`[ProjectStore] Failed to parse plan file for ${dir.name}:`, err);
           }
-        } else {
-          console.warn(`[ProjectStore] No implementation_plan.json found for spec: ${dir.name} at ${planPath}`);
         }
 
-        // PRIORITY 1: Read description from implementation_plan.json (user's original)
+        const initialTaskCount = plan?.phases?.flatMap(p => getPhaseTasks(p)).length || 0;
+        if (initialTaskCount === 0) {
+          const casePlanPath = getCasePlanPath(specPath, basePath, dir.name);
+          if (casePlanPath && casePlanPath !== planPath) {
+            try {
+              const content = readFileSync(casePlanPath, 'utf-8');
+              plan = JSON.parse(content);
+              console.warn(`[ProjectStore] Loaded case plan for ${dir.name}:`, { planPath: casePlanPath });
+            } catch (err) {
+              console.error(`[ProjectStore] Failed to parse case plan for ${dir.name}:`, err);
+            }
+          } else if (!plan) {
+            console.warn(`[ProjectStore] No plan file found for spec: ${dir.name} at ${planPath}`);
+          }
+        }
+
+        if (plan) {
+          console.warn(`[ProjectStore] Loaded plan for ${dir.name}:`, {
+            hasDescription: !!plan?.description,
+            hasCaseName: !!plan?.case_name,
+            status: plan?.status,
+            phaseCount: plan?.phases?.length || 0,
+            taskCount: plan?.phases?.flatMap(p => getPhaseTasks(p)).length || 0
+          });
+        }
+
+        // PRIORITY 1: Read description from plan file (user's original)
         let description = '';
         if (plan?.description) {
           description = plan.description;
@@ -426,10 +543,10 @@ export class ProjectStore {
           }
         }
 
-        // PRIORITY 3: Final fallback to spec.md Overview (AI-synthesized content)
-        if (!description && existsSync(specFilePath)) {
+        // PRIORITY 3: Final fallback to case.md Overview (AI-synthesized content)
+        if (!description && existsSync(docFilePath)) {
           try {
-            const content = readFileSync(specFilePath, 'utf-8');
+            const content = readFileSync(docFilePath, 'utf-8');
             // Extract full Overview section until next heading or end of file
             // Use \n#{1,6}\s to match valid markdown headings (# to ######) with required space
             // This avoids truncating at # in code blocks (e.g., Python comments)
@@ -457,9 +574,9 @@ export class ProjectStore {
         // Determine task status and review reason from plan
         const { status, reviewReason } = this.determineTaskStatusAndReason(plan, specPath, metadata);
 
-        // Extract subtasks from plan (handle both 'subtasks' and 'chunks' naming)
+        // Extract tasks from plan (analysis_tasks)
         const subtasks = plan?.phases?.flatMap((phase) => {
-          const items = phase.subtasks || (phase as { chunks?: PlanSubtask[] }).chunks || [];
+          const items = getPhaseTasks(phase);
           return items.map((subtask) => ({
             id: subtask.id,
             title: subtask.description,
@@ -475,11 +592,11 @@ export class ProjectStore {
         const stagedAt = planWithStaged?.stagedAt;
 
         // Determine title - check if feature looks like a spec ID (e.g., "054-something-something")
-        let title = plan?.feature || plan?.title || dir.name;
+        let title = plan?.case_name || dir.name;
         const looksLikeSpecId = /^\d{3}-/.test(title);
-        if (looksLikeSpecId && existsSync(specFilePath)) {
+        if (looksLikeSpecId && existsSync(docFilePath)) {
           try {
-            const specContent = readFileSync(specFilePath, 'utf-8');
+            const specContent = readFileSync(docFilePath, 'utf-8');
             // Extract title from first # line, handling patterns like:
             // "# Quick Spec: Title" -> "Title"
             // "# Specification: Title" -> "Title"
@@ -527,28 +644,28 @@ export class ProjectStore {
    * providing backwards compatibility for existing tasks with incorrect status.
    *
    * Review reasons:
-   * - 'completed': All subtasks done, QA passed - ready for merge
+   * - 'completed': All tasks done, QA passed - ready for merge
    * - 'errors': Subtasks failed during execution - needs attention
    * - 'qa_rejected': QA found issues that need fixing
    */
   private determineTaskStatusAndReason(
-    plan: ImplementationPlan | null,
+    plan: InvestigationPlan | null,
     specPath: string,
     metadata?: TaskMetadata
   ): { status: TaskStatus; reviewReason?: ReviewReason } {
-    // Handle both 'subtasks' and 'chunks' naming conventions, filter out undefined
-    const allSubtasks = plan?.phases?.flatMap((p) => p.subtasks || (p as { chunks?: PlanSubtask[] }).chunks || []).filter(Boolean) || [];
+    // Handle analysis_tasks naming convention, filter out undefined
+    const allTasks = plan?.phases?.flatMap((p) => getPhaseTasks(p)).filter(Boolean) || [];
 
     let calculatedStatus: TaskStatus = 'backlog';
     let reviewReason: ReviewReason | undefined;
 
-    if (allSubtasks.length > 0) {
-      const completed = allSubtasks.filter((s) => s.status === 'completed').length;
-      const inProgress = allSubtasks.filter((s) => s.status === 'in_progress').length;
-      const failed = allSubtasks.filter((s) => s.status === 'failed').length;
+    if (allTasks.length > 0) {
+      const completed = allTasks.filter((s) => s.status === 'completed').length;
+      const inProgress = allTasks.filter((s) => s.status === 'in_progress').length;
+      const failed = allTasks.filter((s) => s.status === 'failed').length;
 
-      if (completed === allSubtasks.length) {
-        // All subtasks completed - check QA status
+      if (completed === allTasks.length) {
+        // All tasks completed - check QA status
         const qaSignoff = (plan as unknown as Record<string, unknown>)?.qa_signoff as { status?: string } | undefined;
         if (qaSignoff?.status === 'approved') {
           calculatedStatus = 'human_review';
@@ -561,7 +678,7 @@ export class ProjectStore {
           }
         }
       } else if (failed > 0) {
-        // Some subtasks failed - needs human attention
+        // Some tasks failed - needs human attention
         calculatedStatus = 'human_review';
         reviewReason = 'errors';
       } else if (inProgress > 0 || completed > 0) {
@@ -599,18 +716,21 @@ export class ProjectStore {
 
       // For other stored statuses, validate against calculated status
       if (storedStatus) {
-        // Planning/coding status from the backend should be respected even if subtasks aren't in progress yet
-        // This happens when a task is in planning phase (creating spec) but no subtasks have been started
+        // Planning/coding status from the backend should be respected even if tasks aren't in progress yet
+        // This happens when a task is in planning phase (creating spec) but no tasks have been started
         const isActiveProcessStatus = (plan.status as string) === 'planning' || (plan.status as string) === 'coding' || (plan.status as string) === 'in_progress';
 
         // Check if this is a plan review (spec approval stage before coding starts)
         // planStatus: "review" indicates spec creation is complete and awaiting user approval
-        const isPlanReviewStage = (plan as unknown as { planStatus?: string })?.planStatus === 'review';
+        const planStatus = (plan as unknown as { plan_status?: string; planStatus?: string })?.plan_status
+          || (plan as unknown as { plan_status?: string; planStatus?: string })?.planStatus;
+
+        const isPlanReviewStage = planStatus === 'review';
 
         // Determine if there is remaining work to do
-        // True if: no subtasks exist yet (planning in progress) OR some subtasks are incomplete
+        // True if: no tasks exist yet (planning in progress) OR some tasks are incomplete
         // This prevents 'in_progress' from overriding 'human_review' when all work is done
-        const hasRemainingWork = allSubtasks.length === 0 || allSubtasks.some((s) => s.status !== 'completed');
+        const hasRemainingWork = allTasks.length === 0 || allTasks.some((s) => s.status !== 'completed');
 
         const isStoredStatusValid =
           (storedStatus === calculatedStatus) || // Matches calculated
@@ -622,8 +742,8 @@ export class ProjectStore {
           // Preserve reviewReason for human_review status
           if (storedStatus === 'human_review' && !reviewReason) {
             // Infer reason from subtask states or plan review stage
-            const hasFailedSubtasks = allSubtasks.some((s) => s.status === 'failed');
-            const allCompleted = allSubtasks.length > 0 && allSubtasks.every((s) => s.status === 'completed');
+            const hasFailedSubtasks = allTasks.some((s) => s.status === 'failed');
+            const allCompleted = allTasks.length > 0 && allTasks.every((s) => s.status === 'completed');
             if (hasFailedSubtasks) {
               reviewReason = 'errors';
             } else if (allCompleted) {
@@ -646,8 +766,8 @@ export class ProjectStore {
           return { status: 'human_review', reviewReason: 'qa_rejected' };
         }
         if (content.includes('PASSED') || content.includes('APPROVED')) {
-          // QA passed - if all subtasks done, move to human_review
-          if (allSubtasks.length > 0 && allSubtasks.every((s) => s.status === 'completed')) {
+          // QA passed - if all tasks done, move to human_review
+          if (allTasks.length > 0 && allTasks.every((s) => s.status === 'completed')) {
             return { status: 'human_review', reviewReason: 'completed' };
           }
         }

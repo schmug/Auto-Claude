@@ -534,27 +534,30 @@ ${(feature.acceptance_criteria || []).map((c: string) => `- [ ] ${c}`).join('\n'
         const specDir = path.join(specsDir, specId);
         mkdirSync(specDir, { recursive: true });
 
-        // Create initial implementation_plan.json
+        // Create initial investigation_plan.json
         const now = new Date().toISOString();
         const implementationPlan = {
-          feature: feature.title,
+          case_id: specId,
+          case_name: feature.title,
+          investigation_type: 'investigation',
           description: taskDescription,
           created_at: now,
           updated_at: now,
           status: 'pending',
+          plan_status: 'pending',
           phases: []
         };
-        writeFileSync(path.join(specDir, AUTO_BUILD_PATHS.IMPLEMENTATION_PLAN), JSON.stringify(implementationPlan, null, 2));
+        writeFileSync(path.join(specDir, AUTO_BUILD_PATHS.INVESTIGATION_PLAN), JSON.stringify(implementationPlan, null, 2));
 
         // Create requirements.json
         const requirements = {
           task_description: taskDescription,
-          workflow_type: 'feature'
+          investigation_type: 'investigation'
         };
         writeFileSync(path.join(specDir, AUTO_BUILD_PATHS.REQUIREMENTS), JSON.stringify(requirements, null, 2));
 
-        // Create spec.md (required by backend spec creation process)
-        writeFileSync(path.join(specDir, AUTO_BUILD_PATHS.SPEC_FILE), taskDescription);
+        // Create case.md (required by backend case creation process)
+        writeFileSync(path.join(specDir, AUTO_BUILD_PATHS.CASE_FILE), taskDescription);
 
         // Build metadata
         const metadata: TaskMetadata = {

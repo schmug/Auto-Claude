@@ -487,22 +487,25 @@ ${issue.description || 'No description provided.'}
             const specDir = path.join(specsDir, specId);
             mkdirSync(specDir, { recursive: true });
 
-            // Create initial implementation_plan.json
+            // Create initial investigation_plan.json
             const now = new Date().toISOString();
             const implementationPlan = {
-              feature: issue.title,
+              case_id: specId,
+              case_name: issue.title,
+              investigation_type: 'investigation',
               description: description,
               created_at: now,
               updated_at: now,
               status: 'pending',
+              plan_status: 'pending',
               phases: []
             };
-            writeFileSync(path.join(specDir, AUTO_BUILD_PATHS.IMPLEMENTATION_PLAN), JSON.stringify(implementationPlan, null, 2));
+            writeFileSync(path.join(specDir, AUTO_BUILD_PATHS.INVESTIGATION_PLAN), JSON.stringify(implementationPlan, null, 2));
 
             // Create requirements.json
             const requirements = {
               task_description: description,
-              workflow_type: 'feature'
+              investigation_type: 'investigation'
             };
             writeFileSync(path.join(specDir, AUTO_BUILD_PATHS.REQUIREMENTS), JSON.stringify(requirements, null, 2));
 

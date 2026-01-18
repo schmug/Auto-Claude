@@ -6,7 +6,7 @@ import type {
   TaskStartOptions,
   TaskStatus,
   TaskRecoveryResult,
-  ImplementationPlan,
+  InvestigationPlan,
   TaskMetadata,
   TaskLogs,
   TaskLogStreamChunk,
@@ -65,7 +65,7 @@ export interface TaskAPI {
 
   // Task Event Listeners
   // Note: projectId is optional for backward compatibility - events without projectId will still work
-  onTaskProgress: (callback: (taskId: string, plan: ImplementationPlan, projectId?: string) => void) => () => void;
+  onTaskProgress: (callback: (taskId: string, plan: InvestigationPlan, projectId?: string) => void) => () => void;
   onTaskError: (callback: (taskId: string, error: string, projectId?: string) => void) => () => void;
   onTaskLog: (callback: (taskId: string, log: string, projectId?: string) => void) => () => void;
   onTaskStatusChange: (callback: (taskId: string, status: TaskStatus, projectId?: string) => void) => () => void;
@@ -174,12 +174,12 @@ export const createTaskAPI = (): TaskAPI => ({
 
   // Task Event Listeners
   onTaskProgress: (
-    callback: (taskId: string, plan: ImplementationPlan, projectId?: string) => void
+    callback: (taskId: string, plan: InvestigationPlan, projectId?: string) => void
   ): (() => void) => {
     const handler = (
       _event: Electron.IpcRendererEvent,
       taskId: string,
-      plan: ImplementationPlan,
+      plan: InvestigationPlan,
       projectId?: string
     ): void => {
       callback(taskId, plan, projectId);

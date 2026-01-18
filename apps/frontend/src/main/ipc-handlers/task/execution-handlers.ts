@@ -12,6 +12,7 @@ import { checkGitStatus } from '../../project-initializer';
 import { getClaudeProfileManager } from '../../claude-profile-manager';
 import {
   getPlanPath,
+  getPlanPaths,
   persistPlanStatus,
   createPlanIfNotExists
 } from './plan-file-utils';
@@ -55,23 +56,52 @@ function safeReadFileSync(filePath: string): string | null {
   }
 }
 
+function getCaseFilePath(specDir: string): string {
+  const caseFilePath = path.join(specDir, AUTO_BUILD_PATHS.CASE_FILE);
+  if (existsSync(caseFilePath)) {
+    return caseFilePath;
+  }
+  return path.join(specDir, AUTO_BUILD_PATHS.SPEC_FILE);
+}
+
+type PlanPhaseLike = {
+  analysis_tasks?: Array<{ status: string }>;
+  subtasks?: Array<{ status: string }>;
+  chunks?: Array<{ status: string }>;
+};
+
+function getPhaseTasks(phase: PlanPhaseLike): Array<{ status: string }> {
+  if (Array.isArray(phase.analysis_tasks)) {
+    return phase.analysis_tasks;
+  }
+  if (Array.isArray(phase.subtasks)) {
+    return phase.subtasks;
+  }
+  if (Array.isArray(phase.chunks)) {
+    return phase.chunks;
+  }
+  return [];
+}
+
+function getPlanTasks(plan: Record<string, unknown> | null): Array<{ status: string }> {
+  return (plan?.phases as PlanPhaseLike[] | undefined)?.flatMap(getPhaseTasks) || [];
+}
+
 /**
- * Helper function to check subtask completion status
+ * Helper function to check analysis task completion status
  */
-function checkSubtasksCompletion(plan: Record<string, unknown> | null): {
-  allSubtasks: Array<{ status: string }>;
+function checkTasksCompletion(plan: Record<string, unknown> | null): {
+  allTasks: Array<{ status: string }>;
   completedCount: number;
   totalCount: number;
   allCompleted: boolean;
 } {
-  const allSubtasks = (plan?.phases as Array<{ subtasks?: Array<{ status: string }> }> | undefined)?.flatMap(phase =>
-    phase.subtasks || []
-  ) || [];
-  const completedCount = allSubtasks.filter(s => s.status === 'completed').length;
-  const totalCount = allSubtasks.length;
+  const allTasks = getPlanTasks(plan);
+  const completedCount = allTasks.filter(s => s.status === 'completed').length;
+  const totalCount = allTasks.length;
   const allCompleted = totalCount > 0 && completedCount === totalCount;
 
-  return { allSubtasks, completedCount, totalCount, allCompleted };
+  return { allTasks, completedCount, totalCount, allCompleted };
 }
 
 /**
@@ -144,16 +174,19 @@ export function registerTaskExecutionHandlers(
 
       // Start file watcher for this task
       const specsBaseDir = getSpecsDir(project.autoBuildPath);
-      const specDir = path.join(
+      const specDir = task.specsPath || path.join(
         project.path,
         specsBaseDir,
         task.specId
       );
-      fileWatcher.watch(taskId, specDir);
+      const planPath = getPlanPath(project, task);
+      fileWatcher.watch(taskId, planPath);
 
-      // Check if spec.md exists (indicates spec creation was already done or in progress)
+      // Check if case.md exists (indicates case creation was already done or in progress)
+      const caseFilePath = path.join(specDir, AUTO_BUILD_PATHS.CASE_FILE);
       const specFilePath = path.join(specDir, AUTO_BUILD_PATHS.SPEC_FILE);
-      const hasSpec = existsSync(specFilePath);
+      const hasSpec = existsSync(caseFilePath) || existsSync(specFilePath);
+      const docFilePath = existsSync(caseFilePath) ? caseFilePath : specFilePath;
 
       // Check if this task needs spec creation first (no spec file = not yet created)
       // OR if it has a spec but no implementation plan subtasks (spec created, needs planning/building)
@@ -175,11 +208,11 @@ export function registerTaskExecutionHandlers(
         // Also pass baseBranch so worktrees are created from the correct branch
         agentManager.startSpecCreation(task.specId, project.path, taskDescription, specDir, task.metadata, baseBranch);
       } else if (needsImplementation) {
-        // Spec exists but no subtasks - run run.py to create implementation plan and execute
-        // Read the spec.md to get the task description
+        // Case exists but no tasks - run run.py to create investigation plan and execute
+        // Read the case.md to get the task description
         const _taskDescription = task.description || task.title;
         try {
-          readFileSync(specFilePath, 'utf-8');
+          readFileSync(docFilePath, 'utf-8');
         } catch {
           // Use default description
         }
@@ -230,13 +263,13 @@ export function registerTaskExecutionHandlers(
         console.log(`[TASK_START] IPC sent immediately for task ${taskId}, deferring file persistence`);
       }
 
-      // CRITICAL: Persist status to implementation_plan.json to prevent status flip-flop
+      // CRITICAL: Persist status to investigation_plan.json to prevent status flip-flop
       // When getTasks() is called (on refresh), it reads status from the plan file.
       // Without persisting here, the old status (e.g., 'human_review') would override
       // the in-memory 'in_progress' status, causing the task to flip back and forth.
       // Uses shared utility for consistency with agent-events-handlers.ts
       // NOTE: This is now async and non-blocking for better UI responsiveness
-      const planPath = path.join(specDir, AUTO_BUILD_PATHS.IMPLEMENTATION_PLAN);
+      const planPath = getPlanPath(project, task);
       setImmediate(async () => {
         const persistStart = Date.now();
         try {
@@ -285,7 +318,7 @@ export function registerTaskExecutionHandlers(
     const { task, project } = findTaskAndProject(taskId);
 
     if (task && project) {
-      // Persist status to implementation_plan.json to prevent status flip-flop on refresh
+      // Persist status to investigation_plan.json to prevent status flip-flop on refresh
       // Uses shared utility for consistency with agent-events-handlers.ts
       // NOTE: This is now async and non-blocking for better UI responsiveness
       const planPath = getPlanPath(project, task);
@@ -329,7 +362,7 @@ export function registerTaskExecutionHandlers(
 
       // Check if dev mode is enabled for this project
       const specsBaseDir = getSpecsDir(project.autoBuildPath);
-      const specDir = path.join(
+      const specDir = task.specsPath || path.join(
         project.path,
         specsBaseDir,
         task.specId
@@ -400,7 +433,7 @@ export function registerTaskExecutionHandlers(
         }
 
         // Write feedback for QA fixer - write to WORKTREE spec dir if it exists
-        // The QA process runs in the worktree where the build and implementation_plan.json are
+        // The QA process runs in the worktree where the build and investigation_plan.json are
         const targetSpecDir = hasWorktree && worktreeSpecDir ? worktreeSpecDir : specDir;
         const fixRequestPath = path.join(targetSpecDir, 'QA_FIX_REQUEST.md');
 
@@ -418,7 +451,7 @@ export function registerTaskExecutionHandlers(
         }
 
         // Restart QA process - use worktree path if it exists, otherwise main project
-        // The QA process needs to run where the implementation_plan.json with completed subtasks is
+        // The QA process needs to run where the investigation_plan.json with completed subtasks is
         const qaProjectPath = hasWorktree ? worktreePath : project.path;
         console.warn('[TASK_REVIEW] Starting QA process with projectPath:', qaProjectPath);
         agentManager.startQAProcess(taskId, qaProjectPath, task.specId);
@@ -540,14 +573,14 @@ export function registerTaskExecutionHandlers(
       // This prevents tasks from being incorrectly marked as ready for review when execution failed
       if (status === 'human_review') {
         const specsBaseDirForValidation = getSpecsDir(project.autoBuildPath);
-        const specDirForValidation = path.join(
+        const specDirForValidation = task.specsPath || path.join(
           project.path,
           specsBaseDirForValidation,
           task.specId
         );
-        const specFilePath = path.join(specDirForValidation, AUTO_BUILD_PATHS.SPEC_FILE);
+        const specFilePath = getCaseFilePath(specDirForValidation);
 
-        // Check if spec.md exists and has meaningful content (at least 100 chars)
+        // Check if case.md exists and has meaningful content (at least 100 chars)
         const MIN_SPEC_CONTENT_LENGTH = 100;
         let specContent = '';
         try {
@@ -569,7 +602,7 @@ export function registerTaskExecutionHandlers(
 
       // Get the spec directory and plan path using shared utility
       const specsBaseDir = getSpecsDir(project.autoBuildPath);
-      const specDir = path.join(project.path, specsBaseDir, task.specId);
+      const specDir = task.specsPath || path.join(project.path, specsBaseDir, task.specId);
       const planPath = getPlanPath(project, task);
 
       try {
@@ -625,11 +658,13 @@ export function registerTaskExecutionHandlers(
           console.warn('[TASK_UPDATE_STATUS] Auto-starting task:', taskId);
 
           // Start file watcher for this task
-          fileWatcher.watch(taskId, specDir);
+          const planPathForWatcher = getPlanPath(project, task);
+          fileWatcher.watch(taskId, planPathForWatcher);
 
-          // Check if spec.md exists
+          // Check if case.md exists
+          const caseFilePath = path.join(specDir, AUTO_BUILD_PATHS.CASE_FILE);
           const specFilePath = path.join(specDir, AUTO_BUILD_PATHS.SPEC_FILE);
-          const hasSpec = existsSync(specFilePath);
+          const hasSpec = existsSync(caseFilePath) || existsSync(specFilePath);
           const needsSpecCreation = !hasSpec;
           const needsImplementation = hasSpec && task.subtasks.length === 0;
 
@@ -750,8 +785,8 @@ export function registerTaskExecutionHandlers(
         task.specId
       );
 
-      // Update implementation_plan.json
-      const planPath = path.join(specDir, AUTO_BUILD_PATHS.IMPLEMENTATION_PLAN);
+      // Update investigation_plan.json
+      const planPath = getPlanPath(project, task);
       console.log(`[Recovery] Writing to plan file at: ${planPath} (task location: ${task.location || 'main'})`);
 
       // Also update the OTHER location if task exists in both main and worktree
@@ -762,13 +797,15 @@ export function registerTaskExecutionHandlers(
       const worktreeSpecDir = worktreePath ? path.join(worktreePath, specsBaseDir, task.specId) : null;
 
       // Collect all plan file paths that need updating
-      const planPathsToUpdate: string[] = [planPath];
-      if (mainSpecDir !== specDir && existsSync(path.join(mainSpecDir, AUTO_BUILD_PATHS.IMPLEMENTATION_PLAN))) {
-        planPathsToUpdate.push(path.join(mainSpecDir, AUTO_BUILD_PATHS.IMPLEMENTATION_PLAN));
+      const planPathsSet = new Set<string>();
+      getPlanPaths(specDir, project.path, task.specId).forEach(p => planPathsSet.add(p));
+      if (mainSpecDir !== specDir && existsSync(mainSpecDir)) {
+        getPlanPaths(mainSpecDir, project.path, task.specId).forEach(p => planPathsSet.add(p));
       }
-      if (worktreeSpecDir && worktreeSpecDir !== specDir && existsSync(path.join(worktreeSpecDir, AUTO_BUILD_PATHS.IMPLEMENTATION_PLAN))) {
-        planPathsToUpdate.push(path.join(worktreeSpecDir, AUTO_BUILD_PATHS.IMPLEMENTATION_PLAN));
+      if (worktreeSpecDir && worktreeSpecDir !== specDir && existsSync(worktreeSpecDir)) {
+        getPlanPaths(worktreeSpecDir, worktreePath || undefined, task.specId).forEach(p => planPathsSet.add(p));
       }
+      const planPathsToUpdate = Array.from(planPathsSet);
       console.log(`[Recovery] Will update ${planPathsToUpdate.length} plan file(s):`, planPathsToUpdate);
 
       try {
@@ -794,7 +831,7 @@ export function registerTaskExecutionHandlers(
 
         if (!targetStatus && plan?.phases && Array.isArray(plan.phases)) {
           // Analyze subtask statuses to determine appropriate recovery status
-          const { completedCount, totalCount, allCompleted } = checkSubtasksCompletion(plan);
+          const { completedCount, totalCount, allCompleted } = checkTasksCompletion(plan);
 
           if (totalCount > 0) {
             if (allCompleted) {
@@ -812,25 +849,31 @@ export function registerTaskExecutionHandlers(
         if (plan) {
           // Update status
           plan.status = newStatus;
-          plan.planStatus = newStatus === 'done' ? 'completed'
+          plan.plan_status = newStatus === 'done' ? 'completed'
             : newStatus === 'in_progress' ? 'in_progress'
             : newStatus === 'ai_review' ? 'review'
             : newStatus === 'human_review' ? 'review'
             : 'pending';
+          if ('planStatus' in plan) {
+            delete plan.planStatus;
+          }
           plan.updated_at = new Date().toISOString();
 
           // Add recovery note
-          plan.recoveryNote = `Task recovered from stuck state at ${new Date().toISOString()}`;
+          plan.recovery_note = `Task recovered from stuck state at ${new Date().toISOString()}`;
 
           // Check if task is actually stuck or just completed and waiting for merge
-          const { allCompleted } = checkSubtasksCompletion(plan);
+          const { allCompleted } = checkTasksCompletion(plan);
 
           if (allCompleted) {
             console.log('[Recovery] Task is fully complete (all subtasks done), setting to human_review without restart');
             // Don't reset any subtasks - task is done!
             // Just update status in plan file (project store reads from file, no separate update needed)
             plan.status = 'human_review';
-            plan.planStatus = 'review';
+            plan.plan_status = 'review';
+            if ('planStatus' in plan) {
+              delete plan.planStatus;
+            }
 
             // Write to ALL plan file locations to ensure consistency
             const planContent = JSON.stringify(plan, null, 2);
@@ -868,29 +911,28 @@ export function registerTaskExecutionHandlers(
           // Task is not complete - reset only stuck subtasks for retry
           // Keep completed subtasks as-is so run.py can resume from where it left off
           if (plan.phases && Array.isArray(plan.phases)) {
-            for (const phase of plan.phases as Array<{ subtasks?: Array<{ status: string; actual_output?: string; started_at?: string; completed_at?: string }> }>) {
-              if (phase.subtasks && Array.isArray(phase.subtasks)) {
-                for (const subtask of phase.subtasks) {
-                  // Reset in_progress subtasks to pending (they were interrupted)
-                  // Keep completed subtasks as-is so run.py can resume
-                  if (subtask.status === 'in_progress') {
-                    const originalStatus = subtask.status;
-                    subtask.status = 'pending';
-                    // Clear execution data to maintain consistency
-                    delete subtask.actual_output;
-                    delete subtask.started_at;
-                    delete subtask.completed_at;
-                    console.log(`[Recovery] Reset stuck subtask: ${originalStatus} -> pending`);
-                  }
-                  // Also reset failed subtasks so they can be retried
-                  if (subtask.status === 'failed') {
-                    subtask.status = 'pending';
-                    // Clear execution data to maintain consistency
-                    delete subtask.actual_output;
-                    delete subtask.started_at;
-                    delete subtask.completed_at;
-                    console.log(`[Recovery] Reset failed subtask for retry`);
-                  }
+            for (const phase of plan.phases as Array<PlanPhaseLike>) {
+              const tasks = getPhaseTasks(phase);
+              for (const subtask of tasks as Array<{ status: string; actual_output?: string; started_at?: string; completed_at?: string }>) {
+                // Reset in_progress tasks to pending (they were interrupted)
+                // Keep completed tasks as-is so run.py can resume
+                if (subtask.status === 'in_progress') {
+                  const originalStatus = subtask.status;
+                  subtask.status = 'pending';
+                  // Clear execution data to maintain consistency
+                  delete subtask.actual_output;
+                  delete subtask.started_at;
+                  delete subtask.completed_at;
+                  console.log(`[Recovery] Reset stuck task: ${originalStatus} -> pending`);
+                }
+                // Also reset failed tasks so they can be retried
+                if (subtask.status === 'failed') {
+                  subtask.status = 'pending';
+                  // Clear execution data to maintain consistency
+                  delete subtask.actual_output;
+                  delete subtask.started_at;
+                  delete subtask.completed_at;
+                  console.log(`[Recovery] Reset failed task for retry`);
                 }
               }
             }
@@ -963,7 +1005,10 @@ export function registerTaskExecutionHandlers(
             // Update plan status for restart - write to ALL locations
             if (plan) {
               plan.status = 'in_progress';
-              plan.planStatus = 'in_progress';
+              plan.plan_status = 'in_progress';
+              if ('planStatus' in plan) {
+                delete plan.planStatus;
+              }
               const restartPlanContent = JSON.stringify(plan, null, 2);
               for (const pathToUpdate of planPathsToUpdate) {
                 try {
@@ -980,12 +1025,14 @@ export function registerTaskExecutionHandlers(
             // Start the task execution
             // Start file watcher for this task
             const specsBaseDir = getSpecsDir(project.autoBuildPath);
-            const specDirForWatcher = path.join(project.path, specsBaseDir, task.specId);
-            fileWatcher.watch(taskId, specDirForWatcher);
+            const specDirForWatcher = task.specsPath || path.join(project.path, specsBaseDir, task.specId);
+            const planPathForWatcher = getPlanPath(project, task);
+            fileWatcher.watch(taskId, planPathForWatcher);
 
-            // Check if spec.md exists to determine whether to run spec creation or task execution
+            // Check if case.md exists to determine whether to run spec creation or task execution
+            const caseFilePath = path.join(specDirForWatcher, AUTO_BUILD_PATHS.CASE_FILE);
             const specFilePath = path.join(specDirForWatcher, AUTO_BUILD_PATHS.SPEC_FILE);
-            const hasSpec = existsSync(specFilePath);
+            const hasSpec = existsSync(caseFilePath) || existsSync(specFilePath);
             const needsSpecCreation = !hasSpec;
 
             // Get base branch: task-level override takes precedence over project settings

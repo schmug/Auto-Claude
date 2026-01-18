@@ -457,14 +457,14 @@
           }
         }
 
-        // Create initial implementation_plan.json so task shows in kanban immediately
+        // Create initial investigation_plan.json so task shows in kanban immediately
         const initialPlan: ImplementationPlan = {
           feature: idea.title,
           description: idea.description,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
           status: 'backlog',
-          planStatus: 'pending',
+          plan_status: 'pending',
           phases: [],
           workflow_type: 'development',
           services_involved: [],
@@ -472,7 +472,7 @@
           spec_file: 'spec.md'
         };
         writeFileSync(
-          path.join(specDir, AUTO_BUILD_PATHS.IMPLEMENTATION_PLAN),
+          path.join(specDir, AUTO_BUILD_PATHS.INVESTIGATION_PLAN),
           JSON.stringify(initialPlan, null, 2)
         );
 
@@ -566,7 +566,7 @@ ${idea.rationale}
           title: idea.title,
           description: taskDescription,
           status: 'backlog',
-          subtasks: [],
+          analysis_tasks: [],
           logs: [],
           metadata,
           createdAt: new Date(),
@@ -1054,7 +1054,7 @@ ${idea.rationale}
           ...metadata
         };
 
-        // Create initial implementation_plan.json
+        // Create initial investigation_plan.json
         const now = new Date().toISOString();
         const implementationPlan = {
           feature: title,
@@ -1065,7 +1065,7 @@ ${idea.rationale}
           phases: []
         };
 
-        const planPath = path.join(specDir, AUTO_BUILD_PATHS.IMPLEMENTATION_PLAN);
+        const planPath = path.join(specDir, AUTO_BUILD_PATHS.INVESTIGATION_PLAN);
         writeFileSync(planPath, JSON.stringify(implementationPlan, null, 2));
 
         // Save task metadata
@@ -1080,7 +1080,7 @@ ${idea.rationale}
           title,
           description,
           status: 'backlog',
-          subtasks: [],
+          analysis_tasks: [],
           logs: [],
           metadata: taskMetadata,
           createdAt: new Date(),

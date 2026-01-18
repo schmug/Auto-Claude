@@ -138,7 +138,7 @@ investigation-handlers.ts
      ├──► spec-utils.buildInvestigationTask() ► Generate task description
      │
      ├──► spec-utils.createSpecForIssue() ─┬─► Create spec directory
-     │                                      ├─► Write implementation_plan.json
+     │                                      ├─► Write investigation_plan.json
      │                                      ├─► Write requirements.json
      │                                      └─► Write task_metadata.json
      │

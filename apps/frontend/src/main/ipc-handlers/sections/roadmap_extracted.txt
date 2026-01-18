@@ -279,7 +279,7 @@ ${(feature.acceptance_criteria || []).map((c: string) => `- [ ] ${c}`).join('\n'
         const specDir = path.join(specsDir, specId);
         mkdirSync(specDir, { recursive: true });
 
-        // Create initial implementation_plan.json
+        // Create initial investigation_plan.json
         const now = new Date().toISOString();
         const implementationPlan = {
           feature: feature.title,
@@ -289,7 +289,7 @@ ${(feature.acceptance_criteria || []).map((c: string) => `- [ ] ${c}`).join('\n'
           status: 'pending',
           phases: []
         };
-        writeFileSync(path.join(specDir, AUTO_BUILD_PATHS.IMPLEMENTATION_PLAN), JSON.stringify(implementationPlan, null, 2));
+        writeFileSync(path.join(specDir, AUTO_BUILD_PATHS.INVESTIGATION_PLAN), JSON.stringify(implementationPlan, null, 2));
 
         // Create requirements.json
         const requirements = {
@@ -324,7 +324,7 @@ ${(feature.acceptance_criteria || []).map((c: string) => `- [ ] ${c}`).join('\n'
           title: feature.title,
           description: taskDescription,
           status: 'backlog',
-          subtasks: [],
+          analysis_tasks: [],
           logs: [],
           metadata,
           createdAt: new Date(),

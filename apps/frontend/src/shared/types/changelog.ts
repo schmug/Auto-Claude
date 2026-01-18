@@ -2,7 +2,7 @@
  * Changelog-related types
  */
 
-import type { ImplementationPlan } from './task';
+import type { InvestigationPlan } from './task';
 
 // ============================================
 // Changelog Types
@@ -24,10 +24,10 @@ export interface ChangelogTask {
 export interface TaskSpecContent {
   taskId: string;
   specId: string;
-  spec?: string; // Content of spec.md
+  spec?: string; // Content of case.md (fallback: spec.md)
   requirements?: Record<string, unknown>; // Parsed requirements.json
   qaReport?: string; // Content of qa_report.md
-  implementationPlan?: ImplementationPlan; // Parsed implementation_plan.json
+  implementationPlan?: InvestigationPlan; // Parsed investigation_plan.json
   error?: string; // Error message if loading failed
 }
 

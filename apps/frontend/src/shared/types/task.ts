@@ -258,30 +258,49 @@ export interface Task {
   updatedAt: Date;
 }
 
-// Implementation Plan (from auto-claude)
-export interface ImplementationPlan {
-  feature?: string;  // Some plans use 'feature', some use 'title'
-  title?: string;    // Alternative to 'feature' for task name
-  workflow_type: string;
-  services_involved?: string[];
+// Investigation Plan (DFIR schema)
+export interface InvestigationPlan {
+  case_id?: string;
+  case_name?: string;
+  case_type?: string;
+  investigation_type?: string;
+  investigation_rationale?: string;
+  description?: string;
+  client?: string;
+  lead_analyst?: string;
+  created_by?: string;
   phases: Phase[];
-  final_acceptance: string[];
-  created_at: string;
-  updated_at: string;
-  spec_file: string;
+  evidence_sources?: string[];
+  investigation_objectives?: string[];
+  final_deliverables?: string[];
+  final_acceptance?: string[];
+  summary?: Record<string, unknown>;
+  validation_strategy?: Record<string, unknown>;
+  qa_signoff?: Record<string, unknown> | null;
+  qa_acceptance?: string[];
+  created_at?: string;
+  updated_at?: string;
+  case_file?: string;
+  metadata?: Record<string, unknown>;
   // Added for UI status persistence
   status?: TaskStatus;
-  planStatus?: string;
-  recoveryNote?: string;
-  description?: string;
+  plan_status?: string;
+  validation_status?: string;
+  analyst_notes?: string;
+  recovery_note?: string;
 }
 
 export interface Phase {
-  phase: number;
+  phase?: number;
+  id?: string;
   name: string;
-  type: string;
-  subtasks: PlanSubtask[];
-  depends_on?: number[];
+  type?: string;
+  description?: string;
+  analysis_tasks?: PlanSubtask[];
+  depends_on?: Array<number | string>;
+  parallel_safe?: boolean;
+  evidence_scope?: string[];
+  expected_outputs?: string[];
 }
 
 export interface PlanSubtask {
@@ -293,6 +312,30 @@ export interface PlanSubtask {
     run?: string;
     scenario?: string;
   };
+  validation?: {
+    type: string;
+    command?: string;
+    expected?: string;
+    file?: string;
+    regex?: string;
+    instructions?: string;
+    expected_min?: number;
+    expected_max?: number;
+  };
+  notes?: string;
+  evidence_source?: string;
+  evidence_sources?: string[];
+  all_sources?: boolean;
+  artifacts_to_analyze?: string[];
+  artifacts_to_examine?: string[];
+  artifacts_to_produce?: string[];
+  reference_patterns?: string[];
+  analysis_type?: string;
+  ioc_type?: string;
+  ioc_types?: string[];
+  ioc_value?: string;
+  timeline_scope?: string;
+  [key: string]: unknown;
 }
 
 // Workspace management types (for human review)
@@ -473,7 +516,7 @@ export interface TaskRecoveryOptions {
 
 export interface TaskProgressUpdate {
   taskId: string;
-  plan: ImplementationPlan;
+  plan: InvestigationPlan;
   currentSubtask?: string;
 }
 

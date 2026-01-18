@@ -1,8 +1,7 @@
 import chokidar, { FSWatcher } from 'chokidar';
 import { readFileSync, existsSync } from 'fs';
-import path from 'path';
 import { EventEmitter } from 'events';
-import type { ImplementationPlan } from '../shared/types';
+import type { InvestigationPlan } from '../shared/types';
 
 interface WatcherInfo {
   taskId: string;
@@ -11,19 +10,17 @@ interface WatcherInfo {
 }
 
 /**
- * Watches implementation_plan.json files for real-time progress updates
+ * Watches investigation_plan.json files for real-time progress updates
  */
 export class FileWatcher extends EventEmitter {
   private watchers: Map<string, WatcherInfo> = new Map();
 
   /**
-   * Start watching a task's implementation plan
+   * Start watching a task's investigation plan
    */
-  async watch(taskId: string, specDir: string): Promise<void> {
+  async watch(taskId: string, planPath: string): Promise<void> {
     // Stop any existing watcher for this task
     await this.unwatch(taskId);
-
-    const planPath = path.join(specDir, 'implementation_plan.json');
 
     // Check if plan file exists
     if (!existsSync(planPath)) {
@@ -52,7 +49,7 @@ export class FileWatcher extends EventEmitter {
     watcher.on('change', () => {
       try {
         const content = readFileSync(planPath, 'utf-8');
-        const plan: ImplementationPlan = JSON.parse(content);
+        const plan: InvestigationPlan = JSON.parse(content);
         this.emit('progress', taskId, plan);
       } catch {
         // File might be in the middle of being written
@@ -69,7 +66,7 @@ export class FileWatcher extends EventEmitter {
     // Read and emit initial state
     try {
       const content = readFileSync(planPath, 'utf-8');
-      const plan: ImplementationPlan = JSON.parse(content);
+      const plan: InvestigationPlan = JSON.parse(content);
       this.emit('progress', taskId, plan);
     } catch {
       // Initial read failed - not critical
@@ -110,7 +107,7 @@ export class FileWatcher extends EventEmitter {
   /**
    * Get current plan state for a task
    */
-  getCurrentPlan(taskId: string): ImplementationPlan | null {
+  getCurrentPlan(taskId: string): InvestigationPlan | null {
     const watcherInfo = this.watchers.get(taskId);
     if (!watcherInfo) return null;
 
