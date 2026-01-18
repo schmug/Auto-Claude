@@ -125,7 +125,7 @@ def print_merge_success(
         if keep_worktree:
             lines.extend(
                 [
-                    "Your new feature is now part of your project.",
+                    "Your case changes are now part of your project.",
                     "",
                     "Worktree kept for testing. Delete when satisfied:",
                 ]
@@ -137,7 +137,7 @@ def print_merge_success(
         else:
             lines.extend(
                 [
-                    "Your new feature is now part of your project.",
+                    "Your case changes are now part of your project.",
                     "The separate workspace has been cleaned up.",
                 ]
             )

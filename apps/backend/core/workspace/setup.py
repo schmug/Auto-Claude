@@ -124,7 +124,7 @@ def choose_workspace(
     ]
 
     choice = select_menu(
-        title="Where should the AI build your feature?",
+        title="Where should the AI build this case?",
         options=options,
         allow_quit=True,
     )

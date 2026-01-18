@@ -1,6 +1,6 @@
-# Auto Claude Backend
+# Auto Sleuth Backend
 
-Autonomous coding framework powered by Claude AI. Builds software features through coordinated multi-agent sessions.
+Autonomous DFIR orchestration framework powered by Claude AI. Runs case investigations through coordinated multi-agent sessions.
 
 ## Getting Started
 
@@ -27,11 +27,11 @@ Get your token by running: `claude setup-token`
 ### 3. Run
 
 ```bash
-# List available specs
+# List available cases
 python run.py --list
 
-# Run a spec
-python run.py --spec 001
+# Run a case
+python run.py --case 001
 ```
 
 ## Requirements

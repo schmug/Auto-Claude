@@ -184,7 +184,7 @@ def merge_existing_build(
         return False
 
     # Detect current branch - this is where user wants changes merged
-    # Normal workflow: user is on their feature branch (e.g., version/2.5.5)
+    # Normal workflow: user is on their target branch (e.g., version/2.5.5)
     # and wants to merge the case changes into it, then PR to main
     current_branch_result = subprocess.run(
         ["git", "rev-parse", "--abbrev-ref", "HEAD"],
@@ -208,7 +208,7 @@ def merge_existing_build(
         )
         print()
         print("Example:")
-        print(highlight("  git checkout main  # or your feature branch"))
+        print(highlight("  git checkout main  # or your target branch"))
         print(highlight(f"  python auto-sleuth/run.py --case {case_name} --merge"))
         return False
 
@@ -324,7 +324,7 @@ def merge_existing_build(
             print("When satisfied, delete the worktree:")
             print(muted(f"  python auto-sleuth/run.py --case {case_name} --discard"))
         else:
-            print_status("Your feature has been added to your project.", "success")
+            print_status("Your case changes have been added to your project.", "success")
             print()
             print("When satisfied, delete the worktree:")
             print(muted(f"  python auto-sleuth/run.py --case {case_name} --discard"))

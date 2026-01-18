@@ -5,7 +5,7 @@ Task Logger Package
 Persistent logging system for Auto Sleuth tasks.
 Logs are organized by phase (planning, coding, validation) and stored in the case directory.
 
-Key features:
+Key capabilities:
 - Phase-based log organization (collapsible in UI)
 - Streaming markers for real-time UI updates
 - Persistent storage in JSON format for easy frontend consumption

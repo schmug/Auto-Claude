@@ -63,7 +63,7 @@ logger = TaskLogger(case_dir)
 logger.start_phase(LogPhase.CODING, "Beginning implementation")
 
 # Log messages
-logger.log("Implementing feature X...")
+logger.log("Investigating case X...")
 logger.log_info("Processing file: app.py")
 logger.log_success("Feature X completed!")
 logger.log_error("Failed to process file")
@@ -154,5 +154,5 @@ from task_logger.utils import get_task_logger
 2. **Clear Separation**: Each module has a single, well-defined purpose
 3. **Better Testing**: Isolated modules are easier to unit test
 4. **Enhanced Readability**: Easier to find and understand specific functionality
-5. **Scalability**: New features can be added to appropriate modules
+5. **Scalability**: New investigation capabilities can be added to appropriate modules
 6. **No Breaking Changes**: Full backwards compatibility maintained

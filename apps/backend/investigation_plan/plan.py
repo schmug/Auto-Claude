@@ -69,6 +69,8 @@ class InvestigationPlan:
     def to_dict(self) -> dict:
         """Convert to dictionary representation."""
         result = dict(self.extra_fields)
+        for legacy_key in ("feature", "workflow_type", "workflowType", "services_involved", "planStatus", "recoveryNote"):
+            result.pop(legacy_key, None)
         result.update(
             {
                 "case_id": self.case_id,
@@ -182,11 +184,13 @@ class InvestigationPlan:
             or "Unnamed Case"
         )
 
+        evidence_sources = data.get("evidence_sources") or data.get("services_involved") or []
+
         return cls(
             case_id=case_id,
             case_name=case_name,
             case_type=case_type,
-            investigation_type=data.get("investigation_type") or data.get("workflow_type"),
+            investigation_type=data.get("investigation_type") or data.get("workflow_type") or "triage",
             description=data.get("description", ""),
             investigation_rationale=data.get("investigation_rationale", ""),
             client=data.get("client", ""),
@@ -196,7 +200,7 @@ class InvestigationPlan:
                 InvestigationPhase.from_dict(p, idx + 1)
                 for idx, p in enumerate(data.get("phases", []))
             ],
-            evidence_sources=data.get("evidence_sources", []),
+            evidence_sources=evidence_sources,
             investigation_objectives=data.get("investigation_objectives", []),
             final_deliverables=data.get("final_deliverables", []),
             final_acceptance=data.get("final_acceptance", []),

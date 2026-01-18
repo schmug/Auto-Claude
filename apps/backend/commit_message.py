@@ -53,7 +53,7 @@ Rules:
 3. Body: 1-3 sentences explaining WHAT changed and WHY
 4. If GitHub issue number provided, end with "Fixes #N" on its own line
 5. Be caseific about the changes, not generic
-6. Use imperative mood ("Add feature" not "Added feature")
+6. Use imperative mood ("Add capability" not "Added capability")
 
 Types: feat, fix, refactor, docs, test, perf, chore, style, ci, build
 
@@ -71,8 +71,8 @@ def _get_case_context(case_dir: Path) -> dict:
     Extract context from case files for commit message generation.
 
     Returns dict with:
-    - title: Feature/task title
-    - category: Task category (feature, bug_fix, etc)
+    - title: Case/task title
+    - category: Investigation category (triage, intrusion, malware, etc)
     - description: Brief description
     - github_issue: GitHub issue number if linked
     """

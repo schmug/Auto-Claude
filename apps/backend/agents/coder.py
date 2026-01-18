@@ -282,7 +282,7 @@ async def run_autonomous_agent(
                 case_dir,
                 project_dir,
                 {
-                    "description": "Planning implementation for new feature",
+                    "description": "Planning investigation for new case",
                     "id": "planner",
                 },
             )

@@ -273,7 +273,7 @@ class ComplexityAnalyzer:
         # Heuristic based on task scope
         if any(kw in task_lower for kw in self.SIMPLE_KEYWORDS):
             return 2
-        elif any(kw in task_lower for kw in ["feature", "add", "implement", "create"]):
+        elif any(kw in task_lower for kw in ["incident", "investigation", "case", "analyze", "triage"]):
             return 5
         elif any(kw in task_lower for kw in self.COMPLEX_KEYWORDS):
             return 15

@@ -319,7 +319,7 @@ def get_plan_summary(case_dir: Path) -> dict:
             plan = json.load(f)
 
         summary = {
-            "investigation_type": plan.get("investigation_type") or plan.get("workflow_type"),
+            "investigation_type": plan.get("investigation_type") or plan.get("workflow_type") or "triage",
             "total_phases": len(plan.get("phases", [])),
             "total_tasks": 0,
             "completed_tasks": 0,

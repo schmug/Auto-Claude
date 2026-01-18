@@ -15,7 +15,7 @@ Module structure:
     - qa/report.py: Issue tracking, reporting, escalation
     - qa/criteria.py: Acceptance criteria and status management
 
-Enhanced features:
+Enhanced capabilities:
 - Iteration tracking with detailed history
 - Recurring issue detection (3+ occurrences → human escalation)
 - No-test project handling

@@ -23,7 +23,7 @@ class WorkspaceChoice(Enum):
 
     MERGE = "merge"  # Add changes to project
     REVIEW = "review"  # Show what changed
-    TEST = "test"  # Test the feature in the staging worktree
+    TEST = "test"  # Validate the case in the staging worktree
     LATER = "later"  # Decide later
 
 

@@ -41,7 +41,7 @@ def finalize_workspace(
 
     Safe design:
     - No "discard" option (requires separate --discard command)
-    - Default is "test" - encourages testing before merging
+    - Default is "test" - encourages validation before merging
     - Everything is preserved until user explicitly merges or discards
 
     Args:
@@ -75,11 +75,11 @@ def finalize_workspace(
             print(muted("Worktree preserved for UI review."))
         return WorkspaceChoice.LATER
 
-    # Isolated mode - show options with testing as the recommended path
+    # Isolated mode - show options with validation as the recommended path
     content = [
         success(f"{icon(Icons.SUCCESS)} BUILD COMPLETE!"),
         "",
-        "The AI built your feature in a separate workspace.",
+        "The AI built this case in a separate workspace.",
     ]
     print()
     print(box(content, width=60, style="heavy"))
@@ -94,7 +94,7 @@ def finalize_workspace(
     options = [
         MenuOption(
             key="test",
-            label="Test the feature (Recommended)",
+            label="Validate the case (Recommended)",
             icon=Icons.PLAY,
             description="Run the app and try it out before adding to your project",
         ),
@@ -154,17 +154,17 @@ def handle_workspace_choice(
     staging_path = worktree_info.path if worktree_info else None
 
     if choice == WorkspaceChoice.TEST:
-        # Show testing instructions
+        # Show validation instructions
         content = [
-            bold(f"{icon(Icons.PLAY)} TEST YOUR FEATURE"),
+            bold(f"{icon(Icons.PLAY)} VALIDATE THIS CASE"),
             "",
-            "Your feature is ready to test in a separate workspace.",
+            "This case is ready to validate in a separate workspace.",
         ]
         print()
         print(box(content, width=60, style="heavy"))
 
         print()
-        print("To test it, open a NEW terminal and run:")
+        print("To validate it, open a NEW terminal and run:")
         print()
         if staging_path:
             print(highlight(f"  cd {staging_path}"))
@@ -190,7 +190,7 @@ def handle_workspace_choice(
         print()
         print(muted("-" * 60))
         print()
-        print("When you're done testing:")
+        print("When you're done validating:")
         print(highlight(f"  python auto-sleuth/run.py --case {case_name} --merge"))
         print()
         print("To discard (if you don't like it):")
@@ -204,7 +204,7 @@ def handle_workspace_choice(
 
         if success_result:
             print()
-            print_status("Your feature has been added to your project.", "success")
+            print_status("Your case changes have been added to your project.", "success")
         else:
             print()
             print_status("There was a conflict merging the changes.", "error")
@@ -224,7 +224,7 @@ def handle_workspace_choice(
                 )
             )
         print()
-        print("To test the feature:")
+        print("To validate the case:")
         if staging_path:
             print(highlight(f"  cd {staging_path}"))
         print()
@@ -236,7 +236,7 @@ def handle_workspace_choice(
         print()
         print_status("No problem! Your build is saved.", "success")
         print()
-        print("To test the feature:")
+        print("To validate the case:")
         if staging_path:
             print(highlight(f"  cd {staging_path}"))
         else:
@@ -296,7 +296,7 @@ def review_existing_build(project_dir: Path, case_name: str) -> bool:
     print()
     print(muted("-" * 60))
     print()
-    print("To test the feature:")
+    print("To validate the case:")
     print(highlight(f"  cd {worktree_path}"))
     print()
     print("To add these changes to your project:")
