@@ -1,6 +1,6 @@
-# Contributing to Auto Claude
+# Contributing to Auto Sleuth
 
-Thank you for your interest in contributing to Auto Claude! This document provides guidelines and instructions for contributing to the project.
+Thank you for your interest in contributing to Auto Sleuth! This document provides guidelines and instructions for contributing to the project.
 
 ## Table of Contents
 
@@ -35,7 +35,7 @@ All contributors must sign our Contributor License Agreement (CLA) before contri
 
 ### Why We Require a CLA
 
-Auto Claude is currently licensed under AGPL-3.0. The CLA ensures the project has proper licensing flexibility should we introduce additional licensing options (such as commercial/enterprise licenses) in the future.
+Auto Sleuth is currently licensed under AGPL-3.0. The CLA ensures the project has proper licensing flexibility should we introduce additional licensing options (such as commercial/enterprise licenses) in the future.
 
 You retain full copyright ownership of your contributions.
 
@@ -201,7 +201,7 @@ npm run package
 
 ## Running from Source
 
-If you want to run Auto Claude from source (for development or testing unreleased features), follow these steps:
+If you want to run Auto Sleuth from source (for development or testing unreleased features), follow these steps:
 
 ### Step 1: Clone and Set Up
 
@@ -241,7 +241,7 @@ npm run build && npm run start
 <details>
 <summary><b>Windows users:</b> If installation fails with node-gyp errors, click here</summary>
 
-Auto Claude automatically downloads prebuilt binaries for Windows. If prebuilts aren't available for your Electron version yet, you'll need Visual Studio Build Tools:
+Auto Sleuth automatically downloads prebuilt binaries for Windows. If prebuilts aren't available for your Electron version yet, you'll need Visual Studio Build Tools:
 
 1. Download [Visual Studio Build Tools 2022](https://visualstudio.microsoft.com/visual-cpp-build-tools/)
 2. Select "Desktop development with C++" workload
@@ -761,7 +761,7 @@ When reporting a bug, include:
    - OS and version
    - Python version
    - Node.js version (for UI issues)
-   - Auto Claude version
+   - Auto Sleuth version
 3. **Steps to reproduce** the issue
 4. **Expected behavior** vs **actual behavior**
 5. **Error messages** or logs (if applicable)
@@ -778,7 +778,7 @@ When requesting a feature:
 
 ## Architecture Overview
 
-Auto Claude consists of two main parts:
+Auto Sleuth consists of two main parts:
 
 ### Python Backend (`apps/backend/`)
 
@@ -809,4 +809,4 @@ If you have questions about contributing, feel free to:
 1. Open a GitHub issue with the `question` label
 2. Review existing issues and discussions
 
-Thank you for contributing to Auto Claude!
+Thank you for contributing to Auto Sleuth!

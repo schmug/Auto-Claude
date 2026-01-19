@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Auto Claude is a multi-agent autonomous coding framework that builds software through coordinated AI agent sessions. It uses the Claude Agent SDK to run agents in isolated workspaces with security controls.
+Auto Sleuth is a multi-agent autonomous DFIR framework that conducts investigations through coordinated AI agent sessions. It uses the Claude Agent SDK to run agents in isolated workspaces with security controls.
 
 **CRITICAL: All AI interactions use the Claude Agent SDK (`claude-agent-sdk` package), NOT the Anthropic API directly.**
 
@@ -28,7 +28,7 @@ autonomous-coding/
 **When working with AI/LLM code:**
 - Look in `apps/backend/core/client.py` for the Claude SDK client setup
 - Reference `apps/backend/agents/` for working agent implementations
-- Check `apps/backend/spec_agents/` for spec creation agent examples
+- Check `apps/backend/case/` for case creation workflows
 - NEVER use `anthropic.Anthropic()` directly - always use `create_client()` from `core.client`
 
 **Frontend (Electron Desktop App):**
@@ -61,23 +61,23 @@ claude setup-token
 # Add to apps/backend/.env: CLAUDE_CODE_OAUTH_TOKEN=your-token
 ```
 
-### Creating and Running Specs
+### Creating and Running Cases
 ```bash
 cd apps/backend
 
-# Create a spec interactively
-python spec_runner.py --interactive
+# Create a case interactively
+python runners/case_runner.py --interactive
 
-# Create spec from task description
-python spec_runner.py --task "Add user authentication"
+# Create case from task description
+python runners/case_runner.py --task "Investigate unusual PowerShell activity"
 
 # Force complexity level (simple/standard/complex)
-python spec_runner.py --task "Fix button" --complexity simple
+python runners/case_runner.py --task "Fix button" --complexity simple
 
 # Run autonomous build
-python run.py --spec 001
+python run.py --case 001
 
-# List all specs
+# List all cases
 python run.py --list
 ```
 
@@ -86,13 +86,13 @@ python run.py --list
 cd apps/backend
 
 # Review changes in isolated worktree
-python run.py --spec 001 --review
+python run.py --case 001 --review
 
 # Merge completed build into project
-python run.py --spec 001 --merge
+python run.py --case 001 --merge
 
 # Discard build
-python run.py --spec 001 --discard
+python run.py --case 001 --discard
 ```
 
 ### QA Validation
@@ -100,10 +100,10 @@ python run.py --spec 001 --discard
 cd apps/backend
 
 # Run QA manually
-python run.py --spec 001 --qa
+python run.py --case 001 --qa
 
 # Check QA status
-python run.py --spec 001 --qa-status
+python run.py --case 001 --qa-status
 ```
 
 ### Testing
@@ -127,9 +127,9 @@ apps/backend/.venv/bin/pytest tests/ -m "not slow"
 npm run test:backend
 ```
 
-### Spec Validation
+### Case Validation
 ```bash
-python apps/backend/validate_spec.py --spec-dir apps/backend/specs/001-feature --checkpoint all
+python apps/backend/validate_spec.py --spec-dir .auto-sleuth/cases/001-case --checkpoint all
 ```
 
 ### Releases
@@ -156,12 +156,12 @@ See [RELEASE.md](RELEASE.md) for detailed release process documentation.
 
 ### Core Pipeline
 
-**Spec Creation (spec_runner.py)** - Dynamic 3-8 phase pipeline based on task complexity:
+**Case Creation (case_runner.py)** - Dynamic 3-8 phase pipeline based on case complexity:
 - SIMPLE (3 phases): Discovery → Quick Spec → Validate
 - STANDARD (6-7 phases): Discovery → Requirements → [Research] → Context → Spec → Plan → Validate
 - COMPLEX (8 phases): Full pipeline with Research and Self-Critique phases
 
-**Implementation (run.py → agent.py)** - Multi-session build:
+**Implementation (run.py → agent.py)** - Multi-session analysis:
 1. Planner Agent creates subtask-based implementation plan
 2. Coder Agent implements subtasks (can spawn subagents for parallel work)
 3. QA Reviewer validates acceptance criteria (can perform E2E testing via Electron MCP for frontend changes)
@@ -174,7 +174,7 @@ See [RELEASE.md](RELEASE.md) for detailed release process documentation.
 - **core/security.py** - Dynamic command allowlisting based on detected project stack
 - **core/auth.py** - OAuth token management for Claude SDK authentication
 - **agents/** - Agent implementations (planner, coder, qa_reviewer, qa_fixer)
-- **spec_agents/** - Spec creation agents (gatherer, researcher, writer, critic)
+- **case/** - Case creation pipeline (gatherer, researcher, writer, critic)
 
 **Memory & Context:**
 - **integrations/graphiti/** - Graphiti memory system (mandatory)
@@ -190,7 +190,7 @@ See [RELEASE.md](RELEASE.md) for detailed release process documentation.
 **Workspace & Security:**
 - **cli/worktree.py** - Git worktree isolation for safe feature development
 - **context/project_analyzer.py** - Project stack detection for dynamic tooling
-- **auto_claude_tools.py** - Custom MCP tools integration
+- **auto_sleuth_tools.py** - Custom MCP tools integration
 
 **Integrations:**
 - **linear_updater.py** - Optional Linear integration for progress tracking
@@ -209,42 +209,42 @@ See [RELEASE.md](RELEASE.md) for detailed release process documentation.
 | coder_recovery.md | Recovers from stuck/failed subtasks |
 | qa_reviewer.md | Validates acceptance criteria |
 | qa_fixer.md | Fixes QA-reported issues |
-| spec_gatherer.md | Collects user requirements |
-| spec_researcher.md | Validates external integrations |
-| spec_writer.md | Creates spec.md document |
-| spec_critic.md | Self-critique using ultrathink |
+| case_gatherer.md | Collects user requirements |
+| case_researcher.md | Validates external integrations |
+| case_brief_writer.md | Creates case.md document |
+| case_critic.md | Self-critique using ultrathink |
 | complexity_assessor.md | AI-based complexity assessment |
 
-### Spec Directory Structure
+### Case Directory Structure
 
-Each spec in `.auto-claude/specs/XXX-name/` contains:
-- `spec.md` - Feature specification
+Each case in `.auto-sleuth/cases/XXX-name/` contains:
+- `case.md` - Investigation brief
 - `requirements.json` - Structured user requirements
 - `context.json` - Discovered codebase context
-- `implementation_plan.json` - Subtask-based plan with status tracking
+- `investigation_plan.json` - Subtask-based plan with status tracking
 - `qa_report.md` - QA validation results
 - `QA_FIX_REQUEST.md` - Issues to fix (when rejected)
 
 ### Branching & Worktree Strategy
 
-Auto Claude uses git worktrees for isolated builds. All branches stay LOCAL until user explicitly pushes:
+Auto Sleuth uses git worktrees for isolated builds. All branches stay LOCAL until user explicitly pushes:
 
 ```
 main (user's branch)
-└── auto-claude/{spec-name}  ← spec branch (isolated worktree)
+└── auto-sleuth/{case-id}  ← case branch (isolated worktree)
 ```
 
 **Key principles:**
-- ONE branch per spec (`auto-claude/{spec-name}`)
+- ONE branch per case (`auto-sleuth/{case-id}`)
 - Parallel work uses subagents (agent decides when to spawn)
 - NO automatic pushes to GitHub - user controls when to push
-- User reviews in spec worktree (`.worktrees/{spec-name}/`)
-- Final merge: spec branch → main (after user approval)
+- User reviews in case worktree (`.auto-sleuth/worktrees/tasks/{case-id}/`)
+- Final merge: case branch → main (after user approval)
 
 **Workflow:**
-1. Build runs in isolated worktree on spec branch
+1. Build runs in isolated worktree on case branch
 2. Agent implements subtasks (can spawn subagents for parallel work)
-3. User tests feature in `.worktrees/{spec-name}/`
+3. User tests feature in `.auto-sleuth/worktrees/tasks/{case-id}/`
 4. User runs `--merge` to add to their project
 5. User pushes to remote when ready
 
@@ -272,11 +272,11 @@ Three-layer defense:
 2. **Filesystem Permissions** - Operations restricted to project directory
 3. **Command Allowlist** - Dynamic allowlist from project analysis (security.py + project_analyzer.py)
 
-Security profile cached in `.auto-claude-security.json`.
+Security profile cached in `.auto-sleuth-security.json`.
 
 ### Claude Agent SDK Integration
 
-**CRITICAL: Auto Claude uses the Claude Agent SDK for ALL AI interactions. Never use the Anthropic API directly.**
+**CRITICAL: Auto Sleuth uses the Claude Agent SDK for ALL AI interactions. Never use the Anthropic API directly.**
 
 **Client Location:** `apps/backend/core/client.py`
 
@@ -324,7 +324,7 @@ response = client.create_agent_session(
 
 **Graphiti Memory (Mandatory)** - `integrations/graphiti/`
 
-Auto Claude uses Graphiti as its primary memory system with embedded LadybugDB (no Docker required):
+Auto Sleuth uses Graphiti as its primary memory system with embedded LadybugDB (no Docker required):
 
 - **Graph database with semantic search** - Knowledge graph for cross-session context
 - **Session insights** - Patterns, gotchas, discoveries automatically extracted
@@ -341,7 +341,7 @@ Auto Claude uses Graphiti as its primary memory system with embedded LadybugDB (
 **Configuration:**
 - Set provider credentials in `apps/backend/.env` (see `.env.example`)
 - Required env vars: `GRAPHITI_ENABLED=true`, `ANTHROPIC_API_KEY` or other provider keys
-- Memory data stored in `.auto-claude/specs/XXX/graphiti/`
+- Memory data stored in `.auto-sleuth/cases/XXX/graphiti/`
 
 **Usage in agents:**
 ```python
@@ -495,4 +495,4 @@ npm run dev      # Run in development mode (includes --remote-debugging-port=922
 4. QA agents will automatically interact with the running app for testing
 
 **Project data storage:**
-- `.auto-claude/specs/` - Per-project data (specs, plans, QA reports, memory) - gitignored
+- `.auto-sleuth/cases/` - Per-project data (cases, plans, QA reports, memory) - gitignored

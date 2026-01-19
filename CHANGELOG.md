@@ -142,7 +142,7 @@
 
 - Stopped running process when task status changes away from in_progress
 
-- Removed legacy path from auto-claude source detection
+- Removed legacy path from auto-sleuth source detection
 
 - Resolved Python environment race condition
 
@@ -268,7 +268,7 @@
 - feat: Add UI scale feature with 75-200% range (#125) by @Enes Cingöz in 6951251b
 - fix(task): stop running process when task status changes away from in_progress by @AndyMik90 in 30e7536b
 - Fix/linear 400 error by @Andy in 220faf0f
-- fix: remove legacy path from auto-claude source detection (#148) by @Joris Slagter in f96c6301
+- fix: remove legacy path from auto-sleuth source detection (#148) by @Joris Slagter in f96c6301
 - fix: resolve Python environment race condition (#142) by @Joris Slagter in ebd8340d
 - Feat: Ollama download progress tracking with new apps structure (#141) by @rayBlock in df779530
 - Feature/apps restructure v2.7.2 (#138) by @Andy in 0adaddac
@@ -364,7 +364,7 @@
 
 - Preview panel now receives projectPath prop correctly for image component functionality
 
-- Default database path unified to ~/.auto-claude/memories for consistency
+- Default database path unified to ~/.auto-sleuth/memories for consistency
 
 - @lydell/node-pty build scripts compatibility improved for pnpm v10
 
@@ -402,7 +402,7 @@
 
 - fix(merge): use stored baseBranch from task metadata for merge operations by @AndyMik90 in 8d56474
 
-- fix: unify default database path to ~/.auto-claude/memories by @AndyMik90 in 684e3f9
+- fix: unify default database path to ~/.auto-sleuth/memories by @AndyMik90 in 684e3f9
 
 - fix(ui): fix tab persistence and scope terminal shortcuts by @AndyMik90 in 2d1168b
 
@@ -480,7 +480,7 @@
 
 - fix(ui): improve Ollama UX in memory settings by @AndyMik90 in dea1711
 
-- auto-claude: subtask-1-1 - Add projectPath prop to PreviewPanel and implement custom img component by @AndyMik90 in e6529e0
+- auto-sleuth: subtask-1-1 - Add projectPath prop to PreviewPanel and implement custom img component by @AndyMik90 in e6529e0
 
 - Project tab persistence and github org init on project creation by @AndyMik90 in ae1dac9
 
@@ -516,9 +516,9 @@
 
 - Add comprehensive theme system with multiple color schemes (Forest, Neo, Retro, Dusk, Ocean, Lime) and light/dark mode support
 
-- Extract human-readable feature titles from spec.md for better task identification
+- Extract human-readable feature titles from case.md for better task identification
 
-- Improve task description display for specs with compact markdown formatting
+- Improve task description display for cases with compact markdown formatting
 
 ### 🐛 Bug Fixes
 
@@ -582,9 +582,9 @@
 
 - Improvement/refactor task sidebar to task modal by @AndyMik90 in 2a96f85
 
-- fix: extract human-readable title from spec.md when feature field is spec ID by @AndyMik90 in 8b59375
+- fix: extract human-readable title from case.md when feature field is case ID by @AndyMik90 in 8b59375
 
-- fix: task descriptions not showing for specs with compact markdown by @AndyMik90 in 7f12ef0
+- fix: task descriptions not showing for cases with compact markdown by @AndyMik90 in 7f12ef0
 
 - Add comprehensive theme system with Forest, Neo, Retro, Dusk, Ocean, and Lime color schemes by @AndyMik90 in ba776a3, e2b24e2, 7589046, e248256, 76c1bd7, bcbced2
 
@@ -655,7 +655,7 @@
 
 ### ✨ New Features
 
-- Required GitHub setup flow after Auto Claude initialization to ensure proper configuration
+- Required GitHub setup flow after Auto Sleuth initialization to ensure proper configuration
 - Atomic log saving mechanism to prevent log file corruption during concurrent operations
 - Per-session model and thinking level selection in insights management
 - Multi-auth token support and ANTHROPIC_BASE_URL passthrough for flexible authentication
@@ -688,8 +688,8 @@
 ### 🔧 Other Changes
 
 - Code cleanup and test fixture updates
-- Removed redundant auto-claude/specs directory structure
-- Untracked .auto-claude directory to respect gitignore rules
+- Removed redundant auto-sleuth/cases directory structure
+- Untracked .auto-sleuth directory to respect gitignore rules
 
 ---
 
@@ -704,9 +704,9 @@
 - feat: enhance stage-only merge handling with verification checks by @AndyMik90 in 7153558
 - feat: introduce phase configuration module and enhance agent profiles by @AndyMik90 in 2672528
 - fix: preserve roadmap generation state when switching projects by @AndyMik90 in 569e921
-- feat: add required GitHub setup flow after Auto Claude initialization by @AndyMik90 in 03ccce5
-- chore: remove redundant auto-claude/specs directory by @AndyMik90 in 64d5170
-- chore: untrack .auto-claude directory (should be gitignored) by @AndyMik90 in 0710c13
+- feat: add required GitHub setup flow after Auto Sleuth initialization by @AndyMik90 in 03ccce5
+- chore: remove redundant auto-sleuth/cases directory by @AndyMik90 in 64d5170
+- chore: untrack .auto-sleuth directory (should be gitignored) by @AndyMik90 in 0710c13
 - fix: prevent dialog skip during project initialization by @AndyMik90 in 56cedec
 - feat: enhance merge workflow by detecting current branch by @AndyMik90 in c0c8067
 - fix: update model IDs for Sonnet and Haiku by @AndyMik90 in 059315d
@@ -807,15 +807,15 @@
 
 - Update TaskReview component to refine conditional rendering for staged tasks, ensuring proper display when staging is unsuccessful by @AndyMik90 in 1a2b7a1
 
-- auto-claude: subtask-2-3 - Refine visual drop zone feedback to be more subtle by @AndyMik90 in 6cff442
+- auto-sleuth: subtask-2-3 - Refine visual drop zone feedback to be more subtle by @AndyMik90 in 6cff442
 
-- auto-claude: subtask-2-1 - Remove showFiles auto-expand on draft restore by @AndyMik90 in 12bf69d
+- auto-sleuth: subtask-2-1 - Remove showFiles auto-expand on draft restore by @AndyMik90 in 12bf69d
 
-- auto-claude: subtask-1-3 - Create an always-visible referenced files section by @AndyMik90 in 3818b46
+- auto-sleuth: subtask-1-3 - Create an always-visible referenced files section by @AndyMik90 in 3818b46
 
-- auto-claude: subtask-1-2 - Add drop zone wrapper around main modal content area by @AndyMik90 in 219b66d
+- auto-sleuth: subtask-1-2 - Add drop zone wrapper around main modal content area by @AndyMik90 in 219b66d
 
-- auto-claude: subtask-1-1 - Remove Reference Files toggle button by @AndyMik90 in 4e63e85
+- auto-sleuth: subtask-1-1 - Remove Reference Files toggle button by @AndyMik90 in 4e63e85
 
 ## 2.4.0 - Enhanced Cross-Platform Experience with OAuth & Auto-Updates
 
@@ -910,7 +910,7 @@ Bug Fixes:
 
 - fix: fix to spec runner paths by @AndyMik90 in 9babdc2
 
-- feat: auto-claude: subtask-1-1 - Restructure SortableFeatureCard badge layout by @AndyMik90 in dc886dc
+- feat: auto-sleuth: subtask-1-1 - Restructure SortableFeatureCard badge layout by @AndyMik90 in dc886dc
 
 ## 2.3.1 - Linux Compatibility Fix
 
@@ -1046,7 +1046,7 @@ Bug Fixes:
 
 - Enhanced onboarding wizard completion logic and step progression
 
-- Updated README to clarify Auto Claude's role as an AI coding companion
+- Updated README to clarify Auto Sleuth's role as an AI coding companion
 
 ### 🐛 Bug Fixes
 
@@ -1058,7 +1058,7 @@ Bug Fixes:
 
 ### 🔧 Other Changes
 
-- Removed .auto-claude and _bmad-output from git tracking (already in .gitignore)
+- Removed .auto-sleuth and _bmad-output from git tracking (already in .gitignore)
 
 - Updated Python versions in CI workflows
 
@@ -1101,7 +1101,7 @@ Bug Fixes:
 - improve: Getting ready for BMAD integration by @AndyMik90 in b94eb65
 - improve: Enhance AI resolver and debugging output by @AndyMik90 in bf787ad
 - improve: Integrate profile environment for OAuth token in task handlers by @AndyMik90 in 01e801a
-- chore: Remove .auto-claude from tracking (already in .gitignore) by @AndyMik90 in 87f353c
+- chore: Remove .auto-sleuth from tracking (already in .gitignore) by @AndyMik90 in 87f353c
 - chore: Update Python versions in CI workflows by @AndyMik90 in 43a338c
 - chore: Linting gods pleased now? by @AndyMik90 in 6aea4bb
 - chore: Linting and test fixes by @AndyMik90 in 140f11f
@@ -1119,7 +1119,7 @@ Bug Fixes:
 - chore: merge orcehstrator logic by @AndyMik90 in e8b6669
 - chore: Electron UI fix for merge orcehstrator by @AndyMik90 in e08ab62
 - chore: Frontend lints by @AndyMik90 in 488bbfa
-- docs: Revise README.md to enhance clarity and focus on Auto Claude's capabilities by @AndyMik90 in f9ef7ea
+- docs: Revise README.md to enhance clarity and focus on Auto Sleuth's capabilities by @AndyMik90 in f9ef7ea
 - qa: Sign off - all verification passed by @AndyMik90 in b3f4803
 - qa: Rejected - fixes required by @AndyMik90 in 5e56890
 - qa: subtask-6-2 - Run existing tests to verify no regressions by @AndyMik90 in 5f989a4
@@ -1183,10 +1183,10 @@ Bug Fixes:
 - Resolved Kanban and terminal integration issues
 
 ### Changed
-- Updated project-store.ts to use proper Dirent type for specDirs variable
+- Updated project-store.ts to use proper Dirent type for caseDirs variable
 - Refactored codebase for better code quality
 - Removed worktree-worker logic in favor of Claude Code's internal agent system
-- Removed obsolete security configuration file (.auto-claude-security.json)
+- Removed obsolete security configuration file (.auto-sleuth-security.json)
 
 ### Documentation
 - Added CONTRIBUTING.md with development guidelines
@@ -1194,7 +1194,7 @@ Bug Fixes:
 ## What's New in v1.1.0
 
 ### New Features
-- **Follow-up Tasks**: Continue working on completed specs by adding new tasks to existing implementations. The system automatically re-enters planning mode and integrates with your existing documentation and context.
+- **Follow-up Tasks**: Continue working on completed cases by adding new tasks to existing implementations. The system automatically re-enters planning mode and integrates with your existing documentation and context.
 - **Screenshot Support for Feedback**: Attach screenshots to your change requests when reviewing tasks, providing visual context for your feedback alongside text comments.
 - **Unified Task Editing**: The Edit Task dialog now includes all the same options as the New Task dialog—classification metadata, image attachments, and review settings—giving you full control when modifying tasks.
 

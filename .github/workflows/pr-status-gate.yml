@@ -351,7 +351,7 @@ jobs:
             // Regular usernames can be registered by anyone and are NOT trusted.
             const TRUSTED_BOT_ACCOUNTS = Object.freeze([
               'github-actions[bot]',
-              'auto-claude[bot]'
+              'auto-sleuth[bot]'
             ]);
 
             const TRUSTED_AUTHOR_ASSOCIATIONS = Object.freeze([
@@ -361,8 +361,8 @@ jobs:
             ]);
 
             const IDENTIFIER_PATTERNS = Object.freeze([
-              '🤖 Auto Claude PR Review',
-              'Auto Claude Review',
+              '🤖 Auto Sleuth PR Review',
+              'Auto Sleuth Review',
               'Auto-Claude Review'
             ]);
 
@@ -370,7 +370,7 @@ jobs:
             // Using \s* instead of .* and requiring specific emoji + verdict format
             const VERDICTS = Object.freeze({
               APPROVED: {
-                patterns: ['Auto Claude Review - APPROVED', '✅ Auto Claude Review - APPROVED'],
+                patterns: ['Auto Sleuth Review - APPROVED', '✅ Auto Sleuth Review - APPROVED'],
                 // Match: "Merge Verdict:" followed by whitespace/emoji, then ✅, then APPROVED/READY TO MERGE
                 regex: /Merge Verdict:\s*✅\s*(?:APPROVED|READY TO MERGE)/i,
                 label: 'AC: Approved'

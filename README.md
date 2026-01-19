@@ -182,14 +182,14 @@ For headless operation, CI/CD integration, or terminal-only workflows:
 cd apps/backend
 
 # Create a case interactively
-python case_runner.py --interactive
+python runners/case_runner.py --interactive
 
 # Run autonomous investigation
 python run.py --case 001
 
-# Review and close
+# Review and merge
 python run.py --case 001 --review
-python run.py --case 001 --close
+python run.py --case 001 --merge
 ```
 
 ---

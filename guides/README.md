@@ -1,6 +1,6 @@
-# Auto Claude Guides
+# Auto Sleuth Guides
 
-Detailed documentation for Auto Claude setup and usage.
+Detailed documentation for Auto Sleuth setup and usage.
 
 ## Available Guides
 

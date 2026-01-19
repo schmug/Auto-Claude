@@ -1,12 +1,12 @@
-# Auto Claude CLI Usage
+# Auto Sleuth CLI Usage
 
-This document covers terminal-only usage of Auto Claude. **For most users, we recommend using the [Desktop UI](#) instead** - it provides a better experience with visual task management, progress tracking, and automatic Python environment setup.
+This document covers terminal-only usage of Auto Sleuth. **For most users, we recommend using the [Desktop UI](#) instead** - it provides a better experience with visual task management, progress tracking, and automatic Python environment setup.
 
 ## When to Use CLI
 
 - You prefer terminal workflows
 - You're running on a headless server
-- You're integrating Auto Claude into scripts or CI/CD
+- You're integrating Auto Sleuth into scripts or CI/CD
 
 ## Prerequisites
 
@@ -65,7 +65,7 @@ claude setup-token
 # CLAUDE_CODE_OAUTH_TOKEN=your-token-here
 ```
 
-## Creating Specs
+## Creating Cases
 
 All commands below should be run from the `apps/backend/` directory:
 
@@ -73,22 +73,22 @@ All commands below should be run from the `apps/backend/` directory:
 # Activate the virtual environment (if not already active)
 source .venv/bin/activate
 
-# Create a spec interactively
-python runners/spec_runner.py --interactive
+# Create a case interactively
+python runners/case_runner.py --interactive
 
 # Or with a task description
-python runners/spec_runner.py --task "Add user authentication with OAuth"
+python runners/case_runner.py --task "Investigate suspicious OAuth token usage"
 
 # Force a specific complexity level
-python runners/spec_runner.py --task "Fix button color" --complexity simple
+python runners/case_runner.py --task "Fix button color" --complexity simple
 
-# Continue an interrupted spec
-python runners/spec_runner.py --continue 001-feature
+# Continue an interrupted case
+python runners/case_runner.py --continue 001-case
 ```
 
 ### Complexity Tiers
 
-The spec runner automatically assesses task complexity:
+The case runner automatically assesses investigation complexity:
 
 | Tier | Phases | When Used |
 |------|--------|-----------|
@@ -96,18 +96,18 @@ The spec runner automatically assesses task complexity:
 | **STANDARD** | 6 | 3-10 files, 1-2 services, minimal integrations (features, bug fixes) |
 | **COMPLEX** | 8 | 10+ files, multiple services, external integrations |
 
-## Running Builds
+## Running Investigations
 
 ```bash
-# List all specs and their status
+# List all cases and their status
 python run.py --list
 
-# Run a specific spec
-python run.py --spec 001
-python run.py --spec 001-feature-name
+# Run a specific case
+python run.py --case 001
+python run.py --case 001-incident-name
 
 # Limit iterations for testing
-python run.py --spec 001 --max-iterations 5
+python run.py --case 001 --max-iterations 5
 ```
 
 ## QA Validation
@@ -116,13 +116,13 @@ After all chunks are complete, QA validation runs automatically:
 
 ```bash
 # Skip automatic QA
-python run.py --spec 001 --skip-qa
+python run.py --case 001 --skip-qa
 
 # Run QA validation manually
-python run.py --spec 001 --qa
+python run.py --case 001 --qa
 
 # Check QA status
-python run.py --spec 001 --qa-status
+python run.py --case 001 --qa-status
 ```
 
 The QA validation loop:
@@ -133,24 +133,24 @@ The QA validation loop:
 
 ## Workspace Management
 
-Auto Claude uses Git worktrees for isolated builds:
+Auto Sleuth uses Git worktrees for isolated investigations:
 
 ```bash
 # Test the feature in the isolated workspace
-cd .worktrees/auto-claude/
+cd .auto-sleuth/worktrees/tasks/001-case/
 npm run dev  # or your project's run command
 
 # Return to backend directory to run management commands
 cd apps/backend
 
 # See what was changed
-python run.py --spec 001 --review
+python run.py --case 001 --review
 
 # Merge changes into your project
-python run.py --spec 001 --merge
+python run.py --case 001 --merge
 
 # Discard if you don't like it
-python run.py --spec 001 --discard
+python run.py --case 001 --discard
 ```
 
 ## Interactive Controls
@@ -168,16 +168,16 @@ Ctrl+C (twice)
 **File-based alternative:**
 ```bash
 # Create PAUSE file to pause after current session
-touch specs/001-name/PAUSE
+touch .auto-sleuth/cases/001-case/PAUSE
 
 # Add instructions
-echo "Focus on fixing the login bug first" > specs/001-name/HUMAN_INPUT.md
+echo "Focus on analyzing the login anomalies first" > .auto-sleuth/cases/001-case/HUMAN_INPUT.md
 ```
 
-## Spec Validation
+## Case Validation
 
 ```bash
-python validate_spec.py --spec-dir specs/001-feature --checkpoint all
+python validate_spec.py --spec-dir .auto-sleuth/cases/001-case --checkpoint all
 ```
 
 ## Environment Variables
