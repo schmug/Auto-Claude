@@ -53,13 +53,15 @@ lerna-debug.log*
 .worktrees/
 
 # ===========================
-# Auto Claude Generated
+# Auto Sleuth Generated (legacy auto-claude kept)
 # ===========================
 .auto-claude/
 .auto-build-security.json
 .auto-claude-security.json
 .auto-claude-status
 .auto-sleuth/
+.auto-sleuth-security.json
+.auto-sleuth-status
 .claude_settings.json
 .update-metadata.json
 
@@ -174,6 +176,4 @@ OPUS_ANALYSIS_AND_IDEAS.md
 logs/security/
 
 # Auto Sleuth generated files
-.auto-sleuth-security.json
-.auto-sleuth-status
 .sleuth_settings.json
