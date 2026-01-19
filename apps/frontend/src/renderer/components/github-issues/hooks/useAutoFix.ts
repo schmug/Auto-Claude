@@ -223,7 +223,7 @@ export function useAutoFix(projectId: string | undefined) {
 
   // Count active batches being processed
   const activeBatchCount = batches.filter(
-    b => b.status === 'analyzing' || b.status === 'creating_spec' || b.status === 'building' || b.status === 'qa_review'
+    b => b.status === 'analyzing' || b.status === 'creating_case' || b.status === 'building' || b.status === 'qa_review'
   ).length;
 
   return {
