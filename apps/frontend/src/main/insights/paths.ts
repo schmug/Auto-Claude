@@ -1,6 +1,8 @@
 import path from 'path';
+import { existsSync } from 'fs';
 
-const INSIGHTS_DIR = '.auto-claude/insights';
+const INSIGHTS_DIR = '.auto-sleuth/insights';
+const LEGACY_INSIGHTS_DIR = '.auto-claude/insights';
 const SESSIONS_DIR = 'sessions';
 const CURRENT_SESSION_FILE = 'current_session.json';
 
@@ -13,7 +15,17 @@ export class InsightsPaths {
    * Get insights directory path for a project
    */
   getInsightsDir(projectPath: string): string {
-    return path.join(projectPath, INSIGHTS_DIR);
+    const autoSleuthPath = path.join(projectPath, INSIGHTS_DIR);
+    if (existsSync(autoSleuthPath)) {
+      return autoSleuthPath;
+    }
+
+    const legacyPath = path.join(projectPath, LEGACY_INSIGHTS_DIR);
+    if (existsSync(legacyPath)) {
+      return legacyPath;
+    }
+
+    return autoSleuthPath;
   }
 
   /**

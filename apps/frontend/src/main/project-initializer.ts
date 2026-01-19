@@ -155,7 +155,7 @@ export function initializeGit(projectPath: string): InitializationResult {
 /**
  * Entries to add to .gitignore when initializing a project
  */
-const GITIGNORE_ENTRIES = ['.auto-claude/'];
+const GITIGNORE_ENTRIES = ['.auto-sleuth/'];
 
 /**
  * Ensure entries exist in the project's .gitignore file.
@@ -199,7 +199,7 @@ function ensureGitignoreEntries(projectPath: string, entries: string[]): void {
     appendContent += '\n';
   }
 
-  appendContent += '\n# Auto Claude data directory\n';
+  appendContent += '\n# Auto Sleuth data directory\n';
   for (const entry of entriesToAdd) {
     appendContent += entry + '\n';
   }
@@ -207,17 +207,17 @@ function ensureGitignoreEntries(projectPath: string, entries: string[]): void {
   if (existsSync(gitignorePath)) {
     appendFileSync(gitignorePath, appendContent);
   } else {
-    writeFileSync(gitignorePath, '# Auto Claude data directory\n' + entriesToAdd.join('\n') + '\n');
+    writeFileSync(gitignorePath, '# Auto Sleuth data directory\n' + entriesToAdd.join('\n') + '\n');
   }
 
   debug('Added entries to .gitignore', { entries: entriesToAdd });
 }
 
 /**
- * Data directories created in .auto-claude for each project
+ * Data directories created in .auto-sleuth for each project
  */
 const DATA_DIRECTORIES = [
-  'specs',
+  'cases',
   'ideation',
   'insights',
   'roadmap'
@@ -237,7 +237,7 @@ export interface InitializationResult {
  */
 export function hasLocalSource(projectPath: string): boolean {
   const localSourcePath = path.join(projectPath, 'apps', 'backend');
-  // Use runner presence as marker (case_runner or spec_runner).
+  // Use runner presence as marker (case_runner or legacy spec_runner).
   const caseRunner = path.join(localSourcePath, 'runners', 'case_runner.py');
   const specRunner = path.join(localSourcePath, 'runners', 'spec_runner.py');
   return existsSync(localSourcePath) && (existsSync(caseRunner) || existsSync(specRunner));
@@ -255,17 +255,18 @@ export function getLocalSourcePath(projectPath: string): string | null {
 }
 
 /**
- * Check if project is initialized (has .auto-claude directory)
+ * Check if project is initialized (has .auto-sleuth directory)
  */
 export function isInitialized(projectPath: string): boolean {
-  const dotAutoBuildPath = path.join(projectPath, '.auto-claude');
-  return existsSync(dotAutoBuildPath);
+  const dotAutoSleuthPath = path.join(projectPath, '.auto-sleuth');
+  const dotAutoClaudePath = path.join(projectPath, '.auto-claude');
+  return existsSync(dotAutoSleuthPath) || existsSync(dotAutoClaudePath);
 }
 
 /**
- * Initialize auto-claude data directory in a project.
+ * Initialize auto-sleuth data directory in a project.
  *
- * Creates .auto-claude/ with data directories (specs, ideation, insights, roadmap).
+ * Creates .auto-sleuth/ with data directories (cases, ideation, insights, roadmap).
  * The framework code runs from the source repo - only data is stored here.
  *
  * Requires:
@@ -284,42 +285,45 @@ export function initializeProject(projectPath: string): InitializationResult {
     };
   }
 
-  // Check git status - Auto Claude requires git for worktree-based builds
+  // Check git status - Auto Sleuth requires git for worktree-based builds
   const gitStatus = checkGitStatus(projectPath);
   if (!gitStatus.isGitRepo || !gitStatus.hasCommits) {
     debug('Git check failed', { gitStatus });
     return {
       success: false,
-      error: gitStatus.error || 'Git repository required. Auto Claude uses git worktrees for isolated builds.'
+      error: gitStatus.error || 'Git repository required. Auto Sleuth uses git worktrees for isolated builds.'
     };
   }
 
   // Check if already initialized
-  const dotAutoBuildPath = path.join(projectPath, '.auto-claude');
+  const dotAutoSleuthPath = path.join(projectPath, '.auto-sleuth');
+  const dotAutoClaudePath = path.join(projectPath, '.auto-claude');
 
-  if (existsSync(dotAutoBuildPath)) {
-    debug('Already initialized - .auto-claude exists');
+  if (existsSync(dotAutoSleuthPath) || existsSync(dotAutoClaudePath)) {
+    debug('Already initialized - data directory exists');
     return {
       success: false,
-      error: 'Project already has auto-claude initialized (.auto-claude exists)'
+      error: existsSync(dotAutoSleuthPath)
+        ? 'Project already has auto-sleuth initialized (.auto-sleuth exists)'
+        : 'Project already has auto-sleuth initialized (.auto-claude exists)'
     };
   }
 
   try {
-    debug('Creating .auto-claude data directory', { dotAutoBuildPath });
+    debug('Creating .auto-sleuth data directory', { dotAutoBuildPath: dotAutoSleuthPath });
 
-    // Create the .auto-claude directory
-    mkdirSync(dotAutoBuildPath, { recursive: true });
+    // Create the .auto-sleuth directory
+    mkdirSync(dotAutoSleuthPath, { recursive: true });
 
     // Create data directories
     for (const dataDir of DATA_DIRECTORIES) {
-      const dirPath = path.join(dotAutoBuildPath, dataDir);
+      const dirPath = path.join(dotAutoSleuthPath, dataDir);
       debug('Creating data directory', { dataDir, dirPath });
       mkdirSync(dirPath, { recursive: true });
       writeFileSync(path.join(dirPath, '.gitkeep'), '');
     }
 
-    // Update .gitignore to exclude .auto-claude/
+    // Update .gitignore to exclude .auto-sleuth/
     ensureGitignoreEntries(projectPath, GITIGNORE_ENTRIES);
 
     debug('Initialization complete');
@@ -335,13 +339,14 @@ export function initializeProject(projectPath: string): InitializationResult {
 }
 
 /**
- * Ensure all data directories exist in .auto-claude.
+ * Ensure all data directories exist in .auto-sleuth.
  * Useful if new directories are added in future versions.
  */
 export function ensureDataDirectories(projectPath: string): InitializationResult {
-  const dotAutoBuildPath = path.join(projectPath, '.auto-claude');
+  const dotAutoSleuthPath = path.join(projectPath, '.auto-sleuth');
+  const dotAutoClaudePath = path.join(projectPath, '.auto-claude');
 
-  if (!existsSync(dotAutoBuildPath)) {
+  if (!existsSync(dotAutoSleuthPath) && !existsSync(dotAutoClaudePath)) {
     return {
       success: false,
       error: 'Project not initialized. Run initialize first.'
@@ -349,8 +354,12 @@ export function ensureDataDirectories(projectPath: string): InitializationResult
   }
 
   try {
-    for (const dataDir of DATA_DIRECTORIES) {
-      const dirPath = path.join(dotAutoBuildPath, dataDir);
+    const basePath = existsSync(dotAutoSleuthPath) ? dotAutoSleuthPath : dotAutoClaudePath;
+    const dataDirectories = existsSync(dotAutoSleuthPath)
+      ? DATA_DIRECTORIES
+      : ['specs', 'ideation', 'insights', 'roadmap'];
+    for (const dataDir of dataDirectories) {
+      const dirPath = path.join(basePath, dataDir);
       if (!existsSync(dirPath)) {
         debug('Creating missing data directory', { dataDir, dirPath });
         mkdirSync(dirPath, { recursive: true });
@@ -367,22 +376,29 @@ export function ensureDataDirectories(projectPath: string): InitializationResult
 }
 
 /**
- * Get the auto-claude folder path for a project.
+ * Get the auto-sleuth folder path for a project.
  *
- * IMPORTANT: Only .auto-claude/ is considered a valid "installed" auto-claude.
- * The auto-claude/ folder (if it exists) is the SOURCE CODE being developed,
- * not an installation. This allows Auto Claude to be used to develop itself.
+ * IMPORTANT: Only .auto-sleuth/ is considered a valid "installed" auto-sleuth.
+ * The auto-sleuth/ folder (if it exists) is the SOURCE CODE being developed,
+ * not an installation. This allows Auto Sleuth to be used to develop itself.
+ * Legacy .auto-claude/ is accepted for backwards compatibility.
  */
 export function getAutoBuildPath(projectPath: string): string | null {
-  const dotAutoBuildPath = path.join(projectPath, '.auto-claude');
+  const dotAutoSleuthPath = path.join(projectPath, '.auto-sleuth');
+  const dotAutoClaudePath = path.join(projectPath, '.auto-claude');
 
-  debug('getAutoBuildPath called', { projectPath, dotAutoBuildPath });
+  debug('getAutoBuildPath called', { projectPath, dotAutoSleuthPath });
 
-  if (existsSync(dotAutoBuildPath)) {
-    debug('Returning .auto-claude (installed version)');
+  if (existsSync(dotAutoSleuthPath)) {
+    debug('Returning .auto-sleuth (installed version)');
+    return '.auto-sleuth';
+  }
+
+  if (existsSync(dotAutoClaudePath)) {
+    debug('Returning .auto-claude (legacy installed version)');
     return '.auto-claude';
   }
 
-  debug('No .auto-claude folder found - project not initialized');
+  debug('No .auto-sleuth folder found - project not initialized');
   return null;
 }

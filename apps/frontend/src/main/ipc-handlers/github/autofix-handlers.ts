@@ -3,7 +3,7 @@
  *
  * Handles automatic fixing of GitHub issues by:
  * 1. Detecting issues with configured labels (e.g., "auto-fix")
- * 2. Creating specs from issues
+ * 2. Creating cases from issues
  * 3. Running the build pipeline
  * 4. Creating PRs when complete
  */
@@ -34,7 +34,7 @@ import { getRunnerEnv } from './utils/runner-env';
 const { debug: debugLog } = createContextLogger('GitHub AutoFix');
 
 /**
- * Auto-fix configuration stored in .auto-claude/github/config.json
+ * Auto-fix configuration stored in .auto-sleuth/github/config.json
  */
 export interface AutoFixConfig {
   enabled: boolean;
@@ -51,7 +51,7 @@ export interface AutoFixConfig {
 export interface AutoFixQueueItem {
   issueNumber: number;
   repo: string;
-  status: 'pending' | 'analyzing' | 'creating_spec' | 'building' | 'qa_review' | 'pr_created' | 'completed' | 'failed';
+  status: 'pending' | 'analyzing' | 'creating_case' | 'building' | 'qa_review' | 'pr_created' | 'completed' | 'failed';
   specId?: string;
   prNumber?: number;
   error?: string;
@@ -63,7 +63,7 @@ export interface AutoFixQueueItem {
  * Progress status for auto-fix operations
  */
 export interface AutoFixProgress {
-  phase: 'checking' | 'fetching' | 'analyzing' | 'batching' | 'creating_spec' | 'building' | 'qa_review' | 'creating_pr' | 'complete';
+  phase: 'checking' | 'fetching' | 'analyzing' | 'batching' | 'creating_case' | 'building' | 'qa_review' | 'creating_pr' | 'complete';
   issueNumber: number;
   progress: number;
   message: string;
@@ -82,7 +82,7 @@ export interface IssueBatch {
     similarityToPrimary: number;
   }>;
   commonThemes: string[];
-  status: 'pending' | 'analyzing' | 'creating_spec' | 'building' | 'qa_review' | 'pr_created' | 'completed' | 'failed';
+  status: 'pending' | 'analyzing' | 'creating_case' | 'building' | 'qa_review' | 'pr_created' | 'completed' | 'failed';
   specId?: string;
   prNumber?: number;
   error?: string;
@@ -94,7 +94,7 @@ export interface IssueBatch {
  * Batch progress status
  */
 export interface BatchProgress {
-  phase: 'analyzing' | 'batching' | 'creating_specs' | 'complete';
+  phase: 'analyzing' | 'batching' | 'creating_cases' | 'complete';
   progress: number;
   message: string;
   totalIssues: number;
@@ -105,7 +105,8 @@ export interface BatchProgress {
  * Get the GitHub directory for a project
  */
 function getGitHubDir(project: Project): string {
-  return path.join(project.path, '.auto-claude', 'github');
+  const autoBuildDir = project.autoBuildPath || '.auto-sleuth';
+  return path.join(project.path, autoBuildDir, 'github');
 }
 
 /**
@@ -360,7 +361,7 @@ async function startAutoFix(
     }))
   );
 
-  sendProgress({ phase: 'creating_spec', issueNumber, progress: 50, message: 'Creating spec from issue...' });
+  sendProgress({ phase: 'creating_case', issueNumber, progress: 50, message: 'Creating case from issue...' });
 
   // Create spec
   const taskDescription = buildInvestigationTask(issue.number, issue.title, issueContext);
@@ -381,7 +382,7 @@ async function startAutoFix(
   const state: AutoFixQueueItem = {
     issueNumber,
     repo: ghConfig.repo,
-    status: 'creating_spec',
+    status: 'creating_case',
     specId: specData.specId,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -405,12 +406,12 @@ async function startAutoFix(
     }, null, 2)
   );
 
-  sendProgress({ phase: 'creating_spec', issueNumber, progress: 70, message: 'Starting spec creation...' });
+  sendProgress({ phase: 'creating_case', issueNumber, progress: 70, message: 'Starting case creation...' });
 
-  // Automatically start spec creation using the robust spec_runner.py system
+  // Automatically start case creation using the robust case_runner.py system
   try {
-    // Start spec creation - spec_runner.py will create a proper detailed spec
-    // After spec creation completes, the normal flow will handle implementation
+    // Start case creation - case_runner.py will create a proper detailed case
+    // After case creation completes, the normal flow will handle implementation
     agentManager.startSpecCreation(
       specData.specId,
       project.path,
@@ -420,14 +421,14 @@ async function startAutoFix(
     );
 
     // Immediately update the plan status to 'planning' so the frontend shows the task as "In Progress"
-    // This provides instant feedback to the user while spec_runner.py is starting up
+    // This provides instant feedback to the user while case_runner.py is starting up
     updateInvestigationPlanStatus(specData.specDir, 'planning');
 
-    sendProgress({ phase: 'complete', issueNumber, progress: 100, message: 'Auto-fix spec creation started!' });
+    sendProgress({ phase: 'complete', issueNumber, progress: 100, message: 'Auto-fix case creation started!' });
     sendComplete(state);
   } catch (error) {
-    debugLog('Failed to start spec creation', { error });
-    sendProgress({ phase: 'complete', issueNumber, progress: 100, message: 'Spec directory created. Click Start to begin.' });
+    debugLog('Failed to start case creation', { error });
+    sendProgress({ phase: 'complete', issueNumber, progress: 100, message: 'Case directory created. Click Start to begin.' });
     sendComplete(state);
   }
 }

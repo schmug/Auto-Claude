@@ -109,7 +109,7 @@ export function initSentryMain(): void {
   Sentry.init({
     dsn: cachedDsn,
     environment: app.isPackaged ? 'production' : 'development',
-    release: `auto-claude@${app.getVersion()}`,
+    release: `auto-sleuth@${app.getVersion()}`,
 
     beforeSend(event: Sentry.ErrorEvent) {
       if (!sentryEnabledState) {

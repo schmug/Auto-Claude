@@ -53,7 +53,7 @@ export class TitleGenerator extends EventEmitter {
   }
 
   /**
-   * Get the auto-claude source path (detects automatically if not configured)
+   * Get the auto-sleuth source path (detects automatically if not configured)
    */
   private getAutoBuildSourcePath(): string | null {
     const hasRunner = (basePath: string): boolean => {
@@ -82,7 +82,7 @@ export class TitleGenerator extends EventEmitter {
   }
 
   /**
-   * Load environment variables from auto-claude .env file
+   * Load environment variables from auto-sleuth .env file
    */
   private loadAutoBuildEnv(): Record<string, string> {
     const autoBuildSource = this.getAutoBuildSourcePath();

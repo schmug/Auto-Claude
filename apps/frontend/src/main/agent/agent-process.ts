@@ -262,10 +262,10 @@ export class AgentProcessManager {
   }
 
   /**
-   * Get the auto-claude source path (detects automatically if not configured)
+   * Get the auto-sleuth source path (detects automatically if not configured)
    */
   getAutoBuildSourcePath(): string | null {
-    // Use runner presence as the validation marker (case_runner or spec_runner).
+    // Use runner presence as the validation marker (case_runner or legacy spec_runner).
     const validatePath = (p: string): boolean => {
       const caseRunner = path.join(p, 'runners', 'case_runner.py');
       const specRunner = path.join(p, 'runners', 'spec_runner.py');
@@ -369,7 +369,7 @@ export class AgentProcessManager {
   }
 
   /**
-   * Load environment variables from project's .auto-claude/.env file
+   * Load environment variables from project's .auto-sleuth/.env file
    * This contains frontend-configured settings like memory/Graphiti configuration
    */
   private loadProjectEnv(projectPath: string): Record<string, string> {
@@ -386,7 +386,7 @@ export class AgentProcessManager {
   }
 
   /**
-   * Load environment variables from auto-claude .env file
+   * Load environment variables from auto-sleuth .env file
    */
   loadAutoBuildEnv(): Record<string, string> {
     const autoBuildSource = this.getAutoBuildSourcePath();
@@ -659,7 +659,7 @@ export class AgentProcessManager {
    * Priority (later sources override earlier):
    * 1. App-wide memory settings from settings.json (NEW - enables memory from onboarding)
    * 2. Backend source .env (apps/backend/.env) - CLI defaults
-   * 3. Project's .auto-claude/.env - Frontend-configured settings (memory, integrations)
+   * 3. Project's .auto-sleuth/.env - Frontend-configured settings (memory, integrations)
    * 4. Project settings (graphitiMcpUrl, useClaudeMd) - Runtime overrides
    */
   getCombinedEnv(projectPath: string): Record<string, string> {

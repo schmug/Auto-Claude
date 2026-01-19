@@ -40,8 +40,8 @@ Handlers for checking Graphiti/memory system configuration status.
 Handlers for retrieving and searching memories (both file-based and LadybugDB).
 
 **Exports:**
-- `loadFileBasedMemories(specsDir, limit)` - Load memories from case spec files
-- `searchFileBasedMemories(specsDir, query, limit)` - Search file-based memories
+- `loadFileBasedMemories(casesDir, limit)` - Load memories from case files
+- `searchFileBasedMemories(casesDir, query, limit)` - Search file-based memories
 - `registerMemoryDataHandlers(getMainWindow)` - Register IPC handlers
 
 **IPC Channels:**
@@ -66,7 +66,7 @@ Handlers for project context and index operations.
 
 **Features:**
 - Project index loading and caching
-- Graphiti state detection from case specs
+- Graphiti state detection from case files
 - Memory status aggregation
 - Analyzer script execution for index regeneration
 
@@ -136,7 +136,7 @@ test('parseEnvFile handles quotes correctly', () => {
 import { buildMemoryStatus } from './memory-status-handlers';
 
 test('buildMemoryStatus returns correct status', () => {
-  const status = buildMemoryStatus('/path/to/project', 'auto-claude');
+  const status = buildMemoryStatus('/path/to/project', 'auto-sleuth');
   expect(status).toHaveProperty('enabled');
   expect(status).toHaveProperty('available');
 });
@@ -152,7 +152,7 @@ test('buildMemoryStatus returns correct status', () => {
 
 ## Related Documentation
 
-- [Project Memory System](../../../../auto-claude/memory.py)
-- [Graphiti Memory Integration](../../../../auto-claude/graphiti_memory.py)
+- [Project Memory System](../../../../auto-sleuth/memory.py)
+- [Graphiti Memory Integration](../../../../auto-sleuth/graphiti_memory.py)
 - [LadybugDB Integration](../../ladybug-service.ts)
 - [IPC Channels](../../../shared/constants.ts)

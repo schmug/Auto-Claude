@@ -13,7 +13,7 @@ import { mkdirSync, rmSync, existsSync, writeFileSync, readFileSync } from 'fs';
 import path from 'path';
 
 // Test data directory
-const TEST_DATA_DIR = '/tmp/auto-claude-ui-e2e';
+const TEST_DATA_DIR = '/tmp/auto-sleuth-ui-e2e';
 const TEST_PROJECT_DIR = path.join(TEST_DATA_DIR, 'test-project');
 
 // Setup test environment
@@ -23,7 +23,7 @@ function setupTestEnvironment(): void {
   }
   mkdirSync(TEST_DATA_DIR, { recursive: true });
   mkdirSync(TEST_PROJECT_DIR, { recursive: true });
-  mkdirSync(path.join(TEST_PROJECT_DIR, 'auto-claude', 'specs'), { recursive: true });
+  mkdirSync(path.join(TEST_PROJECT_DIR, '.auto-sleuth', 'cases'), { recursive: true });
 }
 
 // Cleanup test environment
@@ -35,7 +35,7 @@ function cleanupTestEnvironment(): void {
 
 // Helper to create a test spec
 function createTestSpec(specId: string, status: 'pending' | 'in_progress' | 'completed' = 'pending'): void {
-  const specDir = path.join(TEST_PROJECT_DIR, 'auto-claude', 'specs', specId);
+  const specDir = path.join(TEST_PROJECT_DIR, '.auto-sleuth', 'cases', specId);
   mkdirSync(specDir, { recursive: true });
 
   const taskStatus = status === 'completed' ? 'completed' : status === 'in_progress' ? 'in_progress' : 'pending';
@@ -124,7 +124,7 @@ test.describe('Add Project Flow', () => {
     await app.evaluate(({ dialog }) => {
       dialog.showOpenDialog = async () => ({
         canceled: false,
-        filePaths: ['/tmp/auto-claude-ui-e2e/test-project']
+        filePaths: ['/tmp/auto-sleuth-ui-e2e/test-project']
       });
     });
 
@@ -196,11 +196,11 @@ test.describe('E2E Test Infrastructure', () => {
     cleanupTestEnvironment();
   });
 
-  test('should create test specs correctly', () => {
+  test('should create test cases correctly', () => {
     setupTestEnvironment();
     createTestSpec('001-test-spec');
 
-    const specDir = path.join(TEST_PROJECT_DIR, 'auto-claude', 'specs', '001-test-spec');
+    const specDir = path.join(TEST_PROJECT_DIR, '.auto-sleuth', 'cases', '001-test-spec');
     expect(existsSync(specDir)).toBe(true);
     expect(existsSync(path.join(specDir, 'investigation_plan.json'))).toBe(true);
     expect(existsSync(path.join(specDir, 'case.md'))).toBe(true);
@@ -208,14 +208,14 @@ test.describe('E2E Test Infrastructure', () => {
     cleanupTestEnvironment();
   });
 
-  test('should create specs with different statuses', () => {
+  test('should create cases with different statuses', () => {
     setupTestEnvironment();
 
     createTestSpec('001-pending', 'pending');
     createTestSpec('002-in-progress', 'in_progress');
     createTestSpec('003-completed', 'completed');
 
-    const specsDir = path.join(TEST_PROJECT_DIR, 'auto-claude', 'specs');
+    const specsDir = path.join(TEST_PROJECT_DIR, '.auto-sleuth', 'cases');
     expect(existsSync(path.join(specsDir, '001-pending'))).toBe(true);
     expect(existsSync(path.join(specsDir, '002-in-progress'))).toBe(true);
     expect(existsSync(path.join(specsDir, '003-completed'))).toBe(true);
@@ -233,8 +233,8 @@ test.describe('E2E Flow Verification (Mock-based)', () => {
     const projectPath = TEST_PROJECT_DIR;
     expect(existsSync(projectPath)).toBe(true);
 
-    // Check for auto-claude directory detection
-    const autoBuildPath = path.join(projectPath, 'auto-claude');
+    // Check for auto-sleuth directory detection
+    const autoBuildPath = path.join(projectPath, '.auto-sleuth');
     expect(existsSync(autoBuildPath)).toBe(true);
 
     cleanupTestEnvironment();
@@ -245,7 +245,7 @@ test.describe('E2E Flow Verification (Mock-based)', () => {
 
     // Simulate what would happen when creating a task
     const specId = '001-new-task';
-    const specDir = path.join(TEST_PROJECT_DIR, 'auto-claude', 'specs', specId);
+    const specDir = path.join(TEST_PROJECT_DIR, '.auto-sleuth', 'cases', specId);
     mkdirSync(specDir, { recursive: true });
 
     // Write case file
@@ -264,8 +264,8 @@ test.describe('E2E Flow Verification (Mock-based)', () => {
     // Simulate status update when task starts
     const planPath = path.join(
       TEST_PROJECT_DIR,
-      'auto-claude',
-      'specs',
+      '.auto-sleuth',
+      'cases',
       '001-task',
       'investigation_plan.json'
     );
@@ -289,8 +289,8 @@ test.describe('E2E Flow Verification (Mock-based)', () => {
     // Simulate approval
     const qaReportPath = path.join(
       TEST_PROJECT_DIR,
-      'auto-claude',
-      'specs',
+      '.auto-sleuth',
+      'cases',
       '001-review',
       'qa_report.md'
     );
@@ -312,8 +312,8 @@ test.describe('E2E Flow Verification (Mock-based)', () => {
     // Simulate rejection
     const fixRequestPath = path.join(
       TEST_PROJECT_DIR,
-      'auto-claude',
-      'specs',
+      '.auto-sleuth',
+      'cases',
       '001-reject',
       'QA_FIX_REQUEST.md'
     );

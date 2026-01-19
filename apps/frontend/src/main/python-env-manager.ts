@@ -16,7 +16,7 @@ export interface PythonEnvStatus {
 }
 
 /**
- * Manages the Python environment for the auto-claude backend.
+ * Manages the Python environment for the auto-sleuth backend.
  *
  * For packaged apps:
  *   - Uses bundled Python binary (resources/python/)

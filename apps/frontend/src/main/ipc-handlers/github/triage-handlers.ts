@@ -83,7 +83,8 @@ export interface TriageProgress {
  * Get the GitHub directory for a project
  */
 function getGitHubDir(project: Project): string {
-  return path.join(project.path, '.auto-claude', 'github');
+  const autoBuildDir = project.autoBuildPath || '.auto-sleuth';
+  return path.join(project.path, autoBuildDir, 'github');
 }
 
 /**

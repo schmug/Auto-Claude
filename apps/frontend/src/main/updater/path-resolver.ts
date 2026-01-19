@@ -1,5 +1,5 @@
 /**
- * Path resolution utilities for Auto Claude updater
+ * Path resolution utilities for Auto Sleuth updater
  */
 
 import { existsSync, readFileSync } from 'fs';
@@ -26,7 +26,7 @@ export function getBundledSourcePath(): string {
   ];
 
   for (const p of possiblePaths) {
-    // Validate it's a proper backend source (must have runners/case_runner.py or runners/spec_runner.py)
+    // Validate it's a proper backend source (must have runners/case_runner.py or legacy runners/spec_runner.py)
     const caseRunner = path.join(p, 'runners', 'case_runner.py');
     const specRunner = path.join(p, 'runners', 'spec_runner.py');
     if (existsSync(p) && (existsSync(caseRunner) || existsSync(specRunner))) {
@@ -50,7 +50,18 @@ export function getBundledSourcePath(): string {
  * Get the path for storing downloaded updates
  */
 export function getUpdateCachePath(): string {
-  return path.join(app.getPath('userData'), 'auto-claude-updates');
+  const autoSleuthUpdates = path.join(app.getPath('userData'), 'auto-sleuth-updates');
+  const legacyUpdates = path.join(app.getPath('userData'), 'auto-claude-updates');
+
+  if (existsSync(autoSleuthUpdates)) {
+    return autoSleuthUpdates;
+  }
+
+  if (existsSync(legacyUpdates)) {
+    return legacyUpdates;
+  }
+
+  return autoSleuthUpdates;
 }
 
 /**
@@ -63,7 +74,7 @@ export function getEffectiveSourcePath(): string {
     if (existsSync(settingsPath)) {
       const settings = JSON.parse(readFileSync(settingsPath, 'utf-8'));
       if (settings.autoBuildPath && existsSync(settings.autoBuildPath)) {
-        // Validate it's a proper backend source (must have runners/case_runner.py or runners/spec_runner.py)
+        // Validate it's a proper backend source (must have runners/case_runner.py or legacy runners/spec_runner.py)
         const caseRunner = path.join(settings.autoBuildPath, 'runners', 'case_runner.py');
         const specRunner = path.join(settings.autoBuildPath, 'runners', 'spec_runner.py');
         if (existsSync(caseRunner) || existsSync(specRunner)) {
@@ -71,7 +82,7 @@ export function getEffectiveSourcePath(): string {
         }
         // Invalid path - log warning and fall through to auto-detection
         console.warn(
-          `[path-resolver] Configured autoBuildPath "${settings.autoBuildPath}" is missing runners/case_runner.py or runners/spec_runner.py, falling back to bundled source`
+          `[path-resolver] Configured autoBuildPath "${settings.autoBuildPath}" is missing runners/case_runner.py or legacy runners/spec_runner.py, falling back to bundled source`
         );
       }
     }

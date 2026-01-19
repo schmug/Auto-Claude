@@ -15,6 +15,7 @@ import type {
 } from '../shared/types';
 import { DEFAULT_CHANGELOG_PATH } from '../shared/constants';
 import { getToolPath } from './cli-tool-manager';
+import { getTaskWorktreeDir } from './worktree-paths';
 
 /**
  * Service for creating GitHub releases with worktree-aware pre-flight checks.
@@ -344,7 +345,7 @@ export class ReleaseService extends EventEmitter {
     tasks: Task[]
   ): Promise<UnmergedWorktreeInfo[]> {
     const unmerged: UnmergedWorktreeInfo[] = [];
-    const worktreesDir = path.join(projectPath, '.auto-claude', 'worktrees', 'tasks');
+    const worktreesDir = getTaskWorktreeDir(projectPath);
 
     if (!existsSync(worktreesDir)) {
       return [];
@@ -501,7 +502,7 @@ export class ReleaseService extends EventEmitter {
           message: 'Stashing current changes...'
         });
 
-        execFileSync(getToolPath('git'), ['stash', 'push', '-m', 'auto-claude-release-temp'], {
+        execFileSync(getToolPath('git'), ['stash', 'push', '-m', 'auto-sleuth-release-temp'], {
           cwd: projectPath,
           encoding: 'utf-8'
         });

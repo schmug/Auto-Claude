@@ -129,7 +129,7 @@ vi.mock('electron', () => {
 // Setup test project structure
 function setupTestProject(): void {
   mkdirSync(TEST_PROJECT_PATH, { recursive: true });
-  mkdirSync(path.join(TEST_PROJECT_PATH, 'auto-claude', 'specs'), { recursive: true });
+  mkdirSync(path.join(TEST_PROJECT_PATH, '.auto-sleuth', 'cases'), { recursive: true });
 }
 
 // Cleanup test directories
@@ -353,7 +353,7 @@ describe('IPC Handlers', { timeout: 15000 }, () => {
   });
 
   describe('task:list handler', () => {
-    it('should return empty array for project with no specs', async () => {
+    it('should return empty array for project with no cases', async () => {
       const { setupIpcHandlers } = await import('../ipc-handlers');
       setupIpcHandlers(mockAgentManager as never, mockTerminalManager as never, () => mockMainWindow as never, mockPythonEnvManager as never);
 
@@ -369,19 +369,19 @@ describe('IPC Handlers', { timeout: 15000 }, () => {
       });
     });
 
-    it('should return tasks when specs exist', async () => {
+    it('should return tasks when cases exist', async () => {
       const { setupIpcHandlers } = await import('../ipc-handlers');
       setupIpcHandlers(mockAgentManager as never, mockTerminalManager as never, () => mockMainWindow as never, mockPythonEnvManager as never);
 
-      // Create .auto-claude directory first (before adding project so it gets detected)
-      mkdirSync(path.join(TEST_PROJECT_PATH, '.auto-claude', 'specs'), { recursive: true });
+      // Create .auto-sleuth directory first (before adding project so it gets detected)
+      mkdirSync(path.join(TEST_PROJECT_PATH, '.auto-sleuth', 'cases'), { recursive: true });
 
-      // Add a project - it will detect .auto-claude
+      // Add a project - it will detect .auto-sleuth
       const addResult = await ipcMain.invokeHandler('project:add', {}, TEST_PROJECT_PATH);
       const projectId = (addResult as { data: { id: string } }).data.id;
 
-      // Create a spec directory with implementation plan in .auto-claude/specs
-      const specDir = path.join(TEST_PROJECT_PATH, '.auto-claude', 'specs', '001-test-feature');
+      // Create a spec directory with implementation plan in .auto-sleuth/cases
+      const specDir = path.join(TEST_PROJECT_PATH, '.auto-sleuth', 'cases', '001-test-feature');
       mkdirSync(specDir, { recursive: true });
       writeFileSync(path.join(specDir, 'investigation_plan.json'), JSON.stringify({
         case_id: '001-test-feature',
@@ -431,8 +431,8 @@ describe('IPC Handlers', { timeout: 15000 }, () => {
       const { setupIpcHandlers } = await import('../ipc-handlers');
       setupIpcHandlers(mockAgentManager as never, mockTerminalManager as never, () => mockMainWindow as never, mockPythonEnvManager as never);
 
-      // Create .auto-claude directory first (before adding project so it gets detected)
-      mkdirSync(path.join(TEST_PROJECT_PATH, '.auto-claude', 'specs'), { recursive: true });
+      // Create .auto-sleuth directory first (before adding project so it gets detected)
+      mkdirSync(path.join(TEST_PROJECT_PATH, '.auto-sleuth', 'cases'), { recursive: true });
 
       // Add a project first
       const addResult = await ipcMain.invokeHandler('project:add', {}, TEST_PROJECT_PATH);
@@ -548,7 +548,7 @@ describe('IPC Handlers', { timeout: 15000 }, () => {
       await ipcMain.invokeHandler('project:add', {}, TEST_PROJECT_PATH);
 
       // Create a spec/task directory with investigation_plan.json
-      const specDir = path.join(TEST_PROJECT_PATH, '.auto-claude', 'specs', 'task-1');
+      const specDir = path.join(TEST_PROJECT_PATH, '.auto-sleuth', 'cases', 'task-1');
       mkdirSync(specDir, { recursive: true });
       writeFileSync(
         path.join(specDir, 'investigation_plan.json'),

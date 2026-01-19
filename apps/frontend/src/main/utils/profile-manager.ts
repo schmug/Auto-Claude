@@ -1,21 +1,32 @@
 /**
  * Profile Manager - File I/O for API profiles
  *
- * Handles loading and saving profiles.json from the auto-claude directory.
+ * Handles loading and saving profiles.json from the auto-sleuth directory.
  * Provides graceful handling for missing or corrupted files.
  */
 
-import { promises as fs } from 'fs';
+import { promises as fs, existsSync } from 'fs';
 import path from 'path';
 import { app } from 'electron';
 import type { ProfilesFile } from '../../shared/types/profile';
 
 /**
- * Get the path to profiles.json in the auto-claude directory
+ * Get the path to profiles.json in the auto-sleuth directory
  */
 export function getProfilesFilePath(): string {
   const userDataPath = app.getPath('userData');
-  return path.join(userDataPath, 'auto-claude', 'profiles.json');
+  const autoSleuthPath = path.join(userDataPath, 'auto-sleuth', 'profiles.json');
+  const legacyAutoClaudePath = path.join(userDataPath, 'auto-claude', 'profiles.json');
+
+  if (existsSync(autoSleuthPath)) {
+    return autoSleuthPath;
+  }
+
+  if (existsSync(legacyAutoClaudePath)) {
+    return legacyAutoClaudePath;
+  }
+
+  return autoSleuthPath;
 }
 
 /**
@@ -41,7 +52,7 @@ export async function loadProfilesFile(): Promise<ProfilesFile> {
 
 /**
  * Save profiles.json to disk
- * Creates the auto-claude directory if it doesn't exist
+ * Creates the auto-sleuth directory if it doesn't exist
  */
 export async function saveProfilesFile(data: ProfilesFile): Promise<void> {
   const filePath = getProfilesFilePath();

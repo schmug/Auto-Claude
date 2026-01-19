@@ -81,6 +81,7 @@ function loadSettingsSync(): AppSettings {
 function cleanupStaleUpdateMetadata(): void {
   const userData = app.getPath('userData');
   const stalePaths = [
+    join(userData, 'auto-sleuth-source'),
     join(userData, 'auto-claude-source'),
     join(userData, 'backend-source'),
   ];
@@ -214,10 +215,10 @@ function createWindow(): void {
 }
 
 // Set app name before ready (for dock tooltip on macOS in dev mode)
-app.setName('Auto Claude');
+app.setName('Auto Sleuth');
 if (process.platform === 'darwin') {
   // Force the name to appear in dock on macOS
-  app.name = 'Auto Claude';
+  app.name = 'Auto Sleuth';
 }
 
 // Fix Windows GPU cache permission errors (0x5 Access Denied)
@@ -230,7 +231,7 @@ if (process.platform === 'win32') {
 // Initialize the application
 app.whenReady().then(() => {
   // Set app user model id for Windows
-  electronApp.setAppUserModelId('com.autoclaude.ui');
+  electronApp.setAppUserModelId('com.autosleuth.ui');
 
   // Clear cache on Windows to prevent permission errors from stale cache
   if (process.platform === 'win32') {
@@ -265,13 +266,13 @@ app.whenReady().then(() => {
   // Initialize agent manager
   agentManager = new AgentManager();
 
-  // Load settings and configure agent manager with Python and auto-claude paths
+  // Load settings and configure agent manager with Python and auto-sleuth paths
   // Uses EAFP pattern (try/catch) instead of LBYL (existsSync) to avoid TOCTOU race conditions
   const settingsPath = join(app.getPath('userData'), 'settings.json');
   try {
     const settings = JSON.parse(readFileSync(settingsPath, 'utf-8'));
 
-    // Validate and migrate autoBuildPath - must contain runners/case_runner.py or runners/spec_runner.py
+    // Validate and migrate autoBuildPath - must contain runners/case_runner.py or legacy runners/spec_runner.py
     // Uses EAFP pattern (try/catch with accessSync) instead of existsSync to avoid TOCTOU race conditions
     let validAutoBuildPath = settings.autoBuildPath;
     if (validAutoBuildPath) {
@@ -295,11 +296,16 @@ app.whenReady().then(() => {
 
       if (!runnerExists) {
         // Migration: Try to fix stale paths from old project structure
-        // Old structure: /path/to/project/auto-claude
+        // Old structure: /path/to/project/auto-claude or /path/to/project/auto-sleuth
         // New structure: /path/to/project/apps/backend
         let migrated = false;
-        if (validAutoBuildPath.endsWith('/auto-claude') || validAutoBuildPath.endsWith('\\auto-claude')) {
-          const basePath = validAutoBuildPath.replace(/[/\\]auto-claude$/, '');
+        if (
+          validAutoBuildPath.endsWith('/auto-claude') ||
+          validAutoBuildPath.endsWith('\\auto-claude') ||
+          validAutoBuildPath.endsWith('/auto-sleuth') ||
+          validAutoBuildPath.endsWith('\\auto-sleuth')
+        ) {
+          const basePath = validAutoBuildPath.replace(/[/\\](auto-claude|auto-sleuth)$/, '');
           const correctedPath = join(basePath, 'apps', 'backend');
           const correctedCaseRunnerPath = join(correctedPath, 'runners', 'case_runner.py');
           const correctedSpecRunnerPath = join(correctedPath, 'runners', 'spec_runner.py');
@@ -337,7 +343,7 @@ app.whenReady().then(() => {
         }
 
         if (!migrated) {
-          console.warn('[main] Configured autoBuildPath is invalid (missing runners/case_runner.py or runners/spec_runner.py), will use auto-detection:', validAutoBuildPath);
+          console.warn('[main] Configured autoBuildPath is invalid (missing runners/case_runner.py or legacy runners/spec_runner.py), will use auto-detection:', validAutoBuildPath);
           validAutoBuildPath = undefined; // Let auto-detection find the correct path
         }
       }

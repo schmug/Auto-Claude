@@ -103,8 +103,12 @@ export const AUTO_BUILD_PATHS = {
 /**
  * Get the case files directory path.
  * All case files go to .auto-sleuth/cases/ (the project's data directory).
+ * Legacy .auto-claude projects continue to use .auto-claude/specs/.
  */
 export function getSpecsDir(autoBuildPath: string | undefined): string {
   const basePath = autoBuildPath || '.auto-sleuth';
+  if (basePath === '.auto-claude') {
+    return `${basePath}/specs`;
+  }
   return `${basePath}/cases`;
 }

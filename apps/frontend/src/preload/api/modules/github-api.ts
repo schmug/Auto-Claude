@@ -29,7 +29,7 @@ export interface AutoFixConfig {
 export interface AutoFixQueueItem {
   issueNumber: number;
   repo: string;
-  status: 'pending' | 'analyzing' | 'creating_spec' | 'building' | 'qa_review' | 'pr_created' | 'completed' | 'failed';
+  status: 'pending' | 'analyzing' | 'creating_case' | 'building' | 'qa_review' | 'pr_created' | 'completed' | 'failed';
   specId?: string;
   prNumber?: number;
   error?: string;
@@ -41,7 +41,7 @@ export interface AutoFixQueueItem {
  * Auto-fix progress status
  */
 export interface AutoFixProgress {
-  phase: 'checking' | 'fetching' | 'analyzing' | 'batching' | 'creating_spec' | 'building' | 'qa_review' | 'creating_pr' | 'complete';
+  phase: 'checking' | 'fetching' | 'analyzing' | 'batching' | 'creating_case' | 'building' | 'qa_review' | 'creating_pr' | 'complete';
   issueNumber: number;
   progress: number;
   message: string;
@@ -60,7 +60,7 @@ export interface IssueBatch {
     similarityToPrimary: number;
   }>;
   commonThemes: string[];
-  status: 'pending' | 'analyzing' | 'creating_spec' | 'building' | 'qa_review' | 'pr_created' | 'completed' | 'failed';
+  status: 'pending' | 'analyzing' | 'creating_case' | 'building' | 'qa_review' | 'pr_created' | 'completed' | 'failed';
   specId?: string;
   prNumber?: number;
   error?: string;
@@ -72,7 +72,7 @@ export interface IssueBatch {
  * Batch progress status
  */
 export interface BatchProgress {
-  phase: 'analyzing' | 'batching' | 'creating_specs' | 'complete';
+  phase: 'analyzing' | 'batching' | 'creating_cases' | 'complete';
   progress: number;
   message: string;
   totalIssues: number;

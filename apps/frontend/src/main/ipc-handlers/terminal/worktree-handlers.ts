@@ -150,8 +150,12 @@ function getDefaultBranch(projectPath: string): string {
     return project.settings.mainBranch;
   }
 
-  const envPath = path.join(projectPath, '.auto-claude', '.env');
-  if (existsSync(envPath)) {
+  const envPathCandidates = [
+    path.join(projectPath, '.auto-sleuth', '.env'),
+    path.join(projectPath, '.auto-claude', '.env')
+  ];
+  const envPath = envPathCandidates.find(candidate => existsSync(candidate));
+  if (envPath) {
     try {
       const content = readFileSync(envPath, 'utf-8');
       const vars = parseEnvFile(content);

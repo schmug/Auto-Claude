@@ -30,7 +30,7 @@ export class TerminalNameGenerator extends EventEmitter {
   }
 
   /**
-   * Configure the auto-claude source path
+   * Configure the auto-sleuth source path
    */
   configure(autoBuildSourcePath?: string): void {
     if (autoBuildSourcePath) {
@@ -39,7 +39,7 @@ export class TerminalNameGenerator extends EventEmitter {
   }
 
   /**
-   * Get the auto-claude source path (detects automatically if not configured)
+   * Get the auto-sleuth source path (detects automatically if not configured)
    */
   private getAutoBuildSourcePath(): string | null {
     const hasRunner = (basePath: string): boolean => {
@@ -85,7 +85,7 @@ export class TerminalNameGenerator extends EventEmitter {
   }
 
   /**
-   * Load environment variables from auto-claude .env file
+   * Load environment variables from auto-sleuth .env file
    */
   private loadAutoBuildEnv(): Record<string, string> {
     const autoBuildSource = this.getAutoBuildSourcePath();
@@ -133,7 +133,7 @@ export class TerminalNameGenerator extends EventEmitter {
     const autoBuildSource = this.getAutoBuildSourcePath();
 
     if (!autoBuildSource) {
-      debug('Auto-claude source path not found');
+      debug('Auto-sleuth source path not found');
       return null;
     }
 

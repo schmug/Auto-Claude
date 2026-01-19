@@ -131,15 +131,15 @@ registerTaskHandlers(agentManager, pythonEnvManager, getMainWindow);
 - `../../task-log-service` - Log service
 - `../../title-generator` - AI title generation
 - `../../python-env-manager` - Python environment
-- `../../auto-claude-updater` - Source paths
+- `../../auto-sleuth-updater` - Source paths
 - `../../rate-limit-detector` - Profile environment
 
 ## Architecture Notes
 
 ### Worktree Architecture
-Each case spec has its own isolated worktree at `.worktrees/{spec-name}/`:
+Each case spec has its own isolated worktree at `.auto-sleuth/worktrees/tasks/{case-id}/` (legacy `.worktrees/{spec-name}/` supported):
 - Enables safe parallel development
-- Each case spec has dedicated branch: `auto-claude/{spec-name}`
+- Each case spec has dedicated branch: `auto-sleuth/{case-id}` (legacy pre-DFIR branch naming supported)
 - Branches stay local until user explicitly pushes
 - User reviews in worktree before merging to main
 

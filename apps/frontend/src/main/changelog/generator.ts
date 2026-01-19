@@ -42,7 +42,7 @@ export class ChangelogGenerator extends EventEmitter {
 
   /**
    * Generate changelog using Claude AI
-   * Supports multiple source modes: tasks (specs), git-history, or branch-diff
+   * Supports multiple source modes: tasks (cases), git-history, or branch-diff
    */
   async generate(
     projectId: string,
@@ -106,7 +106,7 @@ export class ChangelogGenerator extends EventEmitter {
     } else {
       // Tasks mode (original behavior)
       if (!specs || specs.length === 0) {
-        this.emitError(projectId, 'No specs provided for changelog generation');
+        this.emitError(projectId, 'No cases provided for changelog generation');
         return;
       }
 

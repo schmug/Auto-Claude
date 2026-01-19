@@ -1,6 +1,6 @@
 /**
- * GitLab spec utilities
- * Handles creating task specs from GitLab issues
+ * GitLab case utilities
+ * Handles creating task cases from GitLab issues
  */
 
 import { mkdir, writeFile, readFile, stat } from 'fs/promises';
@@ -8,6 +8,7 @@ import path from 'path';
 import type { Project } from '../../../shared/types';
 import type { GitLabAPIIssue, GitLabConfig } from './types';
 import { labelMatchesWholeWord } from '../shared/label-utils';
+import { getSpecsDir } from '../../../shared/constants';
 
 /**
  * Simplified task info returned when creating a spec from a GitLab issue.
@@ -313,7 +314,7 @@ export async function createSpecForIssue(
     const safeProject = sanitizeText(config.project, 200);
     const safeInstanceUrl = sanitizeInstanceUrl(config.instanceUrl);
 
-    const specsDir = path.join(project.path, project.autoBuildPath, 'specs');
+    const specsDir = path.join(project.path, getSpecsDir(project.autoBuildPath));
 
     // Ensure specs directory exists
     await mkdir(specsDir, { recursive: true });

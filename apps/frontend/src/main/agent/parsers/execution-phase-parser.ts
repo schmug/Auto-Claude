@@ -82,7 +82,7 @@ export class ExecutionPhaseParser extends BasePhaseParser<ExecutionPhase> {
   }
 
   /**
-   * Parse phases for spec_runner.py execution.
+   * Parse phases for case_runner.py execution.
    * All spec runner phases map to 'planning'.
    */
   private parseSpecRunnerPhase(lowerLog: string): PhaseParseResult<ExecutionPhase> | null {

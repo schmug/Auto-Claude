@@ -134,7 +134,7 @@ Use diverse, contextually appropriate emojis for each item.`
 }
 
 /**
- * Build changelog prompt from task specs
+ * Build changelog prompt from task cases
  */
 export function buildChangelogPrompt(
   request: ChangelogGenerationRequest,

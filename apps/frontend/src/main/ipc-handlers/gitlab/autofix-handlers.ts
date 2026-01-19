@@ -3,7 +3,7 @@
  *
  * Handles automatic fixing of GitLab issues by:
  * 1. Detecting issues with configured labels (e.g., "auto-fix")
- * 2. Creating specs from issues
+ * 2. Creating cases from issues
  * 3. Running the build pipeline
  * 4. Creating MRs when complete
  */
@@ -69,7 +69,8 @@ function validatePathWithinProject(projectPath: string, resolvedPath: string): v
  * Get the GitLab directory for a project
  */
 function getGitLabDir(project: Project): string {
-  const gitlabDir = path.join(project.path, '.auto-claude', 'gitlab');
+  const autoBuildDir = project.autoBuildPath || '.auto-sleuth';
+  const gitlabDir = path.join(project.path, autoBuildDir, 'gitlab');
   validatePathWithinProject(project.path, gitlabDir);
   return gitlabDir;
 }
@@ -364,10 +365,10 @@ async function startAutoFix(
   });
 
   sendProgress(mainWindow, project.id, {
-    phase: 'creating_spec',
+    phase: 'creating_case',
     issueIid,
     progress: 50,
-    message: 'Creating spec from issue...',
+    message: 'Creating case from issue...',
   });
 
   // Validate issueIid
@@ -382,7 +383,7 @@ async function startAutoFix(
   const state: GitLabAutoFixQueueItem = {
     issueIid,
     project: glConfig.project,
-    status: 'creating_spec',
+    status: 'creating_case',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };
@@ -407,7 +408,7 @@ async function startAutoFix(
     phase: 'complete',
     issueIid,
     progress: 100,
-    message: 'Auto-fix spec created! Start the build to continue.',
+    message: 'Auto-fix case created! Start the build to continue.',
   });
 
   sendComplete(mainWindow, project.id, state);

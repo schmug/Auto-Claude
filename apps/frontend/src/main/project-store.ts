@@ -172,10 +172,10 @@ export class ProjectStore {
     // Check if project already exists
     const existing = this.data.projects.find((p) => p.path === projectPath);
     if (existing) {
-      // Validate that .auto-claude folder still exists for existing project
+      // Validate that .auto-sleuth folder still exists for existing project
       // If manually deleted, reset autoBuildPath so UI prompts for reinitialization
       if (existing.autoBuildPath && !isInitialized(existing.path)) {
-        console.warn(`[ProjectStore] .auto-claude folder was deleted for project "${existing.name}" - resetting autoBuildPath`);
+        console.warn(`[ProjectStore] .auto-sleuth folder was deleted for project "${existing.name}" - resetting autoBuildPath`);
         existing.autoBuildPath = '';
         existing.updatedAt = new Date();
         this.save();
@@ -186,7 +186,7 @@ export class ProjectStore {
     // Derive name from path if not provided
     const projectName = name || path.basename(projectPath);
 
-    // Determine auto-claude path (supports both 'auto-claude' and '.auto-claude')
+    // Determine auto-sleuth path (supports both 'auto-sleuth' and '.auto-sleuth')
     const autoBuildPath = getAutoBuildPath(projectPath) || '';
 
     const project: Project = {
@@ -267,11 +267,11 @@ export class ProjectStore {
   }
 
   /**
-   * Validate all projects to ensure their .auto-claude folders still exist.
+   * Validate all projects to ensure their .auto-sleuth folders still exist.
    * If a project has autoBuildPath set but the folder was deleted,
    * reset autoBuildPath to empty string so the UI prompts for reinitialization.
    *
-   * @returns Array of project IDs that were reset due to missing .auto-claude folder
+   * @returns Array of project IDs that were reset due to missing .auto-sleuth folder
    */
   validateProjects(): string[] {
     const resetProjectIds: string[] = [];
@@ -289,9 +289,9 @@ export class ProjectStore {
         continue; // Don't reset - let user handle this case
       }
 
-      // Check if .auto-claude folder still exists
+      // Check if .auto-sleuth folder still exists
       if (!isInitialized(project.path)) {
-        console.warn(`[ProjectStore] .auto-claude folder missing for project "${project.name}" at ${project.path}`);
+        console.warn(`[ProjectStore] .auto-sleuth folder missing for project "${project.name}" at ${project.path}`);
         project.autoBuildPath = '';
         project.updatedAt = new Date();
         resetProjectIds.push(project.id);
@@ -301,7 +301,7 @@ export class ProjectStore {
 
     if (hasChanges) {
       this.save();
-      console.warn(`[ProjectStore] Reset ${resetProjectIds.length} project(s) due to missing .auto-claude folder`);
+      console.warn(`[ProjectStore] Reset ${resetProjectIds.length} project(s) due to missing .auto-sleuth folder`);
     }
 
     return resetProjectIds;
@@ -331,7 +331,7 @@ export class ProjectStore {
   }
 
   /**
-   * Get tasks for a project by scanning specs directory
+   * Get tasks for a project by scanning cases directory
    * Implements caching with 3-second TTL to prevent excessive worktree scanning
    */
   getTasks(projectId: string): Task[] {
@@ -359,19 +359,19 @@ export class ProjectStore {
     const allTasks: Task[] = [];
     const specsBaseDir = getSpecsDir(project.autoBuildPath);
 
-    // 1. Scan main project specs directory (source of truth for task existence)
+    // 1. Scan main project cases directory (source of truth for task existence)
     const mainSpecsDir = path.join(project.path, specsBaseDir);
     const mainSpecIds = new Set<string>();
     console.warn('[ProjectStore] Main specsDir:', mainSpecsDir, 'exists:', existsSync(mainSpecsDir));
     if (existsSync(mainSpecsDir)) {
       const mainTasks = this.loadTasksFromSpecsDir(mainSpecsDir, project.path, 'main', projectId, specsBaseDir);
       allTasks.push(...mainTasks);
-      // Track which specs exist in main project
+      // Track which cases exist in main project
       mainTasks.forEach(t => mainSpecIds.add(t.specId));
       console.warn('[ProjectStore] Loaded', mainTasks.length, 'tasks from main project');
     }
 
-    // 2. Scan case specs directories (DFIR)
+    // 2. Scan case directories (DFIR)
     const caseSpecsDirs = getCaseSpecsDirs(project.path, specsBaseDir);
     for (const { specsDir, caseDir } of caseSpecsDirs) {
       const caseTasks = this.loadTasksFromSpecsDir(specsDir, caseDir, 'main', projectId, specsBaseDir);
@@ -380,7 +380,7 @@ export class ProjectStore {
       console.warn('[ProjectStore] Loaded', caseTasks.length, 'tasks from case:', path.basename(caseDir));
     }
 
-    // 3. Scan worktree specs directories
+    // 3. Scan worktree cases directories
     // NOTE FOR MAINTAINERS: Worktree tasks are only included if the spec also exists in main.
     // This prevents deleted tasks from "coming back" when the worktree isn't cleaned up.
     const worktreesDir = getTaskWorktreeDir(project.path);
@@ -452,7 +452,7 @@ export class ProjectStore {
   }
 
   /**
-   * Load tasks from a specs directory (helper method for main project and worktrees)
+   * Load tasks from a cases directory (helper method for main project and worktrees)
    */
   private loadTasksFromSpecsDir(
     specsDir: string,
@@ -467,7 +467,7 @@ export class ProjectStore {
     try {
       specDirs = readdirSync(specsDir, { withFileTypes: true });
     } catch (error) {
-      console.error('[ProjectStore] Error reading specs directory:', error);
+      console.error('[ProjectStore] Error reading cases directory:', error);
       return [];
     }
 
@@ -624,12 +624,12 @@ export class ProjectStore {
           stagedInMainProject,
           stagedAt,
           location, // Add location metadata (main vs worktree)
-          specsPath: specPath, // Add full path to specs directory
+          specsPath: specPath, // Add full path to cases directory
           createdAt: new Date(plan?.created_at || Date.now()),
           updatedAt: new Date(plan?.updated_at || Date.now())
         });
       } catch (error) {
-        // Log error but continue processing other specs
+        // Log error but continue processing other cases
         console.error(`[ProjectStore] Error loading spec ${dir.name}:`, error);
       }
     }
@@ -805,7 +805,7 @@ export class ProjectStore {
 
     const paths: string[] = [];
 
-    // 1. Check main specs directory
+    // 1. Check main cases directory
     const mainSpecPath = path.join(projectPath, specsBaseDir, taskId);
     if (existsSync(mainSpecPath)) {
       paths.push(mainSpecPath);

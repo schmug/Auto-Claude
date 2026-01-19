@@ -173,7 +173,7 @@ export interface GitLabAutoFixConfig {
 export interface GitLabAutoFixQueueItem {
   issueIid: number;
   project: string;
-  status: 'pending' | 'analyzing' | 'creating_spec' | 'building' | 'qa_review' | 'mr_created' | 'completed' | 'failed';
+  status: 'pending' | 'analyzing' | 'creating_case' | 'building' | 'qa_review' | 'mr_created' | 'completed' | 'failed';
   specId?: string;
   mrIid?: number;
   createdAt: string;
@@ -198,7 +198,7 @@ export interface GitLabBatchProgress {
 }
 
 export interface GitLabAutoFixProgress {
-  phase: 'checking' | 'fetching' | 'analyzing' | 'batching' | 'creating_spec' | 'building' | 'qa_review' | 'creating_mr' | 'complete';
+  phase: 'checking' | 'fetching' | 'analyzing' | 'batching' | 'creating_case' | 'building' | 'qa_review' | 'creating_mr' | 'complete';
   issueIid: number;
   progress: number;
   message: string;

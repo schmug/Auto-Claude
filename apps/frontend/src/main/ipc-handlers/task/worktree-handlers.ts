@@ -75,6 +75,24 @@ function getUtilitySettings(): { model: string; modelId: string; thinkingLevel: 
 const execAsync = promisify(exec);
 const execFileAsync = promisify(execFile);
 
+function resolveSpecsBaseDir(projectPath: string, autoBuildPath?: string): string {
+  if (autoBuildPath) {
+    return getSpecsDir(autoBuildPath);
+  }
+
+  const autoSleuthPath = path.join(projectPath, '.auto-sleuth');
+  if (existsSync(autoSleuthPath)) {
+    return getSpecsDir('.auto-sleuth');
+  }
+
+  const autoClaudePath = path.join(projectPath, '.auto-claude');
+  if (existsSync(autoClaudePath)) {
+    return getSpecsDir('.auto-claude');
+  }
+
+  return getSpecsDir('.auto-sleuth');
+}
+
 /**
  * Check if a repository is misconfigured as bare but has source files.
  * If so, automatically fix the configuration by unsetting core.bare.
@@ -1326,7 +1344,8 @@ function getTaskBaseBranch(specDir: string): string | undefined {
  */
 function getEffectiveBaseBranch(projectPath: string, specId: string, projectMainBranch?: string): string {
   // 1. Try task metadata baseBranch
-  const specDir = path.join(projectPath, '.auto-claude', 'specs', specId);
+  const specsBaseDir = resolveSpecsBaseDir(projectPath);
+  const specDir = path.join(projectPath, specsBaseDir, specId);
   const taskBaseBranch = getTaskBaseBranch(specDir);
   if (taskBaseBranch) {
     return taskBaseBranch;
@@ -1560,7 +1579,7 @@ async function initializePythonEnvForPR(
 
   const autoBuildSource = getEffectiveSourcePath();
   if (!autoBuildSource) {
-    return 'Python environment not ready and Auto Claude source not found';
+    return 'Python environment not ready and Auto Sleuth source not found';
   }
 
   const status = await pythonEnvManager.initialize(autoBuildSource);
@@ -1627,7 +1646,7 @@ export function registerWorktreeHandlers(
 ): void {
   /**
    * Get the worktree status for a task
-   * Per-spec architecture: Each spec has its own worktree at .auto-claude/worktrees/tasks/{spec-name}/
+   * Per-case architecture: Each case has its own worktree at .auto-sleuth/worktrees/tasks/{case-id}/
    */
   ipcMain.handle(
     IPC_CHANNELS.TASK_WORKTREE_STATUS,
@@ -1638,7 +1657,7 @@ export function registerWorktreeHandlers(
           return { success: false, error: 'Task not found' };
         }
 
-        // Find worktree at .auto-claude/worktrees/tasks/{spec-name}/
+        // Find worktree at .auto-sleuth/worktrees/tasks/{case-id}/ (legacy .auto-claude supported)
         const worktreePath = findTaskWorktree(project.path, task.specId);
 
         if (!worktreePath) {
@@ -1741,7 +1760,7 @@ export function registerWorktreeHandlers(
 
   /**
    * Get the diff for a task's worktree
-   * Per-spec architecture: Each spec has its own worktree at .auto-claude/worktrees/tasks/{spec-name}/
+   * Per-case architecture: Each case has its own worktree at .auto-sleuth/worktrees/tasks/{case-id}/
    */
   ipcMain.handle(
     IPC_CHANNELS.TASK_WORKTREE_DIFF,
@@ -1752,7 +1771,7 @@ export function registerWorktreeHandlers(
           return { success: false, error: 'Task not found' };
         }
 
-        // Find worktree at .auto-claude/worktrees/tasks/{spec-name}/
+        // Find worktree at .auto-sleuth/worktrees/tasks/{case-id}/ (legacy .auto-claude supported)
         const worktreePath = findTaskWorktree(project.path, task.specId);
 
         if (!worktreePath) {
@@ -1856,7 +1875,7 @@ export function registerWorktreeHandlers(
               return { success: false, error: `Python environment not ready: ${status.error || 'Unknown error'}` };
             }
           } else {
-            return { success: false, error: 'Python environment not ready and Auto Claude source not found' };
+            return { success: false, error: 'Python environment not ready and Auto Sleuth source not found' };
           }
         }
 
@@ -1877,11 +1896,12 @@ export function registerWorktreeHandlers(
         // Use run.py --merge to handle the merge
         const sourcePath = getEffectiveSourcePath();
         if (!sourcePath) {
-          return { success: false, error: 'Auto Claude source not found' };
+          return { success: false, error: 'Auto Sleuth source not found' };
         }
 
         const runScript = path.join(sourcePath, 'run.py');
-        const specDir = path.join(project.path, project.autoBuildPath || '.auto-claude', 'specs', task.specId);
+        const specsBaseDir = resolveSpecsBaseDir(project.path, project.autoBuildPath);
+        const specDir = path.join(project.path, specsBaseDir, task.specId);
 
         if (!existsSync(specDir)) {
           debug('Spec directory not found:', specDir);
@@ -2100,6 +2120,7 @@ export function registerWorktreeHandlers(
               // This prevents false positives when merge was already committed previously
               let hasActualStagedChanges = false;
               let mergeAlreadyCommitted = false;
+              const taskBranches = [`auto-sleuth/${task.specId}`, `auto-claude/${task.specId}`];
 
               if (isStageOnly) {
                 // Only check staged changes if project is a working tree (not bare repo)
@@ -2111,21 +2132,25 @@ export function registerWorktreeHandlers(
 
                     if (!hasActualStagedChanges) {
                       // Check if worktree branch was already merged (merge commit exists)
-                      const specBranch = `auto-claude/${task.specId}`;
-                      try {
-                        // Check if current branch contains all commits from spec branch
-                        // git merge-base --is-ancestor returns exit code 0 if true, 1 if false
-                        execFileSync(
-                          getToolPath('git'),
-                          ['merge-base', '--is-ancestor', specBranch, 'HEAD'],
-                          { cwd: project.path, encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] }
-                        );
-                        // If we reach here, the command succeeded (exit code 0) - branch is merged
-                        mergeAlreadyCommitted = true;
-                        debug('Merge already committed check:', mergeAlreadyCommitted);
-                      } catch {
-                        // Exit code 1 means not merged, or branch may not exist
-                        mergeAlreadyCommitted = false;
+                      for (const taskBranch of taskBranches) {
+                        try {
+                          // Check if current branch contains all commits from spec branch
+                          // git merge-base --is-ancestor returns exit code 0 if true, 1 if false
+                          execFileSync(
+                            getToolPath('git'),
+                            ['merge-base', '--is-ancestor', taskBranch, 'HEAD'],
+                            { cwd: project.path, encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] }
+                          );
+                          // If we reach here, the command succeeded (exit code 0) - branch is merged
+                          mergeAlreadyCommitted = true;
+                          debug('Merge already committed check:', mergeAlreadyCommitted, 'branch:', taskBranch);
+                          break;
+                        } catch {
+                          // Exit code 1 means not merged, or branch may not exist
+                        }
+                      }
+
+                      if (!mergeAlreadyCommitted) {
                         debug('Could not check merge status, assuming not merged');
                       }
                     }
@@ -2188,15 +2213,17 @@ export function registerWorktreeHandlers(
                     debug('Worktree cleaned up after full merge:', worktreePath);
 
                     // Also delete the task branch since we merged successfully
-                    const taskBranch = `auto-claude/${task.specId}`;
-                    try {
-                      execFileSync(getToolPath('git'), ['branch', '-D', taskBranch], {
-                        cwd: project.path,
-                        encoding: 'utf-8'
-                      });
-                      debug('Task branch deleted:', taskBranch);
-                    } catch {
-                      // Branch might not exist or already deleted
+                    for (const taskBranch of taskBranches) {
+                      try {
+                        execFileSync(getToolPath('git'), ['branch', '-D', taskBranch], {
+                          cwd: project.path,
+                          encoding: 'utf-8'
+                        });
+                        debug('Task branch deleted:', taskBranch);
+                        break;
+                      } catch {
+                        // Branch might not exist or already deleted
+                      }
                     }
                   }
                 } catch (cleanupErr) {
@@ -2232,7 +2259,7 @@ export function registerWorktreeHandlers(
                 .map((planPath) => ({ path: planPath, isMain: true }));
               // Add worktree plan path if worktree exists
               if (worktreePath) {
-                const worktreeSpecDir = path.join(worktreePath, project.autoBuildPath || '.auto-claude', 'specs', task.specId);
+                const worktreeSpecDir = path.join(worktreePath, specsBaseDir, task.specId);
                 getPlanPaths(worktreeSpecDir, worktreePath, task.specId)
                   .forEach((planPath) => planPaths.push({ path: planPath, isMain: false }));
               }
@@ -2405,8 +2432,8 @@ export function registerWorktreeHandlers(
               return { success: false, error: `Python environment not ready: ${status.error || 'Unknown error'}` };
             }
           } else {
-            console.error('[IPC] Auto Claude source not found');
-            return { success: false, error: 'Python environment not ready and Auto Claude source not found' };
+            console.error('[IPC] Auto Sleuth source not found');
+            return { success: false, error: 'Python environment not ready and Auto Sleuth source not found' };
           }
         }
 
@@ -2446,12 +2473,13 @@ export function registerWorktreeHandlers(
 
         const sourcePath = getEffectiveSourcePath();
         if (!sourcePath) {
-          console.error('[IPC] Auto Claude source not found');
-          return { success: false, error: 'Auto Claude source not found' };
+          console.error('[IPC] Auto Sleuth source not found');
+          return { success: false, error: 'Auto Sleuth source not found' };
         }
 
         const runScript = path.join(sourcePath, 'run.py');
-        const specDir = path.join(project.path, project.autoBuildPath || '.auto-claude', 'specs', task.specId);
+        const specsBaseDir = resolveSpecsBaseDir(project.path, project.autoBuildPath);
+        const specDir = path.join(project.path, specsBaseDir, task.specId);
         const args = [
           runScript,
           '--spec', task.specId,
@@ -2577,7 +2605,7 @@ export function registerWorktreeHandlers(
 
   /**
    * Discard the worktree changes
-   * Per-spec architecture: Each spec has its own worktree at .auto-claude/worktrees/tasks/{spec-name}/
+   * Per-case architecture: Each case has its own worktree at .auto-sleuth/worktrees/tasks/{case-id}/
    */
   ipcMain.handle(
     IPC_CHANNELS.TASK_WORKTREE_DISCARD,
@@ -2588,7 +2616,7 @@ export function registerWorktreeHandlers(
           return { success: false, error: 'Task not found' };
         }
 
-        // Find worktree at .auto-claude/worktrees/tasks/{spec-name}/
+        // Find worktree at .auto-sleuth/worktrees/tasks/{case-id}/ (legacy .auto-claude supported)
         const worktreePath = findTaskWorktree(project.path, task.specId);
 
         if (!worktreePath) {
@@ -2659,7 +2687,7 @@ export function registerWorktreeHandlers(
 
   /**
    * List all spec worktrees for a project
-   * Per-spec architecture: Each spec has its own worktree at .auto-claude/worktrees/tasks/{spec-name}/
+   * Per-case architecture: Each case has its own worktree at .auto-sleuth/worktrees/tasks/{case-id}/
    */
   ipcMain.handle(
     IPC_CHANNELS.TASK_LIST_WORKTREES,
@@ -2953,11 +2981,12 @@ export function registerWorktreeHandlers(
         // Use run.py --create-pr to handle the PR creation
         const sourcePath = getEffectiveSourcePath();
         if (!sourcePath) {
-          return { success: false, error: 'Auto Claude source not found' };
+          return { success: false, error: 'Auto Sleuth source not found' };
         }
 
         const runScript = path.join(sourcePath, 'run.py');
-        const specDir = path.join(project.path, project.autoBuildPath || '.auto-claude', 'specs', task.specId);
+        const specsBaseDir = resolveSpecsBaseDir(project.path, project.autoBuildPath);
+        const specDir = path.join(project.path, specsBaseDir, task.specId);
 
         // Use EAFP pattern - try to read specDir and catch ENOENT
         try {

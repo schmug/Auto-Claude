@@ -16,8 +16,9 @@
 
 import * as path from 'path';
 import * as os from 'os';
+import { existsSync } from 'fs';
 
-const APP_NAME = 'auto-claude';
+const APP_NAME = 'auto-sleuth';
 
 /**
  * Get the XDG config home directory
@@ -72,7 +73,7 @@ export function getAppCacheDir(): string {
  * This is where graph databases are stored (previously ~/.auto-claude/memories)
  */
 export function getMemoriesDir(): string {
-  // For compatibility, we still support the legacy path
+  const autoSleuthPath = path.join(os.homedir(), '.auto-sleuth', 'memories');
   const legacyPath = path.join(os.homedir(), '.auto-claude', 'memories');
 
   // On Linux with XDG variables set (AppImage, Flatpak, Snap), use XDG path
@@ -80,8 +81,15 @@ export function getMemoriesDir(): string {
     return path.join(getXdgDataHome(), APP_NAME, 'memories');
   }
 
-  // Default to legacy path for backwards compatibility
-  return legacyPath;
+  if (existsSync(autoSleuthPath)) {
+    return autoSleuthPath;
+  }
+
+  if (existsSync(legacyPath)) {
+    return legacyPath;
+  }
+
+  return autoSleuthPath;
 }
 
 /**

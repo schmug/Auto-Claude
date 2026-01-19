@@ -241,7 +241,7 @@ export function updateInvestigationPlanStatus(specDir: string, status: string): 
     plan.updated_at = new Date().toISOString();
     writeFileSync(planPath, JSON.stringify(plan, null, 2));
   } catch (error) {
-    // File doesn't exist or couldn't be read - this is expected for new specs
+    // File doesn't exist or couldn't be read - this is expected for new cases
     // Log legitimate errors (malformed JSON, disk write failures, permission errors)
     if (error instanceof Error && error.message && !error.message.includes('ENOENT')) {
       debugLog('spec-utils', `Failed to update implementation plan status: ${error.message}`);

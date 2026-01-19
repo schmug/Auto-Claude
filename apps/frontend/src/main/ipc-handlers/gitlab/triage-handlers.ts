@@ -113,7 +113,8 @@ function sanitizeTriageResult(result: GitLabTriageResult): {
  * Get the GitLab directory for a project
  */
 function getGitLabDir(project: Project): string {
-  return path.join(project.path, '.auto-claude', 'gitlab');
+  const autoBuildDir = project.autoBuildPath || '.auto-sleuth';
+  return path.join(project.path, autoBuildDir, 'gitlab');
 }
 
 /**

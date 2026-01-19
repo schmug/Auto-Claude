@@ -1,11 +1,11 @@
 /**
- * Spec Number Lock - Distributed locking for spec number coordination
+ * Spec Number Lock - Distributed locking for case number coordination
  *
- * Prevents race conditions when creating specs by:
+ * Prevents race conditions when creating cases by:
  * 1. Acquiring an exclusive file lock
- * 2. Scanning ALL spec locations (main + worktrees)
- * 3. Finding global maximum spec number
- * 4. Allowing atomic spec directory creation
+ * 2. Scanning ALL case locations (main + worktrees)
+ * 3. Finding global maximum case number
+ * 4. Allowing atomic case directory creation
  */
 
 import {
@@ -34,12 +34,15 @@ export class SpecNumberLock {
 
   constructor(projectDir: string) {
     this.projectDir = projectDir;
-    this.lockDir = path.join(projectDir, '.auto-claude', '.locks');
+    const autoSleuthDir = path.join(projectDir, '.auto-sleuth');
+    const autoClaudeDir = path.join(projectDir, '.auto-claude');
+    const lockBaseDir = existsSync(autoSleuthDir) ? autoSleuthDir : existsSync(autoClaudeDir) ? autoClaudeDir : autoSleuthDir;
+    this.lockDir = path.join(lockBaseDir, '.locks');
     this.lockFile = path.join(this.lockDir, 'spec-numbering.lock');
   }
 
   /**
-   * Acquire the spec numbering lock
+   * Acquire the case numbering lock
    */
   async acquire(): Promise<void> {
     // Ensure lock directory exists
@@ -95,7 +98,7 @@ export class SpecNumberLock {
       // Check timeout
       if (Date.now() - startTime >= maxWait) {
         throw new SpecNumberLockError(
-          `Could not acquire spec numbering lock after ${maxWait / 1000}s`
+          `Could not acquire case numbering lock after ${maxWait / 1000}s`
         );
       }
 
@@ -105,7 +108,7 @@ export class SpecNumberLock {
   }
 
   /**
-   * Release the spec numbering lock
+   * Release the case numbering lock
    */
   release(): void {
     if (this.acquired && existsSync(this.lockFile)) {
@@ -131,12 +134,12 @@ export class SpecNumberLock {
   }
 
   /**
-   * Get the next available spec number (must be called while lock is held)
+   * Get the next available case number (must be called while lock is held)
    */
   getNextSpecNumber(autoBuildPath?: string): number {
     if (!this.acquired) {
       throw new SpecNumberLockError(
-        'Lock must be acquired before getting next spec number'
+        'Lock must be acquired before getting next case number'
       );
     }
 
@@ -146,27 +149,34 @@ export class SpecNumberLock {
 
     let maxNumber = 0;
 
-    // Determine specs directory base path
-    const specsBase = autoBuildPath || '.auto-claude';
+    // Determine cases directory base path
+    const specsBase = autoBuildPath || '.auto-sleuth';
+    const isLegacyAutoClaude = specsBase === '.auto-claude';
+    const specsDirName = isLegacyAutoClaude ? 'specs' : 'cases';
 
-    // 1. Scan main project specs
-    const mainSpecsDir = path.join(this.projectDir, specsBase, 'specs');
-    maxNumber = Math.max(maxNumber, this.scanSpecsDir(mainSpecsDir));
+    // 1. Scan main project cases
+    const mainCasesDir = path.join(this.projectDir, specsBase, specsDirName);
+    maxNumber = Math.max(maxNumber, this.scanSpecsDir(mainCasesDir));
 
-    // 2. Scan all worktree specs
-    const worktreesDir = path.join(this.projectDir, '.auto-claude', 'worktrees', 'tasks');
+    // 2. Scan all worktree cases
+    const worktreesDir = path.join(
+      this.projectDir,
+      isLegacyAutoClaude ? '.auto-claude' : '.auto-sleuth',
+      'worktrees',
+      'tasks'
+    );
     if (existsSync(worktreesDir)) {
       try {
         const worktrees = readdirSync(worktreesDir, { withFileTypes: true });
         for (const worktree of worktrees) {
           if (worktree.isDirectory()) {
-            const worktreeSpecsDir = path.join(
+            const worktreeCasesDir = path.join(
               worktreesDir,
               worktree.name,
               specsBase,
-              'specs'
+              specsDirName
             );
-            maxNumber = Math.max(maxNumber, this.scanSpecsDir(worktreeSpecsDir));
+            maxNumber = Math.max(maxNumber, this.scanSpecsDir(worktreeCasesDir));
           }
         }
       } catch {
@@ -179,7 +189,7 @@ export class SpecNumberLock {
   }
 
   /**
-   * Scan a specs directory and return the highest spec number found
+   * Scan a cases directory and return the highest spec number found
    */
   private scanSpecsDir(specsDir: string): number {
     if (!existsSync(specsDir)) {

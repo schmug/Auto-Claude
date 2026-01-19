@@ -137,14 +137,14 @@ export function registerTaskExecutionHandlers(
         return;
       }
 
-      // Check git status - Auto Claude requires git for worktree-based builds
+      // Check git status - Auto Sleuth requires git for worktree-based builds
       const gitStatus = checkGitStatus(project.path);
       if (!gitStatus.isGitRepo) {
         console.warn('[TASK_START] Project is not a git repository:', project.path);
         mainWindow.webContents.send(
           IPC_CHANNELS.TASK_ERROR,
           taskId,
-          'Git repository required. Please run "git init" in your project directory. Auto Claude uses git worktrees for isolated builds.'
+          'Git repository required. Please run "git init" in your project directory. Auto Sleuth uses git worktrees for isolated builds.'
         );
         return;
       }
@@ -188,8 +188,8 @@ export function registerTaskExecutionHandlers(
       const hasSpec = existsSync(caseFilePath) || existsSync(specFilePath);
       const docFilePath = existsSync(caseFilePath) ? caseFilePath : specFilePath;
 
-      // Check if this task needs spec creation first (no spec file = not yet created)
-      // OR if it has a spec but no implementation plan subtasks (spec created, needs planning/building)
+      // Check if this task needs case creation first (no case file = not yet created)
+      // OR if it has a case but no implementation plan subtasks (case created, needs planning/building)
       const needsSpecCreation = !hasSpec;
       const needsImplementation = hasSpec && task.subtasks.length === 0;
 
@@ -199,12 +199,12 @@ export function registerTaskExecutionHandlers(
       const baseBranch = task.metadata?.baseBranch || project.settings?.mainBranch;
 
       if (needsSpecCreation) {
-        // No spec file - need to run spec_runner.py to create the spec
+        // No case file - need to run case_runner.py to create the case
         const taskDescription = task.description || task.title;
-        console.warn('[TASK_START] Starting spec creation for:', task.specId, 'in:', specDir, 'baseBranch:', baseBranch);
+        console.warn('[TASK_START] Starting case creation for:', task.specId, 'in:', specDir, 'baseBranch:', baseBranch);
 
-        // Start spec creation process - pass the existing spec directory
-        // so spec_runner uses it instead of creating a new one
+        // Start case creation process - pass the existing case directory
+        // so case_runner uses it instead of creating a new one
         // Also pass baseBranch so worktrees are created from the correct branch
         agentManager.startSpecCreation(task.specId, project.path, taskDescription, specDir, task.metadata, baseBranch);
       } else if (needsImplementation) {
@@ -418,14 +418,14 @@ export function registerTaskExecutionHandlers(
           }
 
           // Step 3: Clean untracked files that came from the merge
-          // IMPORTANT: Exclude .auto-claude directory to preserve specs and worktree data
-          const cleanResult = spawnSync('git', ['clean', '-fd', '-e', '.auto-claude'], {
+          // IMPORTANT: Exclude .auto-sleuth and legacy .auto-claude directories to preserve case/worktree data
+          const cleanResult = spawnSync('git', ['clean', '-fd', '-e', '.auto-sleuth', '-e', '.auto-claude'], {
             cwd: project.path,
             encoding: 'utf-8',
             stdio: 'pipe'
           });
           if (cleanResult.status === 0) {
-            console.log('[TASK_REVIEW] Cleaned untracked files in main (excluding .auto-claude)');
+            console.log('[TASK_REVIEW] Cleaned untracked files in main (excluding .auto-sleuth/.auto-claude)');
           }
 
           console.log('[TASK_REVIEW] Main branch restored to pre-merge state');
@@ -505,6 +505,7 @@ export function registerTaskExecutionHandlers(
               // Get the branch name before removing the worktree
               let branch = '';
               let usingFallbackBranch = false;
+              const fallbackBranches = [`auto-sleuth/${task.specId}`, `auto-claude/${task.specId}`];
               try {
                 branch = execFileSync(getToolPath('git'), ['rev-parse', '--abbrev-ref', 'HEAD'], {
                   cwd: worktreePath,
@@ -513,7 +514,7 @@ export function registerTaskExecutionHandlers(
                 }).trim();
               } catch (branchError) {
                 // If we can't get branch name, use the default pattern
-                branch = `auto-claude/${task.specId}`;
+                branch = fallbackBranches[0];
                 usingFallbackBranch = true;
                 console.warn(`[TASK_UPDATE_STATUS] Could not get branch name, using fallback pattern: ${branch}`, branchError);
               }
@@ -527,21 +528,26 @@ export function registerTaskExecutionHandlers(
               console.warn(`[TASK_UPDATE_STATUS] Worktree removed: ${worktreePath}`);
 
               // Delete the branch (ignore errors if branch doesn't exist)
-              try {
-                execFileSync(getToolPath('git'), ['branch', '-D', branch], {
-                  cwd: project.path,
-                  encoding: 'utf-8',
-                  timeout: 30000
-                });
-                console.warn(`[TASK_UPDATE_STATUS] Branch deleted: ${branch}`);
-              } catch (branchDeleteError) {
-                // Branch may not exist or may be the current branch
-                if (usingFallbackBranch) {
-                  // More concerning - fallback pattern didn't match actual branch
-                  console.warn(`[TASK_UPDATE_STATUS] Could not delete branch ${branch} using fallback pattern. Actual branch may still exist and need manual cleanup.`, branchDeleteError);
-                } else {
-                  console.warn(`[TASK_UPDATE_STATUS] Could not delete branch ${branch} (may not exist or be checked out elsewhere)`);
+              const branchesToDelete = usingFallbackBranch ? fallbackBranches : [branch];
+              let deletedBranch = false;
+              for (const branchToDelete of branchesToDelete) {
+                try {
+                  execFileSync(getToolPath('git'), ['branch', '-D', branchToDelete], {
+                    cwd: project.path,
+                    encoding: 'utf-8',
+                    timeout: 30000
+                  });
+                  console.warn(`[TASK_UPDATE_STATUS] Branch deleted: ${branchToDelete}`);
+                  deletedBranch = true;
+                  break;
+                } catch (branchDeleteError) {
+                  if (!usingFallbackBranch) {
+                    console.warn(`[TASK_UPDATE_STATUS] Could not delete branch ${branchToDelete} (may not exist or be checked out elsewhere)`, branchDeleteError);
+                  }
                 }
+              }
+              if (usingFallbackBranch && !deletedBranch) {
+                console.warn(`[TASK_UPDATE_STATUS] Could not delete fallback branches: ${branchesToDelete.join(', ')}`);
               }
 
               console.warn(`[TASK_UPDATE_STATUS] Worktree cleanup completed successfully`);
@@ -673,7 +679,7 @@ export function registerTaskExecutionHandlers(
           const baseBranchForUpdate = task.metadata?.baseBranch || project.settings?.mainBranch;
 
           if (needsSpecCreation) {
-            // No spec file - need to run spec_runner.py to create the spec
+            // No case file - need to run case_runner.py to create the case
             const taskDescription = task.description || task.title;
             console.warn('[TASK_UPDATE_STATUS] Starting spec creation for:', task.specId);
             agentManager.startSpecCreation(task.specId, project.path, taskDescription, specDir, task.metadata, baseBranchForUpdate);
@@ -1038,7 +1044,7 @@ export function registerTaskExecutionHandlers(
             const baseBranchForRecovery = task.metadata?.baseBranch || project.settings?.mainBranch;
 
             if (needsSpecCreation) {
-              // No spec file - need to run spec_runner.py to create the spec
+              // No case file - need to run case_runner.py to create the case
               const taskDescription = task.description || task.title;
               console.warn(`[Recovery] Starting spec creation for: ${task.specId}`);
               agentManager.startSpecCreation(task.specId, project.path, taskDescription, specDirForWatcher, task.metadata, baseBranchForRecovery);

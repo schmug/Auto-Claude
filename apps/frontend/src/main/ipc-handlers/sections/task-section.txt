@@ -258,7 +258,7 @@
           return { success: false, error: 'Task not found' };
         }
 
-        const autoBuildDir = project.autoBuildPath || '.auto-claude';
+        const autoBuildDir = project.autoBuildPath || '.auto-sleuth';
         const specDir = path.join(project.path, autoBuildDir, 'specs', task.specId);
 
         if (!existsSync(specDir)) {
@@ -415,12 +415,12 @@
       console.log('[TASK_START] hasSpec:', hasSpec, 'needsSpecCreation:', needsSpecCreation, 'needsImplementation:', needsImplementation);
 
       if (needsSpecCreation) {
-        // No spec file - need to run spec_runner.py to create the spec
+        // No spec file - need to run case_runner.py to create the spec
         const taskDescription = task.description || task.title;
         console.log('[TASK_START] Starting spec creation for:', task.specId, 'in:', specDir);
 
         // Start spec creation process - pass the existing spec directory
-        // so spec_runner uses it instead of creating a new one
+        // so case_runner uses it instead of creating a new one
         agentManager.startSpecCreation(task.specId, project.path, taskDescription, specDir, task.metadata);
       } else if (needsImplementation) {
         // Spec exists but no analysis_tasks - run run.py to create implementation plan and execute
@@ -664,7 +664,7 @@
           console.log('[TASK_UPDATE_STATUS] hasSpec:', hasSpec, 'needsSpecCreation:', needsSpecCreation, 'needsImplementation:', needsImplementation);
 
           if (needsSpecCreation) {
-            // No spec file - need to run spec_runner.py to create the spec
+            // No spec file - need to run case_runner.py to create the spec
             const taskDescription = task.description || task.title;
             console.log('[TASK_UPDATE_STATUS] Starting spec creation for:', task.specId);
             agentManager.startSpecCreation(task.specId, project.path, taskDescription, specDir, task.metadata);
@@ -775,7 +775,7 @@
       }
 
       // Get the spec directory
-      const autoBuildDir = project.autoBuildPath || '.auto-claude';
+      const autoBuildDir = project.autoBuildPath || '.auto-sleuth';
       const specDir = path.join(
         project.path,
         autoBuildDir,
@@ -1191,7 +1191,7 @@
               return { success: false, error: `Python environment not ready: ${status.error || 'Unknown error'}` };
             }
           } else {
-            return { success: false, error: 'Python environment not ready and Auto Claude source not found' };
+            return { success: false, error: 'Python environment not ready and Auto Sleuth source not found' };
           }
         }
 
@@ -1203,11 +1203,11 @@
         // Use run.py --merge to handle the merge
         const sourcePath = getEffectiveSourcePath();
         if (!sourcePath) {
-          return { success: false, error: 'Auto Claude source not found' };
+          return { success: false, error: 'Auto Sleuth source not found' };
         }
 
         const runScript = path.join(sourcePath, 'run.py');
-        const specDir = path.join(project.path, project.autoBuildPath || '.auto-claude', 'specs', task.specId);
+        const specDir = path.join(project.path, project.autoBuildPath || '.auto-sleuth', 'specs', task.specId);
 
         if (!existsSync(specDir)) {
           return { success: false, error: 'Spec directory not found' };

@@ -127,7 +127,7 @@ function createProject(): Project {
     id: 'project-1',
     name: 'Test Project',
     path: projectPath,
-    autoBuildPath: '.auto-claude',
+    autoBuildPath: '.auto-sleuth',
     settings: {
       model: 'default',
       memoryBackend: 'file',
