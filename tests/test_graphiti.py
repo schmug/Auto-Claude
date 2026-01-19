@@ -4,7 +4,7 @@ import pytest
 from pathlib import Path
 from unittest.mock import patch, MagicMock
 
-# Add auto-claude to path
+# Add auto-sleuth to path
 import sys
 sys.path.insert(0, str(Path(__file__).parent.parent / "Apps" / "backend"))
 
@@ -78,7 +78,7 @@ class TestGraphitiConfig:
             config = GraphitiConfig.from_env()
             assert config.enabled is False
             assert config.database == "auto_claude_memory"
-            assert "auto-claude" in config.db_path.lower()  # Default path in ~/.auto-claude/
+            assert "auto-sleuth" in config.db_path.lower()  # Default path in ~/.auto-sleuth/
 
     def test_from_env_custom_values(self):
         """Config reads custom environment values."""
